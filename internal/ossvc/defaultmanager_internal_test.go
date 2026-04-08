@@ -427,15 +427,7 @@ func TestManager_Uninstall_openWrt(t *testing.T) {
 func newTestSvc(tb testing.TB) (svc *testService) {
 	tb.Helper()
 
-	svc = &testService{
-		OnRun:       func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnStart:     func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnStop:      func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnRestart:   func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnInstall:   func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnUninstall: func() (err error) { panic(testutil.UnexpectedCall()) },
-		OnStatus:    func() (s service.Status, err error) { panic(testutil.UnexpectedCall()) },
-	}
+	svc = newTestService()
 
 	service.ChooseSystem(&testSystem{
 		OnNew: func(_ service.Interface, _ *service.Config) (s service.Service, err error) {
