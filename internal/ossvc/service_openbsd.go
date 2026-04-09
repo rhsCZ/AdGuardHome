@@ -66,18 +66,20 @@ func (sys *openbsdSystem) Interactive() (ok bool) {
 // New implements service.System interface for openbsdSystem.
 func (sys *openbsdSystem) New(i service.Interface, c *service.Config) (s service.Service, err error) {
 	return &openbsdRunComService{
-		cmdCons: sys.cmdCons,
-		i:       i,
-		cfg:     c,
+		cmdCons:     sys.cmdCons,
+		i:           i,
+		cfg:         c,
+		scriptsPath: "/etc/rc.d",
 	}, nil
 }
 
 // openbsdRunComService is the RunCom-based service.Service to be used on the
 // OpenBSD.
 type openbsdRunComService struct {
-	cmdCons executil.CommandConstructor
-	i       service.Interface
-	cfg     *service.Config
+	cmdCons     executil.CommandConstructor
+	i           service.Interface
+	cfg         *service.Config
+	scriptsPath string
 }
 
 // Platform implements service.Service interface for *openbsdRunComService.
@@ -145,9 +147,7 @@ func (s *openbsdRunComService) scriptPath() (cp string, err error) {
 		return "", errNoUserServiceRunCom
 	}
 
-	const scriptPathPref = "/etc/rc.d"
-
-	return filepath.Join(scriptPathPref, s.cfg.Name), nil
+	return filepath.Join(s.scriptsPath, s.cfg.Name), nil
 }
 
 const (
@@ -249,6 +249,7 @@ func (s *openbsdRunComService) writeScript() (err error) {
 	}
 
 	t := s.template()
+	// #nosec CWE-22 -- The path is constructed from constants.
 	f, err := os.Create(scriptPath)
 	if err != nil {
 		return fmt.Errorf("creating rc.d script file: %w", err)
@@ -269,6 +270,7 @@ func (s *openbsdRunComService) writeScript() (err error) {
 	}
 
 	return errors.Annotate(
+		// #nosec CWE-276 -- The permissions are required.
 		os.Chmod(scriptPath, 0o755),
 		"changing rc.d script file permissions: %w",
 	)
