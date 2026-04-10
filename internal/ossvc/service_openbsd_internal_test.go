@@ -30,8 +30,8 @@ func TestOpenbsdSystem(t *testing.T) {
 		Name: testServiceName,
 	})
 	require.NoError(t, err)
+	require.NotNil(t, svc)
 
-	assert.NotNil(t, svc)
 	assert.Equal(t, "openbsd", svc.Platform())
 	assert.Equal(t, testServiceName, svc.String())
 
@@ -62,20 +62,22 @@ func TestOpenbsdRunComService(t *testing.T) {
 	}
 
 	err := svc.Install()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	assert.FileExists(t, filepath.Join(scriptsDir, testServiceName))
 
 	err = svc.Start()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = svc.Stop()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = svc.Restart()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = svc.Uninstall()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	assert.NoFileExists(t, filepath.Join(scriptsDir, testServiceName))
 }
 

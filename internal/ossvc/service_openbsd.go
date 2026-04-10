@@ -7,6 +7,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -65,11 +66,13 @@ func (sys *openbsdSystem) Interactive() (ok bool) {
 
 // New implements service.System interface for openbsdSystem.
 func (sys *openbsdSystem) New(i service.Interface, c *service.Config) (s service.Service, err error) {
+	const scriptsPath = "/etc/rc.d"
+
 	return &openbsdRunComService{
 		cmdCons:     sys.cmdCons,
 		i:           i,
 		cfg:         c,
-		scriptsPath: "/etc/rc.d",
+		scriptsPath: scriptsPath,
 	}, nil
 }
 
@@ -232,6 +235,11 @@ func (s *openbsdRunComService) configureSysStartup(enable bool) (err error) {
 	)
 }
 
+// scriptFileMode is the file mode for the script file.  For a script to be
+// recognized and executed by the rc(8) system, it should typically have
+// -rwxr-xr-x permissions.
+const scriptFileMode fs.FileMode = 0o755
+
 // writeScript tries to write the script for the service.
 func (s *openbsdRunComService) writeScript() (err error) {
 	var scriptPath string
@@ -254,7 +262,7 @@ func (s *openbsdRunComService) writeScript() (err error) {
 	if err != nil {
 		return fmt.Errorf("creating rc.d script file: %w", err)
 	}
-	defer f.Close()
+	defer func() { err = errors.WithDeferred(err, f.Close()) }()
 
 	err = t.Execute(f, &struct {
 		*service.Config
@@ -270,8 +278,7 @@ func (s *openbsdRunComService) writeScript() (err error) {
 	}
 
 	return errors.Annotate(
-		// #nosec CWE-276 -- The permissions are required.
-		os.Chmod(scriptPath, 0o755),
+		os.Chmod(scriptPath, scriptFileMode),
 		"changing rc.d script file permissions: %w",
 	)
 }
