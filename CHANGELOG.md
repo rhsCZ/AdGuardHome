@@ -20,9 +20,9 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Security
 
-- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.1][go-1.26.1].
+- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.2][go-1.26.2].
 
-[go-1.26.1]: https://groups.google.com/g/golang-announce/c/EdhZqrQ98hkq
+[go-1.26.2]: https://groups.google.com/g/golang-announce/c/0uYbvbPZRWU
 
 ### Changed
 
@@ -58,9 +58,13 @@ In this release, the schema version has changed from 33 to 34.
 
 ### Fixed
 
+- The strict SNI check setting is not persisted when the TLS configuration is changed ([#8327]).
+
 - Status reported by the launchd service implementation in cases of scheduled service restart.
 
 - Fixed clients block/unblock when moving clients between allowed and disallowed lists.
+
+[#8327]: https://github.com/AdguardTeam/AdGuardHome/issues/8327
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
