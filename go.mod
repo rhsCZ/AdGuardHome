@@ -3,8 +3,7 @@ module github.com/AdguardTeam/AdGuardHome
 go 1.26.1
 
 require (
-	// TODO(e.burkov): !! Upd to tag.
-	github.com/AdguardTeam/dnsproxy v0.81.1-0.20260408182641-204d3ef3cd37
+	github.com/AdguardTeam/dnsproxy v0.81.1
 	github.com/AdguardTeam/golibs v0.35.11
 	github.com/AdguardTeam/urlfilter v0.23.2
 	github.com/NYTimes/gziphandler v1.1.1
