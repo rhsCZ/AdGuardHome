@@ -13,8 +13,6 @@ import (
 func TestSysvService_Install(t *testing.T) {
 	t.Parallel()
 
-	sysSvc := newTestService()
-
 	testCases := []struct {
 		cmdErr     error
 		sysSvcErr  error
@@ -39,6 +37,9 @@ func TestSysvService_Install(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			sysSvc := newTestService()
 			sysSvc.OnInstall = func() (err error) {
 				return tc.sysSvcErr
 			}
@@ -58,8 +59,6 @@ func TestSysvService_Install(t *testing.T) {
 func TestSysvService_Uninstall(t *testing.T) {
 	t.Parallel()
 
-	sysSvc := newTestService()
-
 	testCases := []struct {
 		cmdErr     error
 		sysSvcErr  error
@@ -84,6 +83,9 @@ func TestSysvService_Uninstall(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			sysSvc := newTestService()
 			sysSvc.OnUninstall = func() (err error) {
 				return tc.sysSvcErr
 			}
