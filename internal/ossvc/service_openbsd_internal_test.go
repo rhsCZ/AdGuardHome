@@ -84,8 +84,6 @@ func TestOpenbsdRunComService(t *testing.T) {
 func TestOpenbsdRunComService_Status(t *testing.T) {
 	t.Parallel()
 
-	scriptsDir := t.TempDir()
-
 	conf := &service.Config{
 		Name: testServiceName,
 	}
@@ -126,11 +124,13 @@ func TestOpenbsdRunComService_Status(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			svc := &openbsdRunComService{
 				cmdCons:     newTestCmdConstructor(t, tc.body, tc.cmdErr),
 				i:           emptyInterface{},
 				cfg:         conf,
-				scriptsPath: scriptsDir,
+				scriptsPath: t.TempDir(),
 			}
 
 			status, err := svc.Status()
