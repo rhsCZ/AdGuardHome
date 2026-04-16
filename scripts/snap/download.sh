@@ -18,7 +18,7 @@ while read -r arch snap_arch; do
 	release_url="https://static.adtidy.org/adguardhome/${channel}/AdGuardHome_linux_${arch}.tar.gz"
 	output="./AdGuardHome_linux_${arch}.tar.gz"
 
-	curl -o "$output" -v "$release_url" -d "cache_buster=$cache_buster"
+	curl -o "$output" -v -d "cache_buster=$cache_buster" "$release_url"
 	tar -f "$output" -v -x -z
 	cp ./AdGuardHome/AdGuardHome "./AdGuardHome_${snap_arch}"
 	rm -f -r "$output" ./AdGuardHome
