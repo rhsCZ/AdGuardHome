@@ -11,11 +11,14 @@ set -e -f -u
 channel="${CHANNEL:?please set CHANNEL}"
 readonly channel
 
+cache_buster="${CACHE_BUSTER:?please set CACHE_BUSTER}"
+readonly cache_buster
+
 while read -r arch snap_arch; do
 	release_url="https://static.adtidy.org/adguardhome/${channel}/AdGuardHome_linux_${arch}.tar.gz"
 	output="./AdGuardHome_linux_${arch}.tar.gz"
 
-	curl -o "$output" -v "$release_url"
+	curl -o "$output" -v "$release_url" -d "cache_buster=$cache_buster"
 	tar -f "$output" -v -x -z
 	cp ./AdGuardHome/AdGuardHome "./AdGuardHome_${snap_arch}"
 	rm -f -r "$output" ./AdGuardHome
