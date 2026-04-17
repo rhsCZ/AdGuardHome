@@ -11,7 +11,7 @@ set -e -f -u
 channel="${CHANNEL:?please set CHANNEL}"
 readonly channel
 
-cache_buster="${CACHE_BUSTER:-}"
+cache_buster="${CACHE_BUSTER:-0}"
 readonly cache_buster
 
 while read -r arch snap_arch; do
@@ -19,7 +19,7 @@ while read -r arch snap_arch; do
 	output="./AdGuardHome_linux_${arch}.tar.gz"
 
 	if [ -n "$cache_buster" ]; then
-		release_url="$release_url?cache_buster=$cache_buster"
+		release_url="${release_url}?cache_buster=${cache_buster}"
 	fi
 
 	curl -o "$output" -v "$release_url"
