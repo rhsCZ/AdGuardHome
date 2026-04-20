@@ -18,7 +18,7 @@ func (srv *DHCPServer) serveV4(
 	ctx context.Context,
 	iface *dhcpInterfaceV4,
 	pkt gopacket.Packet,
-	fd *frameData,
+	fd *frameData4,
 ) (err error) {
 	defer func() { err = errors.Annotate(err, "serving dhcpv4: %w") }()
 
@@ -64,7 +64,7 @@ func (iface *dhcpInterfaceV4) handleDHCPv4(
 	ctx context.Context,
 	typ layers.DHCPMsgType,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 ) (err error) {
 	switch typ {
 	case layers.DHCPMsgTypeDiscover:
@@ -88,7 +88,7 @@ func (iface *dhcpInterfaceV4) handleDHCPv4(
 func (iface *dhcpInterfaceV4) handleDiscover(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 ) {
 	l := iface.common.logger
 
@@ -133,7 +133,7 @@ func (iface *dhcpInterfaceV4) handleDiscover(
 func (iface *dhcpInterfaceV4) handleRequest(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 ) {
 	srvID, hasSrvID := serverID4(req)
 	reqIP, hasReqIP := requestedIPv4(req)
@@ -186,7 +186,7 @@ func (iface *dhcpInterfaceV4) handleRequest(
 func (iface *dhcpInterfaceV4) handleSelecting(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	reqIP netip.Addr,
 ) {
 	l := iface.common.logger
@@ -239,7 +239,7 @@ func (iface *dhcpInterfaceV4) handleSelecting(
 func (iface *dhcpInterfaceV4) handleInitReboot(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	reqIP netip.Addr,
 ) {
 	l := iface.common.logger
@@ -286,7 +286,7 @@ func (iface *dhcpInterfaceV4) handleInitReboot(
 func (iface *dhcpInterfaceV4) handleRenew(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	ip netip.Addr,
 ) {
 	l := iface.common.logger

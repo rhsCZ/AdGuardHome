@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"encoding/binary"
 	"fmt"
+	"net"
 	"net/netip"
 	"time"
 
@@ -29,20 +30,33 @@ type iaNAOption struct {
 	iaid uint32
 
 	// t1 is the time after which the client must contact the same server to
-	// extend the lifetimes of the addresses in this IA, in seconds.
-	t1 uint32
+	// extend the lifetimes of the addresses in this IA.
+	t1 time.Duration
 
 	// t2 is the time after which the client may contact any available server to
-	// extend the lifetimes, in seconds.
-	t2 uint32
+	// extend the lifetimes.
+	t2 time.Duration
 }
 
 // type check
 var _ encoding.BinaryUnmarshaler = (*iaNAOption)(nil)
 
-// UnmarshalBinary decodes an IA_NA option from its option data bytes.  data
-// must be the raw option-data field (after the option-code and option-len
-// fields).
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface for
+// *iaNAOption.  data should have the following format:
+//
+//	 0                   1                   2                   3
+//	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                        IAID (4 octets)                        |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                              T1                               |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                              T2                               |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                                                               |
+//	.                         IA_NA-options                         .
+//	.                                                               .
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 func (opt *iaNAOption) UnmarshalBinary(data []byte) (err error) {
 	err = validate.NoLessThan("data length", len(data), iaNAMinLen)
 	if err != nil {
@@ -51,8 +65,8 @@ func (opt *iaNAOption) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	opt.iaid = binary.BigEndian.Uint32(data[0:4])
-	opt.t1 = binary.BigEndian.Uint32(data[4:8])
-	opt.t2 = binary.BigEndian.Uint32(data[8:12])
+	opt.t1 = time.Duration(binary.BigEndian.Uint32(data[4:8])) * time.Second
+	opt.t2 = time.Duration(binary.BigEndian.Uint32(data[8:12])) * time.Second
 
 	// Parse the nested options that follow the fixed fields.
 	nested := data[iaNAMinLen:]
@@ -92,8 +106,8 @@ func (opt iaNAOption) Encode() (iaOpt layers.DHCPv6Option) {
 	data := make([]byte, 0, iaNAMinLen+len(opt.nested)*nestedAddrSize)
 
 	binary.BigEndian.AppendUint32(data, opt.iaid)
-	binary.BigEndian.AppendUint32(data, opt.t1)
-	binary.BigEndian.AppendUint32(data, opt.t2)
+	binary.BigEndian.AppendUint32(data, uint32(opt.t1.Seconds()))
+	binary.BigEndian.AppendUint32(data, uint32(opt.t2.Seconds()))
 
 	for _, addr := range opt.nested {
 		data = addr.append(data)
@@ -115,21 +129,38 @@ type iaAddrOption struct {
 	// addr is the IPv6 address.
 	addr netip.Addr
 
-	// preferredLifetime is the preferred lifetime of the address, in seconds.
-	// When it is zero, the address is deprecated.
+	// preferredLifetime is the preferred lifetime of the address.  When it is
+	// zero, the address is deprecated.
 	preferredLifetime time.Duration
 
-	// validLifetime is the valid lifetime of the address, in seconds.  When it
-	// is zero, the address is no longer valid.
+	// validLifetime is the valid lifetime of the address.  When it is zero, the
+	// address is no longer valid.
 	validLifetime time.Duration
 }
 
 // type check
 var _ encoding.BinaryUnmarshaler = (*iaAddrOption)(nil)
 
-// UnmarshalBinary decodes an IA Address option from its option data bytes.
-// data must be the raw option-data field (after the option-code and option-len
-// fields).  Nested options within IA Address, if any, are ignored.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface for
+// *iaAddrOption.  Nested options within IA Address, if any, are
+// ignored.  data should have the following format:
+//
+//	 0                   1                   2                   3
+//	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                                                               |
+//	|                         IPv6-address                          |
+//	|                                                               |
+//	|                                                               |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                      preferred-lifetime                       |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	|                        valid-lifetime                         |
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//	.                                                               .
+//	.                        IAaddr-options                         .
+//	.                                                               .
+//	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 func (ia *iaAddrOption) UnmarshalBinary(data []byte) (err error) {
 	err = validate.NoLessThan("data length", len(data), iaAddrDataLen)
 	if err != nil {
@@ -164,4 +195,16 @@ func (ia iaAddrOption) append(orig []byte) (data []byte) {
 	binary.BigEndian.AppendUint32(data, uint32(ia.validLifetime.Seconds()))
 
 	return data
+}
+
+// newServerDUID creates a DUID-LL (Link-Layer Address) from the given MAC
+// address per RFC 9915 §11.4.  The result is deterministic: the same MAC
+// address always produces the same DUID, satisfying the stability requirement
+// of §11.
+func newServerDUID(mac net.HardwareAddr) (duid *layers.DHCPv6DUID) {
+	return &layers.DHCPv6DUID{
+		Type:             layers.DHCPv6DUIDTypeLL,
+		HardwareType:     HardwareTypeEthernet,
+		LinkLayerAddress: mac,
+	}
 }

@@ -235,7 +235,7 @@ func (iface *dhcpInterfaceV4) updateLease(ctx context.Context, lease *Lease) (er
 func (iface *dhcpInterfaceV4) respondOffer(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	lease *Lease,
 	idOpt []byte,
 ) {
@@ -260,7 +260,7 @@ func (iface *dhcpInterfaceV4) respondOffer(
 func (iface *dhcpInterfaceV4) respondACK(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	lease *Lease,
 	idOpt []byte,
 ) {
@@ -284,7 +284,7 @@ func (iface *dhcpInterfaceV4) respondACK(
 func (iface *dhcpInterfaceV4) respondNAK(
 	ctx context.Context,
 	req *layers.DHCPv4,
-	fd *frameData,
+	fd *frameData4,
 	idOpt []byte,
 ) {
 	// TODO(e.burkov):  According to RFC 2131 we should add a message.
@@ -443,7 +443,7 @@ func (iface *dhcpInterfaceV4) updateAndRespond(
 	l *slog.Logger,
 	req *layers.DHCPv4,
 	lease *Lease,
-	fd *frameData,
+	fd *frameData4,
 	idOpt []byte,
 ) {
 	lease.Hostname = cmp.Or(hostname4(req), lease.Hostname)
@@ -463,7 +463,7 @@ func (iface *dhcpInterfaceV4) updateAndRespond(
 const FlagsBroadcast uint16 = 1 << 15
 
 // respond4 sends a DHCPv4 response.  fd, req, and resp must not be nil.
-func respond4(fd *frameData, req, resp *layers.DHCPv4) (err error) {
+func respond4(fd *frameData4, req, resp *layers.DHCPv4) (err error) {
 	// TODO(e.burkov):  Use pools for buffer and layers.
 	buf := gopacket.NewSerializeBuffer()
 
@@ -490,7 +490,7 @@ func respond4(fd *frameData, req, resp *layers.DHCPv4) (err error) {
 
 // newIPv4UDPLayers creates new UDP and IP layers for DHCPv4 response.  fd, req,
 // and resp must not be nil.
-func newIPv4UDPLayers(fd *frameData, req, resp *layers.DHCPv4) (ip *layers.IPv4, udp *layers.UDP) {
+func newIPv4UDPLayers(fd *frameData4, req, resp *layers.DHCPv4) (ip *layers.IPv4, udp *layers.UDP) {
 	var dstIP net.IP
 	dstPort := ClientPortV4
 	switch {

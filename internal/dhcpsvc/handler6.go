@@ -17,6 +17,7 @@ func (srv *DHCPServer) serveV6(
 	ctx context.Context,
 	_ *dhcpInterfaceV6,
 	pkt gopacket.Packet,
+	_ *frameData6,
 ) (err error) {
 	defer func() { err = errors.Annotate(err, "serving dhcpv6: %w") }()
 

@@ -20,7 +20,7 @@ import (
 // TODO(e.burkov):  Identify the client by the hardware address and the client
 // identifier from the DHCP messages.
 //
-// TODO(e.burkov):  !! Identify IPv6 clients with DUID.
+// TODO(e.burkov):  Identify IPv6 clients with DUID.
 type macKey any
 
 // macToKey converts mac into macKey, which is used as the key for the lease
