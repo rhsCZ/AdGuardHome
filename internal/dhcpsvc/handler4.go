@@ -12,8 +12,8 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-// serveV4 handles the ethernet packet of IPv4 type. iface and pkt must not be
-// nil.  iface and fd must not be nil.  pkt must be an IPv4 packet.
+// serveV4 handles the ethernet packet of IPv4 type.  iface must not be nil, fd
+// must be valid, pkt must be an IPv4 packet.
 func (srv *DHCPServer) serveV4(
 	ctx context.Context,
 	iface *dhcpInterfaceV4,
@@ -55,7 +55,7 @@ func (srv *DHCPServer) serveV4(
 // messages are handled by all interfaces concurrently, as those offer addresses
 // for the independent networks.  The DHCPREQUEST, DHCPRELEASE, and DHCPDECLINE
 // messages are handled by the appropriate interface according to the client's
-// choice.  req and fd must not be nil, typ should be one of:
+// choice.  req must not be nil, fd must be valid, typ should be one of:
 //   - [layers.DHCPMsgTypeDiscover]
 //   - [layers.DHCPMsgTypeRequest]
 //   - [layers.DHCPMsgTypeRelease]
@@ -84,7 +84,7 @@ func (iface *dhcpInterfaceV4) handleDHCPv4(
 }
 
 // handleDiscover handles messages of type DHCPDISCOVER.  req must be a
-// DHCPDISCOVER message, fd must not be nil.
+// DHCPDISCOVER message, fd must be valid.
 func (iface *dhcpInterfaceV4) handleDiscover(
 	ctx context.Context,
 	req *layers.DHCPv4,
@@ -125,7 +125,7 @@ func (iface *dhcpInterfaceV4) handleDiscover(
 }
 
 // handleRequest handles the DHCPv4 message of DHCPREQUEST type.  req must be a
-// DHCPREQUEST message.  req and fd must not be nil.
+// DHCPREQUEST message.  req must not be nil, fd must be valid.
 //
 // See https://datatracker.ietf.org/doc/html/rfc2131#section-4.3.2.
 //
@@ -181,8 +181,8 @@ func (iface *dhcpInterfaceV4) handleRequest(
 }
 
 // handleSelecting handles messages of type DHCPREQUEST in SELECTING state.  req
-// must be a DHCPREQUEST message, reqIP must be a valid IPv4 address, fd must
-// not be nil.
+// must be a DHCPREQUEST message, reqIP must be a valid IPv4 address, fd must be
+// valid.
 func (iface *dhcpInterfaceV4) handleSelecting(
 	ctx context.Context,
 	req *layers.DHCPv4,
@@ -235,7 +235,7 @@ func (iface *dhcpInterfaceV4) handleSelecting(
 
 // handleInitReboot handles messages of type DHCPREQUEST in INIT-REBOOT state.
 // req must be a DHCPREQUEST message, reqIP must be a valid IPv4 address, fd
-// must not be nil.
+// must be valid.
 func (iface *dhcpInterfaceV4) handleInitReboot(
 	ctx context.Context,
 	req *layers.DHCPv4,
@@ -282,7 +282,7 @@ func (iface *dhcpInterfaceV4) handleInitReboot(
 
 // handleRenew handles messages of type DHCPREQUEST in RENEWING or REBINDING
 // state.  req must be a DHCPREQUEST message, ip should be a previously leased
-// address, fd must not be nil.
+// address, fd must be valid.
 func (iface *dhcpInterfaceV4) handleRenew(
 	ctx context.Context,
 	req *layers.DHCPv4,

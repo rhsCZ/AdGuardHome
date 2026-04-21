@@ -108,7 +108,7 @@ func (EmptyNetworkDevice) Addresses() (ips []netip.Addr) {
 }
 
 // HardwareAddr implements the [NetworkDevice] interface for
-// [EmptyNetworkDevice]. It always returns nil.
+// [EmptyNetworkDevice].  It always returns nil.
 func (EmptyNetworkDevice) HardwareAddr() (hw net.HardwareAddr) {
 	return nil
 }
