@@ -197,6 +197,8 @@ func (srv *DHCPServer) newDHCPInterfaceV4(
 	// TODO(e.burkov):  Add a helper for converting [netip.Addr] to subnet mask
 	// to [netutil].
 	maskLen, _ := net.IPMask(conf.SubnetMask.AsSlice()).Size()
+
+	// Ignore the error since it's already checked in [IPv4Config.Validate].
 	addrSpace, _ := newIPRange(conf.RangeStart, conf.RangeEnd)
 
 	iface = &dhcpInterfaceV4{

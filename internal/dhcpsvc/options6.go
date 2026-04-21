@@ -105,9 +105,9 @@ func (opt iaNAOption) Encode() (iaOpt layers.DHCPv6Option) {
 
 	data := make([]byte, 0, iaNAMinLen+len(opt.nested)*nestedAddrSize)
 
-	binary.BigEndian.AppendUint32(data, opt.iaid)
-	binary.BigEndian.AppendUint32(data, uint32(opt.t1.Seconds()))
-	binary.BigEndian.AppendUint32(data, uint32(opt.t2.Seconds()))
+	data = binary.BigEndian.AppendUint32(data, opt.iaid)
+	data = binary.BigEndian.AppendUint32(data, uint32(opt.t1.Seconds()))
+	data = binary.BigEndian.AppendUint32(data, uint32(opt.t2.Seconds()))
 
 	for _, addr := range opt.nested {
 		data = addr.append(data)
@@ -185,14 +185,14 @@ func (ia *iaAddrOption) UnmarshalBinary(data []byte) (err error) {
 func (ia iaAddrOption) append(orig []byte) (data []byte) {
 	data = orig
 
-	binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptIAAddr))
-	binary.BigEndian.AppendUint16(data, uint16(iaAddrDataLen))
+	data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptIAAddr))
+	data = binary.BigEndian.AppendUint16(data, uint16(iaAddrDataLen))
 
 	// [netip.Addr.AppendBinary] never returns errors.
 	data, _ = ia.addr.AppendBinary(data)
 
-	binary.BigEndian.AppendUint32(data, uint32(ia.preferredLifetime.Seconds()))
-	binary.BigEndian.AppendUint32(data, uint32(ia.validLifetime.Seconds()))
+	data = binary.BigEndian.AppendUint32(data, uint32(ia.preferredLifetime.Seconds()))
+	data = binary.BigEndian.AppendUint32(data, uint32(ia.validLifetime.Seconds()))
 
 	return data
 }

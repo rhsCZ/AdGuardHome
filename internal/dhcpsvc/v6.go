@@ -2,7 +2,6 @@ package dhcpsvc
 
 import (
 	"context"
-	"encoding/binary"
 	"log/slog"
 	"net/netip"
 	"slices"
@@ -32,7 +31,7 @@ const (
 // See https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-2.
 //
 // TODO(e.burkov):  Use.
-var HardwareTypeEthernet []byte = binary.BigEndian.AppendUint16(nil, 1)
+var HardwareTypeEthernet = []byte{0x00, 0x01}
 
 // DHCPv6 multicast addresses.
 //
@@ -174,6 +173,9 @@ func (srv *DHCPServer) newDHCPInterfaceV6(
 	// end, and subnet prefix.
 	rangeEndData := conf.RangeStart.As16()
 	rangeEndData[15] = 0xff
+
+	// TODO(e.burkov):  Validate the range end and subnet prefix against the
+	// range start during configuration validation.
 	addrSpace, _ := newIPRange(conf.RangeStart, netip.AddrFrom16(rangeEndData))
 
 	iface = &dhcpInterfaceV6{
