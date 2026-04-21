@@ -91,5 +91,7 @@ func storeGlobals(tb testing.TB) {
 
 func TestMain(m *testing.M) {
 	initCmdLineOpts()
-	testutil.DiscardLogOutput(m)
+
+	// TODO(f.setrakov): !! Use [testutil.DiscardLogOutput].
+	m.Run()
 }

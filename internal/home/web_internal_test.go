@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghuser"
+	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	"github.com/AdguardTeam/golibs/testutil"
@@ -101,6 +103,10 @@ func (d *testDecoder) decodeStatus(tb testing.TB, b []byte) (status int) {
 func TestWebAPI_h2cVulnerability(t *testing.T) {
 	storeGlobals(t)
 
+	logger := slogutil.New(&slogutil.Config{
+		Level: slog.LevelDebug,
+	})
+
 	stop := make(chan struct{})
 	t.Cleanup(func() {
 		testutil.RequireReceive(t, stop, testTimeout)
@@ -124,7 +130,8 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 	}
 
 	auth, err := newAuth(testutil.ContextWithTimeout(t, testTimeout), &authConfig{
-		baseLogger:     testLogger,
+		// TODO(f.setrakov): !! Use [testLogger].
+		baseLogger:     logger,
 		rateLimiter:    emptyRateLimiter{},
 		trustedProxies: testTrustedProxies,
 		dbFilename:     path.Join(t.TempDir(), "sessions.db"),
@@ -143,6 +150,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 	mw := &webMw{}
 	registrar := aghhttp.NewDefaultRegistrar(mux, mw.wrap)
 	web := newTestWeb(t, &webConfig{
+		baseLogger:    logger,
 		auth:          auth,
 		mux:           mux,
 		httpReg:       registrar,
