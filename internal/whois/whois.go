@@ -159,6 +159,7 @@ func whoisParse(data []byte, maxLen int) (info map[string]string) {
 	info = map[string]string{}
 
 	var orgname string
+	// TODO(a.garipov):  Consider using [bytes.Lines].
 	for l := range bytes.SplitSeq(data, []byte("\n")) {
 		if isWHOISComment(l) {
 			continue

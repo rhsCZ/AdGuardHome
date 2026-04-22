@@ -8,6 +8,7 @@ import (
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/container"
+	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/stringutil"
 )
 
@@ -222,7 +223,7 @@ func (c *searchCriterion) isFilteredWithReason(reason filtering.Reason) (matched
 	case filteringStatusSafeSearch:
 		return reason == filtering.FilteredSafeSearch
 	default:
-		panic(fmt.Errorf("unexpected value %q", c.value))
+		panic(fmt.Errorf("%w: %q", errors.ErrBadEnumValue, c.value))
 	}
 }
 

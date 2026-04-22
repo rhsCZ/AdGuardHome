@@ -366,15 +366,15 @@ func (l *queryLog) decodeResultReverseHosts(ctx context.Context, dec *json.Decod
 
 			return
 		case string:
-			setDNSRewriteResult(v, ent)
+			setPTRRewriteResult(v, ent)
 		default:
 			continue
 		}
 	}
 }
 
-// setDNSRewriteResult sets ent.Result.DNSRewriteResult.  ent must not be nil.
-func setDNSRewriteResult(v string, ent *logEntry) {
+// setPTRRewriteResult sets ent.Result.DNSRewriteResult.  ent must not be nil.
+func setPTRRewriteResult(v string, ent *logEntry) {
 	v = dns.Fqdn(v)
 	res := &ent.Result
 
