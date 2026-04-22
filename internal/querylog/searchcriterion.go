@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
+	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/stringutil"
 )
 
@@ -37,22 +38,27 @@ const (
 	filteringStatusProcessed           = "processed"            // not blocked, not white-listed entries
 )
 
-// filteringStatusValues -- array with all possible filteringStatus values
-var filteringStatusValues = []string{
-	filteringStatusAll, filteringStatusFiltered, filteringStatusBlocked,
-	filteringStatusBlockedService, filteringStatusBlockedSafebrowsing, filteringStatusBlockedParental,
-	filteringStatusWhitelisted, filteringStatusRewritten, filteringStatusSafeSearch,
+// filteringStatusValues is the set of all possible [filteringStatus] values.
+var filteringStatusValues = container.NewMapSet(
+	filteringStatusAll,
+	filteringStatusBlocked,
+	filteringStatusBlockedParental,
+	filteringStatusBlockedSafebrowsing,
+	filteringStatusBlockedService,
+	filteringStatusFiltered,
 	filteringStatusProcessed,
-}
+	filteringStatusRewritten,
+	filteringStatusSafeSearch,
+	filteringStatusWhitelisted,
+)
 
 // searchCriterion is a search criterion that is used to match a record.
 type searchCriterion struct {
 	value         string
 	asciiVal      string
 	criterionType criterionType
-	// strict, if true, means that the criterion must be applied to the
-	// whole value rather than the part of it.  That is, equality and not
-	// containment.
+	// strict, if true, means that the criterion must be applied to the whole
+	// value rather than the part of it.  That is, equality and not containment.
 	strict bool
 }
 
@@ -158,12 +164,7 @@ func (c *searchCriterion) ctFilteringStatusCase(
 	case filteringStatusAll:
 		return true
 	case filteringStatusFiltered:
-		return isFiltered || reason.In(
-			filtering.NotFilteredAllowList,
-			filtering.Rewritten,
-			filtering.RewrittenAutoHosts,
-			filtering.RewrittenRule,
-		)
+		return isFiltered || reason == filtering.NotFilteredAllowList || reasonIsRewrite(reason)
 	case
 		filteringStatusBlocked,
 		filteringStatusBlockedParental,
@@ -174,34 +175,44 @@ func (c *searchCriterion) ctFilteringStatusCase(
 	case filteringStatusWhitelisted:
 		return reason == filtering.NotFilteredAllowList
 	case filteringStatusRewritten:
-		return reason.In(
-			filtering.Rewritten,
-			filtering.RewrittenAutoHosts,
-			filtering.RewrittenRule,
-		)
+		return reasonIsRewrite(reason)
 	case filteringStatusProcessed:
-		return !reason.In(
-			filtering.FilteredBlockList,
-			filtering.FilteredBlockedService,
-			filtering.NotFilteredAllowList,
-		)
+		return !reasonIsRuleList(reason)
 	default:
 		return false
 	}
 }
 
+// reasonIsRewrite returns true if r is one of:
+//
+//   - [filtering.RewrittenAutoHosts]
+//   - [filtering.RewrittenRule]
+//   - [filtering.Rewritten]
+func reasonIsRewrite(r filtering.Reason) (ok bool) {
+	return r == filtering.RewrittenAutoHosts ||
+		r == filtering.RewrittenRule ||
+		r == filtering.Rewritten
+}
+
 // isFilteredWithReason returns true if reason matches the criterion value.
 // c.value must be one of:
 //
-//   - filteringStatusBlocked
-//   - filteringStatusBlockedParental
-//   - filteringStatusBlockedSafebrowsing
-//   - filteringStatusBlockedService
-//   - filteringStatusSafeSearch
+//   - [filteringStatusBlockedParental]
+//   - [filteringStatusBlockedSafebrowsing]
+//   - [filteringStatusBlockedService]
+//   - [filteringStatusBlocked]
+//   - [filteringStatusSafeSearch]
 func (c *searchCriterion) isFilteredWithReason(reason filtering.Reason) (matched bool) {
 	switch c.value {
 	case filteringStatusBlocked:
-		return reason.In(filtering.FilteredBlockList, filtering.FilteredBlockedService)
+		switch reason {
+		case
+			filtering.FilteredBlockList,
+			filtering.FilteredBlockedService:
+			return true
+		default:
+			return false
+		}
 	case filteringStatusBlockedParental:
 		return reason == filtering.FilteredParental
 	case filteringStatusBlockedSafebrowsing:
@@ -213,4 +224,15 @@ func (c *searchCriterion) isFilteredWithReason(reason filtering.Reason) (matched
 	default:
 		panic(fmt.Errorf("unexpected value %q", c.value))
 	}
+}
+
+// reasonIsRuleList returns true if r is one of:
+//
+//   - [filtering.FilteredBlockList]
+//   - [filtering.FilteredBlockedService]
+//   - [filtering.NotFilteredAllowList]
+func reasonIsRuleList(r filtering.Reason) (ok bool) {
+	return r == filtering.FilteredBlockList ||
+		r == filtering.FilteredBlockedService ||
+		r == filtering.NotFilteredAllowList
 }
