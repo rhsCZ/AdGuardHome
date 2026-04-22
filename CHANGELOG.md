@@ -20,11 +20,13 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Fixed
 
-- When DNS caching is enabled, the ISP's DNS does not work properly ([#7046]).
-
 - Safe Browsing and Parental Control labels on the General Settings page not updating after changing the UI language.
 
-[#7046]: https://github.com/AdguardTeam/AdGuardHome/issues/8075
+#### Configuration changes
+
+- `enable_dnssec` in `dns` configuration now defines whether the proxy should set the AD/DO bits in the upstream requests, the default is `true` ([#7046]).
+
+[#7046]: https://github.com/AdguardTeam/AdGuardHome/issues/7046
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
