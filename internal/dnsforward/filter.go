@@ -178,8 +178,8 @@ func removeIPv6Hints(rr *dns.HTTPS) {
 }
 
 // filterHTTPSRecords filters HTTPS answers information through all rule list
-// filters of the server filters.  Removes IPv6 hints if IPv6 resolving is
-// disabled.
+// filters of the server filters.  It removes IPv6 hints if IPv6 resolving is
+// disabled.  All arguments must not be nil.
 func (s *Server) filterHTTPSRecords(
 	rr *dns.HTTPS,
 	setts *filtering.Settings,

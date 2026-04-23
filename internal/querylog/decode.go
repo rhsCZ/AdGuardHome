@@ -478,15 +478,15 @@ func (l *queryLog) decodeResultDNSRewriteResultKey(
 			return
 		}
 
-		ent.Result.DNSRewriteResult = maybeNew(ent.Result.DNSRewriteResult)
+		ent.Result.DNSRewriteResult = ensureNonNil(ent.Result.DNSRewriteResult)
 
 		if n, ok := vToken.(json.Number); ok {
 			rcode64, _ := n.Int64()
 			ent.Result.DNSRewriteResult.RCode = rules.RCode(rcode64)
 		}
 	case "Response":
-		ent.Result.DNSRewriteResult = maybeNew(ent.Result.DNSRewriteResult)
-		ent.Result.DNSRewriteResult.Response = maybeNewMap(ent.Result.DNSRewriteResult.Response)
+		ent.Result.DNSRewriteResult = ensureNonNil(ent.Result.DNSRewriteResult)
+		ent.Result.DNSRewriteResult.Response = ensureNonNilMap(ent.Result.DNSRewriteResult.Response)
 
 		// TODO(a.garipov): I give up.  This whole file is a mess.  Luckily, we
 		// can assume that this field is relatively rare and just use the normal
@@ -502,9 +502,9 @@ func (l *queryLog) decodeResultDNSRewriteResultKey(
 	}
 }
 
-// maybeNew returns a new non-nil pointer if ptr is nil; otherwise, it returns
-// ptr.
-func maybeNew[T any](ptr *T) (res *T) {
+// ensureNonNil returns a new non-nil pointer if ptr is nil; otherwise, it
+// returns ptr.
+func ensureNonNil[T any](ptr *T) (res *T) {
 	if ptr == nil {
 		return new(T)
 	}
@@ -512,8 +512,9 @@ func maybeNew[T any](ptr *T) (res *T) {
 	return ptr
 }
 
-// maybeNewMap returns a new non-nil map if m is nil; otherwise, it returns m.
-func maybeNewMap[K comparable, V any](m map[K]V) (res map[K]V) {
+// ensureNonNilMap returns a new non-nil map if m is nil; otherwise, it returns
+// m.
+func ensureNonNilMap[K comparable, V any](m map[K]V) (res map[K]V) {
 	if m == nil {
 		return map[K]V{}
 	}
