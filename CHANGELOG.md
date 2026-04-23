@@ -20,7 +20,11 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Fixed
 
+- Redundant validation warnings about DHCP when it's disabled ([#8348]).
+
 - Safe Browsing and Parental Control labels on the General Settings page not updating after changing the UI language.
+
+[#8348]: https://github.com/AdguardTeam/AdGuardHome/issues/8348
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
