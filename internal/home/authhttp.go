@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/netip"
 	"path"
+	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
@@ -388,7 +389,12 @@ func (mw *authMiddlewareDefault) Wrap(h http.Handler) (wrapped http.Handler) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				mw.logger.DebugContext(ctx, "auth middleware panicked", slogutil.KeyError, err)
+				mw.logger.DebugContext(
+					ctx,
+					"auth middleware panicked",
+					slogutil.KeyError, err,
+					"stack", debug.Stack(),
+				)
 				panic(err)
 			}
 		}()
