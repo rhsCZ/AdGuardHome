@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -16,7 +15,6 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghuser"
-	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	"github.com/AdguardTeam/golibs/testutil"
@@ -103,10 +101,6 @@ func (d *testDecoder) decodeStatus(tb testing.TB, b []byte) (status int) {
 func TestWebAPI_h2cVulnerability(t *testing.T) {
 	storeGlobals(t)
 
-	logger := slogutil.New(&slogutil.Config{
-		Level: slog.LevelDebug,
-	})
-
 	stop := make(chan struct{})
 	t.Cleanup(func() {
 		testutil.RequireReceive(t, stop, testTimeout)
@@ -131,8 +125,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 
 	mux := http.NewServeMux()
 	auth, err := newAuth(testutil.ContextWithTimeout(t, testTimeout), &authConfig{
-		// TODO(f.setrakov): !! Use [testLogger].
-		baseLogger:     logger,
+		baseLogger:     testLogger,
 		rateLimiter:    emptyRateLimiter{},
 		trustedProxies: testTrustedProxies,
 		dbFilename:     path.Join(t.TempDir(), "sessions.db"),
@@ -151,7 +144,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 	mw := &webMw{}
 	registrar := aghhttp.NewDefaultRegistrar(mux, mw.wrap)
 	web := newTestWeb(t, &webConfig{
-		baseLogger:    logger,
+		baseLogger:    testLogger,
 		auth:          auth,
 		mux:           mux,
 		httpReg:       registrar,
@@ -176,7 +169,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 	})
 
 	waitForWebAPIReady(t, host)
-	performH2CUpgradeAttack(t, host, logger)
+	performH2CUpgradeAttack(t, host)
 }
 
 // waitForWebAPIReady waits until the [webAPI] server has started and is ready
@@ -205,9 +198,7 @@ func waitForWebAPIReady(tb testing.TB, host string) {
 // performs an HTTP2 protocol upgrade, and attempts to access a protected
 // endpoint without proper authentication, verifying that the server responds
 // with [http.StatusUnauthorized].
-//
-// TODO(f.setrakov): !! Remove logger.
-func performH2CUpgradeAttack(tb testing.TB, host string, l *slog.Logger) {
+func performH2CUpgradeAttack(tb testing.TB, host string) {
 	tb.Helper()
 
 	dialer := &net.Dialer{}
@@ -251,7 +242,7 @@ func performH2CUpgradeAttack(tb testing.TB, host string, l *slog.Logger) {
 	sendH2CRequest(tb, framer, host)
 	require.NoError(tb, writer.Flush())
 
-	readH2CResponse(tb, framer, decoder, l)
+	readH2CResponse(tb, framer, decoder)
 }
 
 // performH2CSettingsExchange performs the HTTP2 settings exchange handshake. It
@@ -331,29 +322,12 @@ func sendH2CRequest(tb testing.TB, framer *http2.Framer, host string) {
 // readH2CResponse reads the response from an h2c connection and asserts that
 // the server responds with [http.StatusUnauthorized].  framer and decoder must
 // not be nil.
-//
-// TODO(f.setrakov): !! remove log.
-func readH2CResponse(tb testing.TB, framer *http2.Framer, decoder *testDecoder, l *slog.Logger) {
+func readH2CResponse(tb testing.TB, framer *http2.Framer, decoder *testDecoder) {
 	tb.Helper()
 
 	for {
 		frame, err := framer.ReadFrame()
 		require.NoError(tb, err)
-
-		l.DebugContext(
-			tb.Context(),
-			"received frame",
-			"type", frame.Header().Type,
-			"stream_id", frame.Header().StreamID,
-		)
-		if rstFrame, ok := frame.(*http2.RSTStreamFrame); ok {
-			l.DebugContext(
-				tb.Context(),
-				"RST_STREAM received",
-				"stream_id", rstFrame.StreamID,
-				slogutil.KeyError, rstFrame.ErrCode,
-			)
-		}
 
 		if frame.Header().StreamID != testTargetStreamID {
 			headerFrame, ok := frame.(*http2.HeadersFrame)

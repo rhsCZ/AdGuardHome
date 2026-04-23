@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/netip"
 	"path"
-	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
@@ -405,21 +404,6 @@ var _ httputil.Middleware = (*authMiddlewareDefault)(nil)
 func (mw *authMiddlewareDefault) Wrap(h http.Handler) (wrapped http.Handler) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-
-		mw.logger.DebugContext(ctx, "checking auth")
-
-		defer func() {
-			err := recover()
-			if err != nil {
-				mw.logger.DebugContext(
-					ctx,
-					"auth middleware panicked",
-					slogutil.KeyError, err,
-					"stack", debug.Stack(),
-				)
-				panic(err)
-			}
-		}()
 
 		if !mw.needsAuthentication(ctx) {
 			h.ServeHTTP(w, r)

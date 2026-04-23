@@ -121,8 +121,6 @@ func (web *webAPI) handleStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	l := web.logger
 
-	l.DebugContext(ctx, "handling status request")
-
 	dnsAddrs, err := collectDNSAddresses(web.tlsManager)
 	if err != nil {
 		// Don't add a lot of formatting, since the error is already
