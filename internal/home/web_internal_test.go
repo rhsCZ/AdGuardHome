@@ -175,7 +175,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 	})
 
 	waitForWebAPIReady(t, host)
-	performH2CUpgradeAttack(t, host)
+	performH2CUpgradeAttack(t, host, logger)
 }
 
 // waitForWebAPIReady waits until the [webAPI] server has started and is ready
@@ -204,7 +204,9 @@ func waitForWebAPIReady(tb testing.TB, host string) {
 // performs an HTTP2 protocol upgrade, and attempts to access a protected
 // endpoint without proper authentication, verifying that the server responds
 // with [http.StatusUnauthorized].
-func performH2CUpgradeAttack(tb testing.TB, host string) {
+//
+// TODO(f.setrakov): !! Remove logger.
+func performH2CUpgradeAttack(tb testing.TB, host string, l *slog.Logger) {
 	tb.Helper()
 
 	dialer := &net.Dialer{}
@@ -248,7 +250,7 @@ func performH2CUpgradeAttack(tb testing.TB, host string) {
 	sendH2CRequest(tb, framer, host)
 	require.NoError(tb, writer.Flush())
 
-	readH2CResponse(tb, framer, decoder)
+	readH2CResponse(tb, framer, decoder, l)
 }
 
 // performH2CSettingsExchange performs the HTTP2 settings exchange handshake. It
@@ -328,12 +330,29 @@ func sendH2CRequest(tb testing.TB, framer *http2.Framer, host string) {
 // readH2CResponse reads the response from an h2c connection and asserts that
 // the server responds with [http.StatusUnauthorized].  framer and decoder must
 // not be nil.
-func readH2CResponse(tb testing.TB, framer *http2.Framer, decoder *testDecoder) {
+//
+// TODO(f.setrakov): !! remove log.
+func readH2CResponse(tb testing.TB, framer *http2.Framer, decoder *testDecoder, l *slog.Logger) {
 	tb.Helper()
 
 	for {
 		frame, err := framer.ReadFrame()
 		require.NoError(tb, err)
+
+		l.DebugContext(
+			tb.Context(),
+			"received frame",
+			"type", frame.Header().Type,
+			"stream_id", frame.Header().StreamID,
+		)
+		if rstFrame, ok := frame.(*http2.RSTStreamFrame); ok {
+			l.DebugContext(
+				tb.Context(),
+				"RST_STREAM received",
+				"stream_id", rstFrame.StreamID,
+				slogutil.KeyError, rstFrame.ErrCode,
+			)
+		}
 
 		if frame.Header().StreamID != testTargetStreamID {
 			headerFrame, ok := frame.(*http2.HeadersFrame)
