@@ -129,6 +129,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 		UserID:       aghuser.MustNewUserID(),
 	}
 
+	mux := http.NewServeMux()
 	auth, err := newAuth(testutil.ContextWithTimeout(t, testTimeout), &authConfig{
 		// TODO(f.setrakov): !! Use [testLogger].
 		baseLogger:     logger,
@@ -138,6 +139,7 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 		users:          []webUser{user},
 		sessionTTL:     testTimeout,
 		isGLiNet:       false,
+		mux:            mux,
 	})
 	require.NoError(t, err)
 
@@ -146,7 +148,6 @@ func TestWebAPI_h2cVulnerability(t *testing.T) {
 		auth.close(ctx)
 	})
 
-	mux := http.NewServeMux()
 	mw := &webMw{}
 	registrar := aghhttp.NewDefaultRegistrar(mux, mw.wrap)
 	web := newTestWeb(t, &webConfig{
