@@ -136,7 +136,7 @@ export const InactivitySchedule = () => {
                     value={timezoneValue}
                     onChange={handleTimezoneChange}
                     size="responsive"
-                    height="medium"
+                    height="big"
                     isSearchable
                 />
             </div>
