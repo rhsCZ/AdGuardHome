@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -26,7 +27,7 @@ const (
 	//
 	// See (*searchCriterion).ctFilteringStatusCase for details.
 	//
-	// TODO(f.setrakov): Remove since migration to reason criterion is complete.
+	// TODO(f.setrakov): Remove when migration to reason criterion is complete.
 	ctFilteringStatus
 
 	// ctReason is for searching by the filtering reason.
@@ -61,30 +62,11 @@ var filteringStatusValues = container.NewMapSet(
 	filteringStatusWhitelisted,
 )
 
-// filteringReasonValues is the set of all possible filtering reason values.
-//
-// TODO(f.setrakov): Consider drying with an equivalent map in the filtering
-// package.
-var filteringReasonValues = container.NewMapSet(
-	"NotFilteredNotFound",
-	"NotFilteredWhiteList",
-	"NotFilteredError",
-	"FilteredBlackList",
-	"FilteredSafeBrowsing",
-	"FilteredParental",
-	"FilteredInvalid",
-	"FilteredSafeSearch",
-	"FilteredBlockedService",
-	"Rewrite",
-	"RewriteEtcHosts",
-	"RewriteRule",
-)
-
 // searchCriterion is a search criterion that is used to match a record.
 type searchCriterion struct {
 	value         string
 	asciiVal      string
-	valueList     []string
+	values        []string
 	criterionType criterionType
 	// strict, if true, means that the criterion must be applied to the whole
 	// value rather than the part of it.  That is, equality and not containment.
@@ -185,7 +167,7 @@ func (c *searchCriterion) match(entry *logEntry) bool {
 	case ctFilteringStatus:
 		return c.ctFilteringStatusCase(entry.Result.Reason, entry.Result.IsFiltered)
 	case ctReason:
-		return c.ctReasonCase(entry.Result.Reason)
+		return slices.Contains(c.values, entry.Result.Reason.String())
 	}
 
 	return false
@@ -288,15 +270,4 @@ func reasonIsRuleList(r filtering.Reason) (ok bool) {
 	return r == filtering.FilteredBlockList ||
 		r == filtering.FilteredBlockedService ||
 		r == filtering.NotFilteredAllowList
-}
-
-// ctReasonCase returns true if the filtering reason matches one of the values.
-func (c *searchCriterion) ctReasonCase(reason filtering.Reason) (ok bool) {
-	for _, val := range c.valueList {
-		if val == reason.String() {
-			return true
-		}
-	}
-
-	return false
 }

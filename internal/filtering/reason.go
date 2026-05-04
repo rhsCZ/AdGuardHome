@@ -1,6 +1,8 @@
 package filtering
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Reason holds an enum detailing why it was filtered, allowed, or rewritten.
 type Reason uint8
@@ -53,6 +55,10 @@ const (
 	RewrittenRule
 )
 
+// reasonNames maps reason values to their string representations.
+//
+// NOTE: Keep in sync with [ReasonByString].
+//
 // TODO(a.garipov): Resync with actual code names or replace completely in the
 // next version of HTTP API.
 var reasonNames = []string{
@@ -70,6 +76,26 @@ var reasonNames = []string{
 	Rewritten:          "Rewrite",
 	RewrittenAutoHosts: "RewriteEtcHosts",
 	RewrittenRule:      "RewriteRule",
+}
+
+// ReasonByString maps reason string names to their values.
+//
+// NOTE: Keep in sync with [reasonNames].
+var ReasonByString = map[string]Reason{
+	"NotFilteredNotFound":  NotFilteredNotFound,
+	"NotFilteredWhiteList": NotFilteredAllowList,
+	"NotFilteredError":     NotFilteredError,
+
+	"FilteredBlackList":      FilteredBlockList,
+	"FilteredSafeBrowsing":   FilteredSafeBrowsing,
+	"FilteredParental":       FilteredParental,
+	"FilteredInvalid":        FilteredInvalid,
+	"FilteredSafeSearch":     FilteredSafeSearch,
+	"FilteredBlockedService": FilteredBlockedService,
+
+	"Rewrite":         Rewritten,
+	"RewriteEtcHosts": RewrittenAutoHosts,
+	"RewriteRule":     RewrittenRule,
 }
 
 // type check

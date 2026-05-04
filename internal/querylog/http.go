@@ -15,6 +15,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
+	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/timeutil"
@@ -360,7 +361,7 @@ func (l *queryLog) parseSearchCriterion(
 	strict := getDoubleQuotesEnclosedValue(&val)
 
 	var asciiVal string
-	var valueList []string
+	var values []string
 	switch ct {
 	case ctTerm:
 		// Decode lowercased value from punycode to make EqualFold and
@@ -380,7 +381,7 @@ func (l *queryLog) parseSearchCriterion(
 			return false, sc, fmt.Errorf("invalid value %s", val)
 		}
 	case ctReason:
-		valueList, err = parseReason(q, name)
+		values, err = parseReason(q, name)
 		if err != nil {
 			// Don't wrap the error, because it's informative enough as is.
 			return false, sc, err
@@ -394,7 +395,7 @@ func (l *queryLog) parseSearchCriterion(
 	}
 
 	sc = searchCriterion{
-		valueList:     valueList,
+		values:        values,
 		criterionType: ct,
 		value:         val,
 		asciiVal:      asciiVal,
@@ -407,8 +408,9 @@ func (l *queryLog) parseSearchCriterion(
 // parseReason parses reason search criterion from url parameters.
 func parseReason(q url.Values, name string) (values []string, err error) {
 	for _, val := range q[name] {
-		if !filteringReasonValues.Has(val) {
-			return nil, fmt.Errorf("invalid reason: %s", val)
+		_, ok := filtering.ReasonByString[val]
+		if !ok {
+			return nil, fmt.Errorf("reason: %w: %q", errors.ErrBadEnumValue, val)
 		}
 
 		values = append(values, val)
@@ -428,7 +430,7 @@ func (l *queryLog) parseSearchParams(
 	q := r.URL.Query()
 	if q.Has("reason") && q.Has("response_status") {
 		return nil,
-			errors.Error(`"reason" and "response_status" criterions cannot be used together`)
+			errors.Error(`"reason" and "response_status" criteria cannot be used together`)
 	}
 
 	olderThan := q.Get("older_than")
