@@ -1,12 +1,13 @@
 import React from 'react';
 
 import intl from 'panel/common/intl';
+import { EmptyState } from '../EmptyState';
 import { Icon } from 'panel/common/ui/Icon';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
 
 import s from './GeneralStatistics.module.pcss';
-import { StatRow } from './StatRow';
+import { StatRow } from '../StatRow';
 
 type Props = {
     numDnsQueries: number;
@@ -97,10 +98,7 @@ export const GeneralStatistics = ({
                     />
                 </div>
             ) : (
-                <div className={s.emptyState}>
-                    <Icon icon="not_found_search" className={s.emptyStateIcon} />
-                    <div className={s.emptyStateText}>{intl.getMessage('no_stats_yet')}</div>
-                </div>
+                <EmptyState />
             )}
         </div>
     );

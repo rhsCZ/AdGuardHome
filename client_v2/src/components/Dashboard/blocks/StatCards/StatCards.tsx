@@ -2,8 +2,8 @@ import React from 'react';
 
 import intl from 'panel/common/intl';
 
-import s from './StatCard.module.pcss';
-import { StatCard, CARDS_THEME } from './StatCard';
+import s from '../StatCard/StatCard.module.pcss';
+import { StatCard, CARDS_THEME } from '../StatCard';
 
 type Props = {
     numDnsQueries: number;

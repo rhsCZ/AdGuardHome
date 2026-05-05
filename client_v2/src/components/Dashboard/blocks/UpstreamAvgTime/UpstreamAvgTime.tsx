@@ -4,10 +4,11 @@ import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
 import { Icon } from 'panel/common/ui/Icon';
-import { SortableTableHeader } from './SortableTableHeader';
-import { useSortedData } from '../hooks/useSortedData';
+import { SortableTableHeader } from '../SortableTableHeader';
+import { EmptyState } from '../EmptyState';
+import { useSortedData } from '../../hooks/useSortedData';
 
-import s from './TableCard.module.pcss';
+import s from '../TableCard.module.pcss';
 
 type UpstreamInfo = {
     name: string;
@@ -61,11 +62,7 @@ export const UpstreamAvgTime = ({ topUpstreamsAvgTime, avgProcessingTime }: Prop
                         </div>
                     ))
                 ) : (
-                    <div className={s.emptyState}>
-                        <Icon icon="not_found_search" className={s.emptyStateIcon} />
-
-                        <div className={s.emptyStateText}>{intl.getMessage('no_stats_yet')}</div>
-                    </div>
+                    <EmptyState />
                 )}
             </div>
         </div>

@@ -12,8 +12,9 @@ import { apiClient } from 'panel/api/Api';
 import { getAccessList } from 'panel/actions/access';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
-import { useSortedData } from '../hooks/useSortedData';
-import { SortableTableHeader } from './SortableTableHeader';
+import { useSortedData } from '../../hooks/useSortedData';
+import { SortableTableHeader } from '../SortableTableHeader';
+import { EmptyState } from '../EmptyState';
 
 import s from './TopClients.module.pcss';
 
@@ -251,25 +252,22 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
                         );
                     })
                 ) : (
-                    <div className={s.emptyState}>
-                        <Icon icon="not_found_search" className={s.emptyStateIcon} />
-
-                        <div className={s.emptyStateText}>{intl.getMessage('no_stats_yet')}</div>
-                    </div>
+                    <EmptyState />
                 )}
 
                 {confirmDialog.open && (() => {
                     const isBlock = confirmDialog.action === 'block';
-                    const titleKey = isBlock ? 'confirm_client_block_title' : 'confirm_client_unblock_title';
-                    const textKey = isBlock ? 'confirm_client_block_desc' : 'confirm_client_unblock_desc';
-                    const buttonKey = isBlock ? 'block' : 'unblock';
 
                     return (
                         <ConfirmDialog
                             onClose={() => setConfirmDialog({ open: false, client: '', action: 'block' })}
-                            title={intl.getMessage(titleKey, { ip: confirmDialog.client })}
-                            text={intl.getMessage(textKey, { ip: confirmDialog.client })}
-                            buttonText={intl.getMessage(buttonKey)}
+                            title={isBlock
+                                ? intl.getMessage('confirm_client_block_title', { ip: confirmDialog.client })
+                                : intl.getMessage('confirm_client_unblock_title', { ip: confirmDialog.client })}
+                            text={isBlock
+                                ? intl.getMessage('confirm_client_block_desc', { ip: confirmDialog.client })
+                                : intl.getMessage('confirm_client_unblock_desc', { ip: confirmDialog.client })}
+                            buttonText={isBlock ? intl.getMessage('block') : intl.getMessage('unblock')}
                             cancelText={intl.getMessage('cancel')}
                             buttonVariant={isBlock ? 'danger' : 'primary'}
                             onConfirm={() => {

@@ -7,11 +7,12 @@ import { Dropdown } from 'panel/common/ui/Dropdown';
 import { formatNumber, formatCompactNumber } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
 import { getTrackerData } from 'panel/helpers/trackers/trackers';
-import { SortableTableHeader } from './SortableTableHeader';
-import { TrackerTooltip } from './TrackerTooltip';
-import { useSortedData } from '../hooks/useSortedData';
+import { SortableTableHeader } from '../SortableTableHeader';
+import { TrackerTooltip } from '../TrackerTooltip';
+import { EmptyState } from '../EmptyState';
+import { useSortedData } from '../../hooks/useSortedData';
 
-import s from './TableCard.module.pcss';
+import s from '../TableCard.module.pcss';
 
 type DomainInfo = {
     name: string;
@@ -109,11 +110,7 @@ export const TopBlockedDomains = ({ topBlockedDomains, numBlockedFiltering }: Pr
                         );
                     })
                 ) : (
-                    <div className={s.emptyState}>
-                        <Icon icon="not_found_search" className={s.emptyStateIcon} />
-
-                        <div className={s.emptyStateText}>{intl.getMessage('no_stats_yet')}</div>
-                    </div>
+                    <EmptyState />
                 )}
             </div>
         </div>

@@ -84,7 +84,7 @@ export const StatCard = ({ value, label, data, color, percentValue, cardTheme }:
                             <Area
                                 type="monotone"
                                 dataKey="value"
-                                strokeWidth={0}
+                                strokeWidth={1}
                                 fill={`url(#gradient-${color})`}
                                 isAnimationActive={false}
                                 activeDot={{ r: 4, fill: color }}
