@@ -22,6 +22,12 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - New `reason` query parameter in `GET /control/querylog`.  See `openapi/openapi.yaml` for the full description.
 
+### Security
+
+- IDs of requests received over DoH and DoQ and forwarded to plain-DNS upstreams are now set to non-zero values to improve security.
+
+    This is GHSA-xgx4-4h9w-53pv.  We thank @N0zoM1z0 for reporting this security issue.
+
 ### Changed
 
 - Frontend API requests no longer depend on axios.
@@ -35,6 +41,8 @@ NOTE: Add new changes BELOW THIS COMMENT.
 - Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
 
 ### Fixed
+
+- Statistics database deadlock ([#8359]).
 
 - Translated labels on the DNS settings pages not updating after changing the UI language.
 
