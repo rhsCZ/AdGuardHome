@@ -15,11 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// test domains for querylog search testing.
+// Test domains for querylog search testing.
 const (
-	testDomainBlocked  = "blocked.org"
-	testDomainNotFound = "notfound.org"
-	testDomainRewriten = "rewritten.org"
+	testDomainBlocked   = "blocked.org"
+	testDomainNotFound  = "notfound.org"
+	testDomainRewritten = "rewritten.org"
 )
 
 // response is the GET /control/querylog HTTP response structure.
@@ -37,9 +37,9 @@ type question struct {
 	Name string `json:"name"`
 }
 
-// parseHostNamesFromEntry is a helper that parses the /control/querylog
+// parseHostnamesFromEntry is a helper that parses the /control/querylog
 // response and extracts the host names from it.
-func parseHostNamesFromEntry(tb testing.TB, in io.Reader) (hostNames []string) {
+func parseHostnamesFromEntry(tb testing.TB, in io.Reader) (hostNames []string) {
 	tb.Helper()
 
 	var resp response
@@ -81,7 +81,7 @@ func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
 	)
 	addTestEntry(
 		l,
-		testDomainRewriten,
+		testDomainRewritten,
 		testAnswerIPv4,
 		testClientIPv4,
 		filtering.Rewritten,
@@ -98,7 +98,7 @@ func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
 		query:      "",
 		wantMsg:    "",
 		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewriten, testDomainBlocked, testDomainNotFound},
+		wantHosts:  []string{testDomainRewritten, testDomainBlocked, testDomainNotFound},
 	}, {
 		name:  "reason_not_found",
 		query: "reason=" + filtering.NotFilteredNotFound.String(),
@@ -117,14 +117,14 @@ func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
 		query:      "reason=" + filtering.Rewritten.String(),
 		wantMsg:    "",
 		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewriten},
+		wantHosts:  []string{testDomainRewritten},
 	}, {
 		name: "multiple_reasons",
 		query: "reason=" + filtering.Rewritten.String() + "&reason=" +
 			filtering.FilteredBlockList.String(),
 		wantMsg:    "",
 		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewriten, testDomainBlocked},
+		wantHosts:  []string{testDomainRewritten, testDomainBlocked},
 	}, {
 		name:       "invalid_reason",
 		query:      "reason=InvalidReason",
@@ -162,7 +162,7 @@ func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
 				return
 			}
 
-			gotHosts := parseHostNamesFromEntry(t, w.Body)
+			gotHosts := parseHostnamesFromEntry(t, w.Body)
 			assert.Equal(t, tc.wantHosts, gotHosts)
 		})
 	}

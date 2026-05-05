@@ -407,13 +407,20 @@ func (l *queryLog) parseSearchCriterion(
 
 // parseReason parses reason search criterion from url parameters.
 func parseReason(q url.Values, name string) (values []string, err error) {
+	var errs []error
 	for _, val := range q[name] {
 		_, ok := filtering.ReasonByString[val]
 		if !ok {
-			return nil, fmt.Errorf("reason: %w: %q", errors.ErrBadEnumValue, val)
+			errs = append(errs, fmt.Errorf("reason: %w: %q", errors.ErrBadEnumValue, val))
+
+			continue
 		}
 
 		values = append(values, val)
+	}
+
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
 	}
 
 	return values, nil

@@ -24,7 +24,7 @@ func searchCriTerm(val string, isStrict bool) (c searchCriterion) {
 	}
 }
 
-// searchCriTerm is a helper function for tests that constructs a search
+// searchReason is a helper function for tests that constructs a search
 // criterion of type [ctReason].
 func searchReason(values []string) (c searchCriterion) {
 	return searchCriterion{

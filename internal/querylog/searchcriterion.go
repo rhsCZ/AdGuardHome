@@ -11,7 +11,6 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
-	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/stringutil"
 )
 
@@ -27,7 +26,7 @@ const (
 	//
 	// See (*searchCriterion).ctFilteringStatusCase for details.
 	//
-	// TODO(f.setrakov): Remove when migration to reason criterion is complete.
+	// Deprecated: Remove when migration to reason criterion is complete.
 	ctFilteringStatus
 
 	// ctReason is for searching by the filtering reason.
@@ -61,6 +60,27 @@ var filteringStatusValues = container.NewMapSet(
 	filteringStatusSafeSearch,
 	filteringStatusWhitelisted,
 )
+
+// ReasonCodes is a set of all valid reason codes.
+var reasonCodes = container.NewMapSet(
+	reasonCode(filtering.NotFilteredNotFound),
+	reasonCode(filtering.NotFilteredAllowList),
+	reasonCode(filtering.NotFilteredError),
+	reasonCode(filtering.FilteredBlockList),
+	reasonCode(filtering.FilteredSafeBrowsing),
+	reasonCode(filtering.FilteredParental),
+	reasonCode(filtering.FilteredInvalid),
+	reasonCode(filtering.FilteredSafeSearch),
+	reasonCode(filtering.FilteredBlockedService),
+	reasonCode(filtering.Rewritten),
+	reasonCode(filtering.RewrittenAutoHosts),
+	reasonCode(filtering.RewrittenRule),
+)
+
+// reasonCode returns the numeric string representation of r.
+func reasonCode(r filtering.Reason) (s string) {
+	return strconv.FormatUint(uint64(r), 10)
+}
 
 // searchCriterion is a search criterion that is used to match a record.
 type searchCriterion struct {
@@ -133,26 +153,15 @@ func (c *searchCriterion) quickMatch(
 		// filtering statuses.
 		return true
 	case ctReason:
-		reasonStr := readJSONValue(line, `"Reason":`)
-		if reasonStr == "" {
+		reason := readJSONValue(line, `"Reason":`)
+		if reason == "" {
 			// For [filtering.NotFilteredNotFound] reason can be empty.
 			return true
 		}
 
-		reasonStr = strings.Trim(reasonStr, "},")
-		_, err := strconv.ParseInt(reasonStr, 10, 64)
-		if err != nil {
-			logger.WarnContext(
-				ctx,
-				"could't parse reason",
-				"val", reasonStr,
-				slogutil.KeyError, err,
-			)
+		reason = strings.Trim(reason, "},")
 
-			return false
-		}
-
-		return true
+		return reasonCodes.Has(reason)
 	default:
 		return true
 	}

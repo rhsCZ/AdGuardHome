@@ -243,7 +243,6 @@
       - 'name': 'reason'
         'in': 'query'
         'description': >
-          Deprecated: Use 'reason' parameter instead
           Filter by response status
 
           NOTE: This parameter cannot be used with 'response_status' parameter.

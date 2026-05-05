@@ -1,8 +1,6 @@
 package filtering
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Reason holds an enum detailing why it was filtered, allowed, or rewritten.
 type Reason uint8
