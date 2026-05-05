@@ -271,11 +271,11 @@ func clientIDNoServer(opts layers.DHCPv6Options) (cliID *layers.DHCPv6DUID, err 
 	return cliID, nil
 }
 
-// clientIDMathingServer extracts the client identifier from opts and checks
+// clientIDMatchingServer extracts the client identifier from opts and checks
 // that the server identifier matches serverDUID.  It returns an error if the
 // client identifier is not found, if the server identifier is not found, or if
 // the server identifier does not match serverDUID.
-func clientIDMathingServer(
+func clientIDMatchingServer(
 	opts layers.DHCPv6Options,
 	serverDUID []byte,
 ) (cliID *layers.DHCPv6DUID, err error) {
@@ -284,6 +284,7 @@ func clientIDMathingServer(
 		return nil, fmt.Errorf("dhcpv6: server id: %w", errors.ErrNoValue)
 	}
 
+	// TODO(e.burkov):  Add validate.EqualFunc.
 	if !bytes.Equal(srvID, serverDUID) {
 		return nil, fmt.Errorf(
 			"dhcpv6: server id: got %v, want %v: %w",

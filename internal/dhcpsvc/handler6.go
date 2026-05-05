@@ -61,7 +61,7 @@ func (iface *dhcpInterfaceV6) handleDHCPv6(
 	case layers.DHCPv6MsgTypeDecline:
 		return iface.handleDecline(ctx, fd, req)
 	default:
-		return fmt.Errorf("dhcpv6: request type: %w: %v", errors.ErrBadEnumValue, typ)
+		return fmt.Errorf("dhcpv6: request type: %w: %d", errors.ErrBadEnumValue, typ)
 	}
 }
 
@@ -76,7 +76,7 @@ func (iface *dhcpInterfaceV6) handleSolicit(
 ) (err error) {
 	cliID, err := clientIDNoServer(req.Options)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -94,9 +94,9 @@ func (iface *dhcpInterfaceV6) handleRequest(
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	cliID, err := clientIDMathingServer(req.Options, fd.duidData)
+	cliID, err := clientIDMatchingServer(req.Options, fd.duidData)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -116,7 +116,7 @@ func (iface *dhcpInterfaceV6) handleConfirm(
 ) (err error) {
 	cliID, err := clientIDNoServer(req.Options)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -134,9 +134,9 @@ func (iface *dhcpInterfaceV6) handleRenew(
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	cliID, err := clientIDMathingServer(req.Options, fd.duidData)
+	cliID, err := clientIDMatchingServer(req.Options, fd.duidData)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -156,7 +156,7 @@ func (iface *dhcpInterfaceV6) handleRebind(
 ) (err error) {
 	cliID, err := clientIDNoServer(req.Options)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -175,31 +175,28 @@ func (iface *dhcpInterfaceV6) handleInfo(
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	l := iface.common.logger
-	cliID, ok := findOption6(req.Options, layers.DHCPv6OptServerID)
-	if ok {
-		if !bytes.Equal(cliID, fd.duidData) {
+	if srvID, ok := findOption6(req.Options, layers.DHCPv6OptServerID); ok {
+		if !bytes.Equal(srvID, fd.duidData) {
 			return fmt.Errorf(
 				"dhcpv6: server id: got %v, want %v: %w",
-				cliID,
+				srvID,
 				fd.duidData,
 				errors.ErrNotEqual,
 			)
 		}
-
-		l = l.With("cli_id", cliID)
 	}
 
-	_, ok = findOption6(req.Options, layers.DHCPv6OptIANA)
+	_, ok := findOption6(req.Options, layers.DHCPv6OptIANA)
 	if ok {
-		return fmt.Errorf("dhcpv6: %v: ia option: %w", req.MsgType, errors.ErrUnexpectedValue)
+		return fmt.Errorf("dhcpv6: %s: ia option: %w", req.MsgType, errors.ErrUnexpectedValue)
 	}
 
 	_, ok = findOption6(req.Options, layers.DHCPv6OptIATA)
 	if ok {
-		return fmt.Errorf("dhcpv6: %v: ia option: %w", req.MsgType, errors.ErrUnexpectedValue)
+		return fmt.Errorf("dhcpv6: %s: ia option: %w", req.MsgType, errors.ErrUnexpectedValue)
 	}
 
+	l := iface.common.logger
 	l.DebugContext(ctx, "handling message", "type", req.MsgType)
 
 	return nil
@@ -214,9 +211,9 @@ func (iface *dhcpInterfaceV6) handleRelease(
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	cliID, err := clientIDMathingServer(req.Options, fd.duidData)
+	cliID, err := clientIDMatchingServer(req.Options, fd.duidData)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
@@ -234,9 +231,9 @@ func (iface *dhcpInterfaceV6) handleDecline(
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	cliID, err := clientIDMathingServer(req.Options, fd.duidData)
+	cliID, err := clientIDMatchingServer(req.Options, fd.duidData)
 	if err != nil {
-		return fmt.Errorf("dhcpv6: %v: %w", req.MsgType, err)
+		return fmt.Errorf("dhcpv6: %s: %w", req.MsgType, err)
 	}
 
 	l := iface.common.logger
