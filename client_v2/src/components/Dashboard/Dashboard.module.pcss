@@ -60,6 +60,10 @@
 
 .periodMenu {
     min-width: 180px;
+
+    @media (min-width: 768px) {
+        min-width: 328px;
+    }
 }
 
 .periodMenuItem {
@@ -74,6 +78,16 @@
     &:hover {
         background-color: var(--hovered-item-background);
     }
+
+    &:last-child {
+        padding: 16px 16px 32px;
+    }
+}
+
+.periodMenuItemLink {
+    align-items: flex-start;
+    padding: 24px 16px;
+    border-top: 1px solid var(--default-item-divider);
 }
 
 .periodMenuIcon {

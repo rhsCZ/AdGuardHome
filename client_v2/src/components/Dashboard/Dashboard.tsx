@@ -19,7 +19,9 @@ import {
     DAY,
     STATS_INTERVALS_DAYS,
 } from 'panel/helpers/constants';
+import { Link } from 'react-router-dom';
 import { msToSeconds, msToMinutes, msToHours } from 'panel/helpers/helpers';
+import { Paths } from 'panel/components/Routes/Paths';
 
 import { StatCards } from './blocks/StatCards';
 import { GeneralStatistics } from './blocks/GeneralStatistics';
@@ -317,6 +319,31 @@ export const Dashboard = () => {
                                             {option.label}
                                         </div>
                                     ))}
+
+                                    <div
+                                        className={cn(
+                                            theme.text.t2,
+                                            theme.text.condenced,
+                                            s.periodMenuItem,
+                                            s.periodMenuItemLink,
+                                        )}
+                                    >
+                                        <Icon icon="settings" className={s.periodMenuIcon} />
+
+                                        <div>
+                                            {intl.getMessage('period_notify', {
+                                                a: (text: string) => (
+                                                    <Link
+                                                        key="a"
+                                                        to={{ pathname: Paths.SettingsPage, hash: '#stats_config' }}
+                                                        className={cn(theme.link.link, theme.link.noDecoration)}
+                                                    >
+                                                        {text}
+                                                    </Link>
+                                                ),
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                             }
                             trigger="click"
