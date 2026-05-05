@@ -3,7 +3,7 @@ import React from 'react';
 import intl from 'panel/common/intl';
 
 import s from '../StatCard/StatCard.module.pcss';
-import { StatCard, CARDS_THEME } from '../StatCard';
+import { StatCard, CARDS_THEME, CARDS_COLORS } from '../StatCard';
 
 type Props = {
     numDnsQueries: number;
@@ -36,14 +36,14 @@ export const StatCards = ({
                 value={numDnsQueries}
                 label={intl.getMessage('dns_query')}
                 data={dnsQueries}
-                color="#7F7F7F"
+                color={CARDS_COLORS.QUERIES}
                 cardTheme={CARDS_THEME.QUERIES}
             />
             <StatCard
                 value={numBlockedFiltering}
                 label={intl.getMessage('ads_blocked_card')}
                 data={blockedFiltering}
-                color="#E07575"
+                color={CARDS_COLORS.ADS}
                 percentValue={blockedPercent}
                 cardTheme={CARDS_THEME.ADS}
             />
@@ -51,7 +51,7 @@ export const StatCards = ({
                 value={numReplacedSafebrowsing}
                 label={intl.getMessage('blocked_threats_chart')}
                 data={replacedSafebrowsing}
-                color="#F5A623"
+                color={CARDS_COLORS.THREATS}
                 percentValue={threatsPercent}
                 cardTheme={CARDS_THEME.THREATS}
             />
@@ -59,7 +59,7 @@ export const StatCards = ({
                 value={numReplacedParental}
                 label={intl.getMessage('stats_adult')}
                 data={replacedParental}
-                color="#9B59B6"
+                color={CARDS_COLORS.ADULT}
                 percentValue={parentalPercent}
                 cardTheme={CARDS_THEME.ADULT}
             />

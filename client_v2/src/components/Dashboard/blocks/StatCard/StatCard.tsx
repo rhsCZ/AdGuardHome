@@ -14,6 +14,13 @@ export const CARDS_THEME = {
     ADULT: 'adult',
 };
 
+export const CARDS_COLORS = {
+    QUERIES: '#7F7F7F',
+    ADS: '#E07575',
+    THREATS: '#F5A623',
+    ADULT: '#9B59B6',
+};
+
 const formatDate = (date: Date): string => {
     return date.toLocaleDateString(navigator.language, {
         day: 'numeric',
@@ -85,6 +92,7 @@ export const StatCard = ({ value, label, data, color, percentValue, cardTheme }:
                                 type="monotone"
                                 dataKey="value"
                                 strokeWidth={1}
+                                stroke={color}
                                 fill={`url(#gradient-${color})`}
                                 isAnimationActive={false}
                                 activeDot={{ r: 4, fill: color }}

@@ -90,7 +90,7 @@ export const GeneralStatistics = ({
 
                     <StatRow
                         label={intl.getMessage('average_time_processing')}
-                        value={`${avgProcessingTime.toFixed(0)} ${intl.getMessage('milliseconds_abbreviation')}`}
+                        value={intl.getMessage('processing_time_ms', { value: avgProcessingTime.toFixed(0) })}
                         isQueriesValue={false}
                         icon="time"
                         rowTheme="averageProcessingTime"

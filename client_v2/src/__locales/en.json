@@ -577,6 +577,7 @@
     "safe_search": "Safe Search",
     "blocklist": "Blocklist",
     "milliseconds_abbreviation": "ms",
+    "processing_time_ms": "%value% ms",
     "cache_size": "Cache size",
     "cache_size_desc": "DNS cache size (in bytes). To disable caching, set to 0.",
     "cache_ttl_min_override": "Override minimum TTL",
