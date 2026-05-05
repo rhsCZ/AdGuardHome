@@ -5,7 +5,6 @@ import { formatNumber, formatCompactNumber } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
 import { Dropdown } from 'panel/common/ui/Dropdown';
 import cn from 'clsx';
-import { Icon } from 'panel/common/ui/Icon';
 import { SortableTableHeader } from '../SortableTableHeader';
 import { EmptyState } from '../EmptyState';
 import { useSortedData } from '../../hooks/useSortedData';

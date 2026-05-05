@@ -3,7 +3,6 @@ import React from 'react';
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
-import { Icon } from 'panel/common/ui/Icon';
 import { SortableTableHeader } from '../SortableTableHeader';
 import { EmptyState } from '../EmptyState';
 import { useSortedData } from '../../hooks/useSortedData';

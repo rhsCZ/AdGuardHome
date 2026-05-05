@@ -134,7 +134,10 @@ export const Dashboard = () => {
     }, [periodIntervals, selectedPeriod]);
 
     useEffect(() => {
-        handleRefreshStats();
+        dispatch(getStats(selectedPeriod));
+        dispatch(getStatsConfig());
+        dispatch(getClients());
+        dispatch(getAccessList());
     }, [dispatch, selectedPeriod]);
 
     if (!dashboard || !stats) {
