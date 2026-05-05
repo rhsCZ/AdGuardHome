@@ -169,7 +169,7 @@ func newTestNetworkDevice(
 	}
 
 	onHardwareAddr := func() (hw net.HardwareAddr) {
-		return testHWIface
+		return testIfaceHWAddr
 	}
 
 	onLinkType := func() (lt layers.LinkType) {
