@@ -53,14 +53,12 @@ export const StatsConfig = ({
     const handleFormSubmit = (values: FormValues) => {
         const { interval, customInterval, enabled, ignored } = values;
 
-        const getInterval = () => {
-            if (!customInterval) {
-                return interval;
-            }
-            return customInterval >= HOUR ? customInterval : customInterval * HOUR;
-        };
-
-        const newInterval = getInterval();
+        let newInterval: number;
+        if (customInterval) {
+            newInterval = customInterval >= HOUR ? customInterval : customInterval * HOUR;
+        } else {
+            newInterval = interval;
+        }
 
         const data: StatsConfigPayload = {
             enabled,

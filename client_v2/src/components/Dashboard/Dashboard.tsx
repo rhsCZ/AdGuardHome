@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import cn from 'clsx';
 
@@ -19,7 +19,9 @@ import {
     DAY,
     STATS_INTERVALS_DAYS,
 } from 'panel/helpers/constants';
+import { Link } from 'react-router-dom';
 import { msToSeconds, msToMinutes, msToHours } from 'panel/helpers/helpers';
+import { Paths } from 'panel/components/Routes/Paths';
 
 import { StatCards } from './blocks/StatCards';
 import { GeneralStatistics } from './blocks/GeneralStatistics';
@@ -84,23 +86,7 @@ export const Dashboard = () => {
     const [selectedPeriod, setSelectedPeriod] = useState(DAY);
     const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
 
-    if (!dashboard || !stats) {
-        return (
-            <div className={theme.layout.container}>
-                <div className={theme.layout.containerIn}>
-                    <div className={s.loader}>
-                        <Loader />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const {
-        protectionEnabled,
-        processingProtection,
-        protectionDisabledDuration,
-    } = dashboard;
+    const protectionDisabledDuration = dashboard?.protectionDisabledDuration;
 
     useEffect(() => {
         if (protectionDisabledDuration && protectionDisabledDuration > 0) {
@@ -123,6 +109,54 @@ export const Dashboard = () => {
         return undefined;
     }, [protectionDisabledDuration, dispatch]);
 
+    const maxStatsInterval = stats?.interval || DAY;
+    const effectiveMaxStatsInterval = maxStatsInterval >= HOUR ? maxStatsInterval : DAY;
+    const periodIntervals = useMemo(() => {
+        const intervals = STATS_INTERVALS_DAYS.filter((interval) => interval <= effectiveMaxStatsInterval);
+
+        if (!intervals.includes(effectiveMaxStatsInterval)) {
+            intervals.push(effectiveMaxStatsInterval);
+        }
+
+        return intervals.sort((a, b) => a - b);
+    }, [effectiveMaxStatsInterval]);
+
+    const periodOptions = useMemo(
+        () => periodIntervals.map((interval) => ({ value: interval, label: getPeriodLabel(interval) })),
+        [periodIntervals],
+    );
+
+    useEffect(() => {
+        const maxAvailable = periodIntervals[periodIntervals.length - 1];
+        if (maxAvailable && selectedPeriod > maxAvailable) {
+            setSelectedPeriod(maxAvailable);
+        }
+    }, [periodIntervals, selectedPeriod]);
+
+    useEffect(() => {
+        dispatch(getStats(selectedPeriod));
+        dispatch(getStatsConfig());
+        dispatch(getClients());
+        dispatch(getAccessList());
+    }, [dispatch, selectedPeriod]);
+
+    if (!dashboard || !stats) {
+        return (
+            <div className={theme.layout.container}>
+                <div className={theme.layout.containerIn}>
+                    <div className={s.loader}>
+                        <Loader />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const {
+        protectionEnabled,
+        processingProtection,
+    } = dashboard;
+
     const {
         processingStats,
         processingGetConfig,
@@ -142,37 +176,6 @@ export const Dashboard = () => {
         topUpstreamsResponses,
         topUpstreamsAvgTime,
     } = stats;
-
-    const maxStatsInterval = stats.interval || DAY;
-    const effectiveMaxStatsInterval = maxStatsInterval >= HOUR ? maxStatsInterval : DAY;
-    const periodIntervals = React.useMemo(() => {
-        const intervals = STATS_INTERVALS_DAYS.filter((interval) => interval <= effectiveMaxStatsInterval);
-
-        if (!intervals.includes(effectiveMaxStatsInterval)) {
-            intervals.push(effectiveMaxStatsInterval);
-        }
-
-        return intervals.sort((a, b) => a - b);
-    }, [effectiveMaxStatsInterval]);
-
-    const periodOptions = React.useMemo(
-        () => periodIntervals.map((interval) => ({ value: interval, label: getPeriodLabel(interval) })),
-        [periodIntervals],
-    );
-
-    useEffect(() => {
-        const maxAvailable = periodIntervals[periodIntervals.length - 1];
-        if (maxAvailable && selectedPeriod > maxAvailable) {
-            setSelectedPeriod(maxAvailable);
-        }
-    }, [periodIntervals, selectedPeriod]);
-
-    useEffect(() => {
-        dispatch(getStats(selectedPeriod));
-        dispatch(getStatsConfig());
-        dispatch(getClients());
-        dispatch(getAccessList());
-    }, [dispatch, selectedPeriod]);
 
     const handleRefreshStats = () => {
         dispatch(getStats(selectedPeriod));
@@ -317,6 +320,31 @@ export const Dashboard = () => {
                                             {option.label}
                                         </div>
                                     ))}
+
+                                    <div
+                                        className={cn(
+                                            theme.text.t2,
+                                            theme.text.condenced,
+                                            s.periodMenuItem,
+                                            s.periodMenuItemLink,
+                                        )}
+                                    >
+                                        <Icon icon="settings" className={s.periodMenuIcon} />
+
+                                        <div>
+                                            {intl.getMessage('period_notify', {
+                                                a: (text: string) => (
+                                                    <Link
+                                                        key="a"
+                                                        to={{ pathname: Paths.SettingsPage, hash: '#stats_config' }}
+                                                        className={cn(theme.link.link, theme.link.noDecoration)}
+                                                    >
+                                                        {text}
+                                                    </Link>
+                                                ),
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                             }
                             trigger="click"
@@ -343,78 +371,78 @@ export const Dashboard = () => {
                 ) : (
                     <>
                         <StatCards
-                            numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : (numDnsQueries || 0)}
+                            numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : numDnsQueries}
                             numBlockedFiltering={
-                                USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : (numBlockedFiltering || 0)
+                                USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : numBlockedFiltering
                             }
                             numReplacedSafebrowsing={
-                                USE_MOCK_DATA ? MOCK_DATA.numReplacedSafebrowsing : (numReplacedSafebrowsing || 0)
+                                USE_MOCK_DATA ? MOCK_DATA.numReplacedSafebrowsing : numReplacedSafebrowsing
                             }
                             numReplacedParental={
-                                USE_MOCK_DATA ? MOCK_DATA.numReplacedParental : (numReplacedParental || 0)
+                                USE_MOCK_DATA ? MOCK_DATA.numReplacedParental : numReplacedParental
                             }
-                            dnsQueries={USE_MOCK_DATA ? MOCK_DATA.dnsQueries : (dnsQueries || [])}
-                            blockedFiltering={USE_MOCK_DATA ? MOCK_DATA.blockedFiltering : (blockedFiltering || [])}
+                            dnsQueries={USE_MOCK_DATA ? MOCK_DATA.dnsQueries : dnsQueries}
+                            blockedFiltering={USE_MOCK_DATA ? MOCK_DATA.blockedFiltering : blockedFiltering}
                             replacedSafebrowsing={
-                                USE_MOCK_DATA ? MOCK_DATA.replacedSafebrowsing : (replacedSafebrowsing || [])
+                                USE_MOCK_DATA ? MOCK_DATA.replacedSafebrowsing : replacedSafebrowsing
                             }
-                            replacedParental={USE_MOCK_DATA ? MOCK_DATA.replacedParental : (replacedParental || [])}
+                            replacedParental={USE_MOCK_DATA ? MOCK_DATA.replacedParental : replacedParental}
                         />
 
                         <div className={s.statContainer}>
                             <GeneralStatistics
-                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : (numDnsQueries || 0)}
+                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : numDnsQueries}
                                 numBlockedFiltering={
-                                    USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : (numBlockedFiltering || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : numBlockedFiltering
                                 }
                                 numReplacedSafebrowsing={
-                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedSafebrowsing : (numReplacedSafebrowsing || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedSafebrowsing : numReplacedSafebrowsing
                                 }
                                 numReplacedParental={
-                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedParental : (numReplacedParental || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedParental : numReplacedParental
                                 }
                                 numReplacedSafesearch={
-                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedSafesearch : (numReplacedSafesearch || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.numReplacedSafesearch : numReplacedSafesearch
                                 }
                                 avgProcessingTime={
-                                    USE_MOCK_DATA ? MOCK_DATA.avgProcessingTime : (avgProcessingTime || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.avgProcessingTime : avgProcessingTime
                                 }
                             />
 
                             <TopClients
-                                topClients={USE_MOCK_DATA ? MOCK_DATA.topClients : (topClients || [])}
-                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : (numDnsQueries || 0)}
+                                topClients={USE_MOCK_DATA ? MOCK_DATA.topClients : topClients}
+                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : numDnsQueries}
                             />
 
                             <TopQueriedDomains
                                 topQueriedDomains={
-                                    USE_MOCK_DATA ? MOCK_DATA.topQueriedDomains : (topQueriedDomains || [])
+                                    USE_MOCK_DATA ? MOCK_DATA.topQueriedDomains : topQueriedDomains
                                 }
-                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : (numDnsQueries || 0)}
+                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : numDnsQueries}
                             />
 
                             <TopBlockedDomains
                                 topBlockedDomains={
-                                    USE_MOCK_DATA ? MOCK_DATA.topBlockedDomains : (topBlockedDomains || [])
+                                    USE_MOCK_DATA ? MOCK_DATA.topBlockedDomains : topBlockedDomains
                                 }
                                 numBlockedFiltering={
-                                    USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : (numBlockedFiltering || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.numBlockedFiltering : numBlockedFiltering
                                 }
                             />
 
                             <TopUpstreams
                                 topUpstreamsResponses={
-                                    USE_MOCK_DATA ? MOCK_DATA.topUpstreamsResponses : (topUpstreamsResponses || [])
+                                    USE_MOCK_DATA ? MOCK_DATA.topUpstreamsResponses : topUpstreamsResponses
                                 }
-                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : (numDnsQueries || 0)}
+                                numDnsQueries={USE_MOCK_DATA ? MOCK_DATA.numDnsQueries : numDnsQueries}
                             />
 
                             <UpstreamAvgTime
                                 topUpstreamsAvgTime={
-                                    USE_MOCK_DATA ? MOCK_DATA.topUpstreamsAvgTime : (topUpstreamsAvgTime || [])
+                                    USE_MOCK_DATA ? MOCK_DATA.topUpstreamsAvgTime : topUpstreamsAvgTime
                                 }
                                 avgProcessingTime={
-                                    USE_MOCK_DATA ? MOCK_DATA.avgProcessingTime : (avgProcessingTime || 0)
+                                    USE_MOCK_DATA ? MOCK_DATA.avgProcessingTime : avgProcessingTime
                                 }
                             />
                         </div>

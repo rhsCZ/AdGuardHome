@@ -22,6 +22,7 @@ import (
 
 	"github.com/AdguardTeam/AdGuardHome/internal/agh"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghalg"
+	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
 	"github.com/AdguardTeam/AdGuardHome/internal/client"
 	"github.com/AdguardTeam/AdGuardHome/internal/dnsforward"
 	"github.com/AdguardTeam/golibs/testutil"
@@ -69,6 +70,7 @@ func TestValidateCertificates(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:        testLogger,
 		confModifier:  agh.EmptyConfigModifier{},
+		manager:       aghtls.EmptyManager{},
 		servePlainDNS: false,
 	})
 	require.NoError(t, err)
@@ -128,39 +130,6 @@ func TestValidateCertificates(t *testing.T) {
 		assert.True(t, status.ValidChain)
 		assert.True(t, status.ValidKey)
 		assert.True(t, status.ValidPair)
-	})
-}
-
-// storeGlobals is a test helper function that saves global variables and
-// restores them once the test is complete.
-//
-// The global variables are:
-//   - [config]
-//   - [glFilePrefix]
-//   - [globalContext.auth]
-//   - [globalContext.clients.storage]
-//   - [globalContext.dnsServer]
-//   - [globalContext.firstRun]
-//   - [globalContext.mux]
-//   - [globalContext.web]
-//
-// TODO(s.chzhen):  Remove this once the TLS manager no longer accesses global
-// variables.  Make tests that use this helper concurrent.
-func storeGlobals(tb testing.TB) {
-	tb.Helper()
-
-	prevConfig := config
-	prefGLFilePrefix := glFilePrefix
-	storage := globalContext.clients.storage
-	dnsServer := globalContext.dnsServer
-	web := globalContext.web
-
-	tb.Cleanup(func() {
-		config = prevConfig
-		glFilePrefix = prefGLFilePrefix
-		globalContext.clients.storage = storage
-		globalContext.dnsServer = dnsServer
-		globalContext.web = web
 	})
 }
 
@@ -328,6 +297,7 @@ func TestTLSManager_Reload(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
+		manager:      aghtls.EmptyManager{},
 		tlsSettings: tlsConfigSettings{
 			Enabled:         true,
 			CertificatePath: certPath,
@@ -367,6 +337,7 @@ func TestTLSManager_HandleTLSStatus(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
+		manager:      aghtls.EmptyManager{},
 		tlsSettings: tlsConfigSettings{
 			Enabled:          true,
 			CertificateChain: string(testCertChainData),
@@ -401,6 +372,7 @@ func TestValidateTLSSettings(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:        testLogger,
 		confModifier:  agh.EmptyConfigModifier{},
+		manager:       aghtls.EmptyManager{},
 		servePlainDNS: false,
 	})
 	require.NoError(t, err)
@@ -496,6 +468,7 @@ func TestTLSManager_HandleTLSValidate(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
+		manager:      aghtls.EmptyManager{},
 		tlsSettings: tlsConfigSettings{
 			Enabled:          true,
 			CertificateChain: string(testCertChainData),
@@ -585,6 +558,7 @@ func TestTLSManager_HandleTLSConfigure(t *testing.T) {
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
+		manager:      aghtls.EmptyManager{},
 		tlsSettings: tlsConfigSettings{
 			Enabled:         true,
 			CertificatePath: certPath,
@@ -628,6 +602,7 @@ func TestTLSManager_HandleTLSConfigure(t *testing.T) {
 	res := &tlsConfig{
 		tlsConfigStatus: &tlsConfigStatus{},
 	}
+
 	err = json.NewDecoder(w.Body).Decode(res)
 	require.NoError(t, err)
 

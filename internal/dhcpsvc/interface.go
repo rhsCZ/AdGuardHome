@@ -1,6 +1,7 @@
 package dhcpsvc
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
@@ -15,6 +16,11 @@ import (
 // macKey contains hardware address as byte array of 6, 8, or 20 bytes.
 //
 // TODO(e.burkov):  Move to aghnet or even to netutil.
+//
+// TODO(e.burkov):  Identify the client by the hardware address and the client
+// identifier from the DHCP messages.
+//
+// TODO(e.burkov):  Identify IPv6 clients with DUID.
 type macKey any
 
 // macToKey converts mac into macKey, which is used as the key for the lease
@@ -119,19 +125,24 @@ func (iface *netInterface) removeLease(l *Lease) (err error) {
 }
 
 // blockLease marks l as blocked for a configured TTL, as reported by
-// [Lease.IsBlocked].  It also removes the lease from iface.  l must not be nil.
-func (iface *netInterface) blockLease(l *Lease, clock timeutil.Clock) {
-	mk := macToKey(l.HWAddr)
-
-	iface.indexMu.Lock()
-	defer iface.indexMu.Unlock()
-
+// [Lease.IsBlocked].  indexMu must be locked,  It also removes the lease from
+// iface.  l must not be nil.
+func (iface *netInterface) blockLease(
+	ctx context.Context,
+	l *Lease,
+	clock timeutil.Clock,
+) (err error) {
 	l.HWAddr = blockedHardwareAddr
 	l.Hostname = ""
 	l.Expiry = clock.Now().Add(iface.leaseTTL)
 	l.IsStatic = false
 
-	delete(iface.leases, mk)
+	err = iface.index.dbStore(ctx, iface.logger)
+	if err != nil {
+		return fmt.Errorf("storing index: %w", err)
+	}
+
+	return nil
 }
 
 // nextIP generates a new free IP.

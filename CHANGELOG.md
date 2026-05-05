@@ -9,16 +9,123 @@ The format is based on [*Keep a Changelog*](https://keepachangelog.com/en/1.0.0/
 <!--
 ## [v0.108.0] – TBA
 
-## [v0.107.72] - 2025-12-22 (APPROX.)
+## [v0.107.75] - 2026-05-01 (APPROX.)
 
-See also the [v0.107.72 GitHub milestone][ms-v0.107.72].
+See also the [v0.107.75 GitHub milestone][ms-v0.107.75].
 
-[ms-v0.107.72]: https://github.com/AdguardTeam/AdGuardHome/milestone/107?closed=1
+[ms-v0.107.75]: https://github.com/AdguardTeam/AdGuardHome/milestone/110?closed=1
 
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Changed
+
+- Frontend API requests no longer depend on axios.
+
+- Dashboard charts use Recharts instead of Nivo.
+
+- `enable_dnssec` in `dns` configuration now defines whether the proxy should set the DO flag in the upstream requests, the default is `true` ([#7046]).
+
+### Fixed
+
+- Translated labels on the DNS settings pages not updating after changing the UI language.
+
+- Dashboard charts now correctly display lower query counts ([#6823]).
+
+- Redundant validation warnings about DHCP when it's disabled ([#8348]).
+
+- Safe Browsing and Parental Control labels on the General Settings page not updating after changing the UI language.
+
+[#7046]: https://github.com/AdguardTeam/AdGuardHome/issues/7046
+[#6823]: https://github.com/AdguardTeam/AdGuardHome/issues/6823
+[#8348]: https://github.com/AdguardTeam/AdGuardHome/issues/8348
+
+<!--
+NOTE: Add new changes ABOVE THIS COMMENT.
+-->
+
+## [v0.107.74] - 2026-04-16
+
+See also the [v0.107.74 GitHub milestone][ms-v0.107.74].
+
+### Security
+
+- Frontend libraries has been updated to prevent the possibility of exploiting the vulnerability described in [CVE-2026-40175][cve-2026-40175].
+
+- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.2][go-1.26.2].
+
+### Changed
+
+#### Configuration changes
+
+In this release, the schema version has changed from 33 to 34.
+
+- Added a new field `doh` in `http` configuration.
+
+    ```yaml
+    # BEFORE:
+    'http':
+      # …
+    'tls':
+      # …
+      'allow_unencrypted_doh': false
+
+    # AFTER:
+    'http':
+      # …
+      'doh':
+        'insecure_enabled': false
+        'routes':
+          - 'GET /dns-query'
+          - 'POST /dns-query'
+          - 'GET /dns-query/{ClientID}'
+          - 'POST /dns-query/{ClientID}'
+    'tls':
+      # …
+    ```
+
+    To roll back this change, set the `schema_version` back to `33`.
+
+### Fixed
+
+- Incorrect forwarding of root domain requests when domain-specific upstreams are configured ([#7058]).
+
+- The strict SNI check setting is not persisted when the TLS configuration is changed ([#8327]).
+
+- Status reported by the launchd service implementation in cases of scheduled service restart.
+
+- Fixed clients block/unblock when moving clients between allowed and disallowed lists.
+
+[#7058]: https://github.com/AdguardTeam/AdGuardHome/issues/7058
+[#8327]: https://github.com/AdguardTeam/AdGuardHome/issues/8327
+
+[cve-2026-40175]: https://nvd.nist.gov/vuln/detail/CVE-2026-40175
+[go-1.26.2]:      https://groups.google.com/g/golang-announce/c/0uYbvbPZRWU
+[ms-v0.107.74]:   https://github.com/AdguardTeam/AdGuardHome/milestone/109?closed=1
+
+## [v0.107.73] - 2026-03-10
+
+See also the [v0.107.73 GitHub milestone][ms-v0.107.73].
+
+### Security
+
+- Authentication is now applied to requests that have been upgraded from HTTP/2 Cleartext (H2C) requests to public resources.
+
+    **NOTE:** We thank @mandreko for reporting this security issue.
+
+[ms-v0.107.73]: https://github.com/AdguardTeam/AdGuardHome/milestone/108?closed=1
+
+## [v0.107.72] - 2026-02-19
+
+See also the [v0.107.72 GitHub milestone][ms-v0.107.72].
+
+### Security
+
+- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.25.7][go-1.25.7].
+
 ### Added
+
+- AdGuard Home now tracks the TLS certificate and key files for updates and reloads them after any updates are detected ([#3962]).
 
 - New query parameter `recent` in `GET /control/stats/` defines statistics lookback period in millieseconds.  See `openapi/openapi.yaml` for details.
 
@@ -62,11 +169,15 @@ In this release, the schema version has changed from 32 to 33.
 
 ### Fixed
 
+- Executable permissions in some Docker installations ([#8237]).
+
 - Unknown blocked services from both global and client configuration now logged instead of causing server crash.
 
-<!--
-NOTE: Add new changes ABOVE THIS COMMENT.
--->
+[#3962]: https://github.com/AdguardTeam/AdGuardHome/issues/3962
+[#8237]: https://github.com/AdguardTeam/AdGuardHome/issues/8237
+
+[go-1.25.7]: https://groups.google.com/g/golang-announce/c/K09ubi9FQFk
+[ms-v0.107.72]: https://github.com/AdguardTeam/AdGuardHome/milestone/107?closed=1
 
 ## [v0.107.71] - 2025-12-08
 
@@ -3469,11 +3580,14 @@ See also the [v0.104.2 GitHub milestone][ms-v0.104.2].
 [ms-v0.104.2]: https://github.com/AdguardTeam/AdGuardHome/milestone/28?closed=1
 
 <!--
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.72...HEAD
-[v0.107.72]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.71...v0.107.72
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.75...HEAD
+[v0.107.75]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...v0.107.75
 -->
 
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.71...HEAD
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...HEAD
+[v0.107.74]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.73...v0.107.74
+[v0.107.73]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.72...v0.107.73
+[v0.107.72]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.71...v0.107.72
 [v0.107.71]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.70...v0.107.71
 [v0.107.70]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.69...v0.107.70
 [v0.107.69]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.68...v0.107.69
