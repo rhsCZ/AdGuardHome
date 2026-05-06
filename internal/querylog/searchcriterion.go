@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
@@ -61,25 +60,20 @@ var filteringStatusValues = container.NewMapSet(
 	filteringStatusWhitelisted,
 )
 
-// ReasonCodes is a set of all valid reason codes.
-var reasonCodes = container.NewMapSet(
-	reasonCode(filtering.NotFilteredNotFound),
-	reasonCode(filtering.NotFilteredAllowList),
-	reasonCode(filtering.NotFilteredError),
-	reasonCode(filtering.FilteredBlockList),
-	reasonCode(filtering.FilteredSafeBrowsing),
-	reasonCode(filtering.FilteredParental),
-	reasonCode(filtering.FilteredInvalid),
-	reasonCode(filtering.FilteredSafeSearch),
-	reasonCode(filtering.FilteredBlockedService),
-	reasonCode(filtering.Rewritten),
-	reasonCode(filtering.RewrittenAutoHosts),
-	reasonCode(filtering.RewrittenRule),
-)
-
-// reasonCode returns the numeric string representation of r.
-func reasonCode(r filtering.Reason) (s string) {
-	return strconv.FormatUint(uint64(r), 10)
+// reasonCodes is a set of all valid reason codes.
+var reasonCodes = []string{
+	filtering.NotFilteredNotFound:    "0",
+	filtering.NotFilteredAllowList:   "1",
+	filtering.NotFilteredError:       "2",
+	filtering.FilteredBlockList:      "3",
+	filtering.FilteredSafeBrowsing:   "4",
+	filtering.FilteredParental:       "5",
+	filtering.FilteredInvalid:        "6",
+	filtering.FilteredSafeSearch:     "7",
+	filtering.FilteredBlockedService: "8",
+	filtering.Rewritten:              "9",
+	filtering.RewrittenAutoHosts:     "10",
+	filtering.RewrittenRule:          "11",
 }
 
 // searchCriterion is a search criterion that is used to match a record.
@@ -153,15 +147,19 @@ func (c *searchCriterion) quickMatch(
 		// filtering statuses.
 		return true
 	case ctReason:
-		reason := readJSONValue(line, `"Reason":`)
-		if reason == "" {
+		reasonCode := readJSONValue(line, `"Reason":`)
+		if reasonCode == "" {
 			// For [filtering.NotFilteredNotFound] reason can be empty.
-			return true
+			return slices.Contains(c.values, filtering.NotFilteredNotFound.String())
 		}
 
-		reason = strings.Trim(reason, "},")
+		reasonCode = strings.Trim(reasonCode, "},")
+		idx := slices.Index(reasonCodes, reasonCode)
+		if idx == -1 {
+			return false
+		}
 
-		return reasonCodes.Has(reason)
+		return slices.Contains(c.values, filtering.Reason(idx).String())
 	default:
 		return true
 	}

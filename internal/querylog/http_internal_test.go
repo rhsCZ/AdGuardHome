@@ -39,7 +39,7 @@ type question struct {
 
 // parseHostnamesFromEntry is a helper that parses the /control/querylog
 // response and extracts the host names from it.
-func parseHostnamesFromEntry(tb testing.TB, in io.Reader) (hostNames []string) {
+func parseHostnamesFromEntry(tb testing.TB, in io.Reader) (hostnames []string) {
 	tb.Helper()
 
 	var resp response
@@ -47,10 +47,10 @@ func parseHostnamesFromEntry(tb testing.TB, in io.Reader) (hostNames []string) {
 	require.NoError(tb, err)
 
 	for _, d := range resp.Data {
-		hostNames = append(hostNames, d.Question.Name)
+		hostnames = append(hostnames, d.Question.Name)
 	}
 
-	return hostNames
+	return hostnames
 }
 
 func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
