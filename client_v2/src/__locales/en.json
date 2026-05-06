@@ -1046,7 +1046,7 @@
   "login": "Log in",
   "password_login_error": "Unrecognized password",
   "blocked_services": "Blocked services",
-  "blocked_services_desc": "Allows you to quickly block popular websites and services",
+  "blocked_services_desc": "Select popular websites and services that should be blocked",
   "inactivity_schedule": "Inactivity schedule",
   "inactivity_schedule_desc": "Set inactivity periods for blocking services",
   "parental_group_ai": "AI",
