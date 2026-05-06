@@ -47,11 +47,11 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({
-            gateway_ip: gatewayIp,
-            subnet_mask: subnetMask,
-            range_start: rangeStart,
-            range_end: rangeEnd,
-            lease_duration: leaseDuration ? Number(leaseDuration) : 0,
+            gateway_ip: gatewayIp.trim(),
+            subnet_mask: subnetMask.trim(),
+            range_start: rangeStart.trim(),
+            range_end: rangeEnd.trim(),
+            lease_duration: leaseDuration ? Number(leaseDuration.trim()) : 0,
         });
     };
 
@@ -105,7 +105,7 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
                 <div className={s.formField}>
                     <Input
                         id="v4_lease_duration"
-                        type="number"
+                        inputMode="numeric"
                         label={intl.getMessage('dhcp_form_lease_title')}
                         placeholder="86400"
                         value={leaseDuration}

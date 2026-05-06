@@ -349,7 +349,7 @@ export const Dhcp = () => {
 
                 <div className={s.settingsColumn}>
                     <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
-                        {intl.getMessage('dhcp_ipv4_settings_v2')}
+                        {intl.getMessage('dhcp_ipv4_settings')}
                     </h2>
                     <Ipv4Settings
                         v4={v4}
@@ -393,6 +393,7 @@ export const Dhcp = () => {
                             size="small"
                             onClick={handleAddStaticLease}
                             className={theme.form.button}
+                            disabled={!selectedInterface}
                         >
                             {intl.getMessage('dhcp_add_static_lease')}
                         </Button>
@@ -401,6 +402,7 @@ export const Dhcp = () => {
                             size="small"
                             onClick={() => setConfirmResetLeases(true)}
                             className={theme.form.button}
+                            disabled={!selectedInterface || !staticLeases || staticLeases.length === 0}
                         >
                             {intl.getMessage('dhcp_reset_leases')}
                         </Button>
