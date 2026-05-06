@@ -141,7 +141,7 @@ export const BlockedServices = () => {
                         {intl.getMessage('inactivity_schedule_desc')}
                     </div>
                 </div>
-                <Icon icon="arrow" />
+                <Icon icon="arrow" color="gray" />
             </Link>
 
             <div className={s.search}>
@@ -151,7 +151,7 @@ export const BlockedServices = () => {
                     value={search}
                     onChange={handleSearchChange}
                     placeholder={intl.getMessage('search_placeholder')}
-                    prefixIcon={<Icon icon="search" />}
+                    prefixIcon={<Icon icon="search" className={s.searchIcon} color="gray" />}
                     suffixIcon={search ? (
                         <button
                             type="button"
@@ -159,7 +159,7 @@ export const BlockedServices = () => {
                             className={s.clearButton}
                             aria-label={intl.getMessage('clear_btn')}
                         >
-                            <Icon icon="cross" />
+                            <Icon icon="cross" color="gray" />
                         </button>
                     ) : undefined}
                 />

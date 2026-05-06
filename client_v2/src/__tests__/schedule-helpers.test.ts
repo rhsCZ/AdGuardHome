@@ -6,6 +6,9 @@ import {
     isFullDay,
     FULL_DAY_END_MS,
     DAYS_OF_WEEK,
+    getNextTimeValue,
+    getNormalizedEndTime,
+    getEndTimeOptions,
 } from '../components/BlockedServices/InactivitySchedule/helpers';
 
 describe('schedule helpers', () => {
@@ -48,6 +51,80 @@ describe('schedule helpers', () => {
 
         test('pads single digits', () => {
             expect(formatTimePeriod(0, 3660000)).toBe('00:00 \u2013 01:01');
+        });
+    });
+
+    describe('getNextTimeValue', () => {
+        test('returns the next minute within the same hour', () => {
+            expect(getNextTimeValue({ hours: 10, minutes: 15 })).toEqual({
+                hours: 10,
+                minutes: 16,
+            });
+        });
+
+        test('rolls over to the next hour', () => {
+            expect(getNextTimeValue({ hours: 10, minutes: 59 })).toEqual({
+                hours: 11,
+                minutes: 0,
+            });
+        });
+
+        test('returns null for the last minute of the day', () => {
+            expect(getNextTimeValue({ hours: 23, minutes: 59 })).toBeNull();
+        });
+    });
+
+    describe('getNormalizedEndTime', () => {
+        test('keeps a valid end time unchanged', () => {
+            expect(
+                getNormalizedEndTime(
+                    { hours: 10, minutes: 15 },
+                    { hours: 11, minutes: 0 },
+                ),
+            ).toEqual({ hours: 11, minutes: 0 });
+        });
+
+        test('moves an invalid end time to the next available minute', () => {
+            expect(
+                getNormalizedEndTime(
+                    { hours: 10, minutes: 15 },
+                    { hours: 10, minutes: 15 },
+                ),
+            ).toEqual({ hours: 10, minutes: 16 });
+        });
+
+        test('returns null when no later end time exists', () => {
+            expect(
+                getNormalizedEndTime(
+                    { hours: 23, minutes: 59 },
+                    { hours: 23, minutes: 59 },
+                ),
+            ).toBeNull();
+        });
+    });
+
+    describe('getEndTimeOptions', () => {
+        test('disables end hours earlier than the selected start hour', () => {
+            const options = getEndTimeOptions({ hours: 10, minutes: 15 }, 11);
+
+            expect(options.hours[9].isDisabled).toBe(true);
+            expect(options.hours[10].isDisabled).toBe(false);
+            expect(options.hours[11].isDisabled).toBe(false);
+        });
+
+        test('disables end minutes not later than the selected start minute in the same hour', () => {
+            const options = getEndTimeOptions({ hours: 10, minutes: 15 }, 10);
+
+            expect(options.minutes[15].isDisabled).toBe(true);
+            expect(options.minutes[16].isDisabled).toBe(false);
+        });
+
+        test('disables all end options when start time is 23:59', () => {
+            const options = getEndTimeOptions({ hours: 23, minutes: 59 }, 23);
+
+            expect(options.hasAvailableEndTime).toBe(false);
+            expect(options.hours.every((option) => option.isDisabled)).toBe(true);
+            expect(options.minutes.every((option) => option.isDisabled)).toBe(true);
         });
     });
 

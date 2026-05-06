@@ -109,10 +109,6 @@ export const InactivitySchedule = () => {
         setEditDay(undefined);
     };
 
-    if (processing) {
-        return null;
-    }
-
     return (
         <div className={cn(theme.layout.container, s.container)}>
             <div className={cn(theme.layout.containerIn, theme.layout.containerIn_one_col)}>
@@ -137,6 +133,7 @@ export const InactivitySchedule = () => {
                     onChange={handleTimezoneChange}
                     size="responsive"
                     height="big"
+                    isDisabled={processing}
                     isSearchable
                 />
             </div>

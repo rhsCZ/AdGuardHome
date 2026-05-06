@@ -11,15 +11,20 @@
 }
 
 .description {
+    margin: 0;
     font-size: 16px;
     line-height: 1.5;
     color: var(--default-description-text);
-    padding: 0 16px;
+    padding: 12px 16px;
+
+    @media (min-width: 768px) {
+        padding: 16px;
+    }
 }
 
 .navItem {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     padding: 16px;
     cursor: pointer;
@@ -56,6 +61,10 @@
     padding: 16px 16px 8px;
 }
 
+.searchIcon {
+    margin-left: 8px;
+}
+
 .groups {
     display: flex;
     flex-wrap: wrap;
@@ -74,11 +83,20 @@
     transition: background-color 0.2s, border-color 0.2s;
     cursor: pointer;
     outline: none;
+
+    &:hover,
+    &:focus {
+        background-color: var(--page-background-additional);
+    }
 }
 
 .groupButtonActive {
     border-color: var(--default-link);
-    color: var(--default-link);
+
+    &:hover,
+    &:focus {
+        background-color: transparent;
+    }
 }
 
 .servicesList {
@@ -141,6 +159,7 @@
     align-items: center;
     justify-content: center;
     padding: 0;
+    margin-right: 8px;
     border: none;
     background: none;
     cursor: pointer;
