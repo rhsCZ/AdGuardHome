@@ -142,7 +142,6 @@ export const ScheduleModal = ({ visible, currentDay, currentData, onClose, onSav
                                 value={HOURS_OPTIONS[startHour]}
                                 onChange={(opt) => applyStartTime(opt.value, startMinute)}
                                 isDisabled={allDay}
-                                showOptionIcon={false}
                                 height="big"
                                 size="responsive"
                             />
@@ -151,7 +150,6 @@ export const ScheduleModal = ({ visible, currentDay, currentData, onClose, onSav
                                 value={MINUTES_OPTIONS[startMinute]}
                                 onChange={(opt) => applyStartTime(startHour, opt.value)}
                                 isDisabled={allDay}
-                                showOptionIcon={false}
                                 height="big"
                                 size="responsive"
                             />
@@ -167,7 +165,6 @@ export const ScheduleModal = ({ visible, currentDay, currentData, onClose, onSav
                                 value={HOURS_OPTIONS[endHour]}
                                 onChange={(opt) => applyEndTime(opt.value, endMinute)}
                                 isDisabled={allDay}
-                                showOptionIcon={false}
                                 height="big"
                                 size="responsive"
                             />
@@ -176,7 +173,6 @@ export const ScheduleModal = ({ visible, currentDay, currentData, onClose, onSav
                                 value={MINUTES_OPTIONS[endMinute]}
                                 onChange={(opt) => applyEndTime(endHour, opt.value)}
                                 isDisabled={allDay}
-                                showOptionIcon={false}
                                 height="big"
                                 size="responsive"
                             />
