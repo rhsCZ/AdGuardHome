@@ -322,16 +322,11 @@ export const Dashboard = () => {
                                     ))}
 
                                     <div
-                                        className={cn(
-                                            theme.text.t2,
-                                            theme.text.condenced,
-                                            s.periodMenuItem,
-                                            s.periodMenuItemLink,
-                                        )}
+                                        className={cn(s.periodMenuItem, s.periodMenuItemLink)}
                                     >
                                         <Icon icon="settings" className={s.periodMenuIcon} />
 
-                                        <div>
+                                        <div className={cn(theme.text.t2, theme.text.condenced)}>
                                             {intl.getMessage('period_notify', {
                                                 a: (text: string) => (
                                                     <Link
