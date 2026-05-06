@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Icon } from 'panel/common/ui/Icon';
@@ -20,6 +20,17 @@ type Props = {
 export const ScheduleRow = ({ day, data, onEdit, onDelete, onAdd }: Props) => {
     const dayName = getDayName(day);
     const isConfigured = !!data;
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const handleEditClick = () => {
+        setDropdownOpen(false);
+        onEdit(day);
+    };
+
+    const handleDeleteClick = () => {
+        setDropdownOpen(false);
+        onDelete(day);
+    };
 
     const getTimeDisplay = () => {
         if (!data) {
@@ -71,19 +82,21 @@ export const ScheduleRow = ({ day, data, onEdit, onDelete, onAdd }: Props) => {
                             trigger="click"
                             position="bottomRight"
                             noIcon
+                            open={dropdownOpen}
+                            onOpenChange={setDropdownOpen}
                             menu={
                                 <div className={theme.dropdown.menu}>
                                     <button
                                         type="button"
                                         className={theme.dropdown.item}
-                                        onClick={() => onEdit(day)}
+                                        onClick={handleEditClick}
                                     >
                                         {intl.getMessage('inactivity_schedule_edit')}
                                     </button>
                                     <button
                                         type="button"
                                         className={cn(theme.dropdown.item, s.dropdownItemDanger)}
-                                        onClick={() => onDelete(day)}
+                                        onClick={handleDeleteClick}
                                     >
                                         {intl.getMessage('inactivity_schedule_delete')}
                                     </button>
