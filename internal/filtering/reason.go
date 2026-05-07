@@ -1,6 +1,9 @@
 package filtering
 
-import "fmt"
+import (
+	"fmt"
+	"maps"
+)
 
 // Reason holds an enum detailing why it was filtered, allowed, or rewritten.
 type Reason uint8
@@ -76,25 +79,14 @@ var reasonNames = []string{
 	RewrittenRule:      "RewriteRule",
 }
 
-// ReasonByString maps reason string names to their values.
-//
-// NOTE: Keep in sync with [reasonNames].
-var ReasonByString = map[string]Reason{
-	"NotFilteredNotFound":  NotFilteredNotFound,
-	"NotFilteredWhiteList": NotFilteredAllowList,
-	"NotFilteredError":     NotFilteredError,
-
-	"FilteredBlackList":      FilteredBlockList,
-	"FilteredSafeBrowsing":   FilteredSafeBrowsing,
-	"FilteredParental":       FilteredParental,
-	"FilteredInvalid":        FilteredInvalid,
-	"FilteredSafeSearch":     FilteredSafeSearch,
-	"FilteredBlockedService": FilteredBlockedService,
-
-	"Rewrite":         Rewritten,
-	"RewriteEtcHosts": RewrittenAutoHosts,
-	"RewriteRule":     RewrittenRule,
-}
+// ReasonByName maps reason string names to their values.
+var ReasonByName = maps.Collect(func(yield func(string, Reason) (ok bool)) {
+	for i, name := range reasonNames {
+		if !yield(name, Reason(i)) {
+			break
+		}
+	}
+})
 
 // type check
 var _ fmt.Stringer = NotFilteredNotFound

@@ -10,6 +10,7 @@ import (
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
 	"github.com/AdguardTeam/AdGuardHome/internal/filtering"
+	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -54,16 +55,102 @@ func parseHostnamesFromEntry(tb testing.TB, in io.Reader) (hostnames []string) {
 }
 
 func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
+	testCases := []struct {
+		name       string
+		query      url.Values
+		wantMsg    string
+		wantHosts  []string
+		wantStatus int
+	}{{
+		name:       "no_params",
+		query:      url.Values{},
+		wantMsg:    "",
+		wantStatus: http.StatusOK,
+		wantHosts:  []string{testDomainRewritten, testDomainBlocked, testDomainNotFound},
+	}, {
+		name:       "reason_not_found",
+		query:      url.Values{"reason": []string{filtering.NotFilteredNotFound.String()}},
+		wantMsg:    "",
+		wantStatus: http.StatusOK,
+		wantHosts:  []string{testDomainNotFound},
+	}, {
+		name:       "reason_block_list",
+		query:      url.Values{"reason": []string{filtering.FilteredBlockList.String()}},
+		wantMsg:    "",
+		wantStatus: http.StatusOK,
+		wantHosts:  []string{testDomainBlocked},
+	}, {
+		name:       "reason_rewritten",
+		query:      url.Values{"reason": []string{filtering.Rewritten.String()}},
+		wantMsg:    "",
+		wantStatus: http.StatusOK,
+		wantHosts:  []string{testDomainRewritten},
+	}, {
+		name: "multiple_reasons",
+		query: url.Values{"reason": []string{
+			filtering.Rewritten.String(),
+			filtering.FilteredBlockList.String(),
+		}},
+		wantMsg:    "",
+		wantStatus: http.StatusOK,
+		wantHosts:  []string{testDomainRewritten, testDomainBlocked},
+	}, {
+		name:       "invalid_reason",
+		query:      url.Values{"reason": []string{"InvalidReason"}},
+		wantMsg:    `parsing params: reason: bad enum value: "InvalidReason"` + "\n",
+		wantStatus: http.StatusBadRequest,
+		wantHosts:  nil,
+	}, {
+		name: "reason_and_status_conflict",
+		query: url.Values{
+			"reason":          []string{filtering.Rewritten.String()},
+			"response_status": []string{filteringStatusAll},
+		},
+		wantMsg: `parsing params: "reason" and "response_status"` +
+			` criteria cannot be used together` + "\n",
+		wantStatus: http.StatusBadRequest,
+		wantHosts:  nil,
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			l := newTestQueryLog(t)
+
+			u := (&url.URL{
+				Path:     "/control/querylog",
+				RawQuery: tc.query.Encode(),
+			}).String()
+
+			require.True(t, t.Run("memory", func(t *testing.T) {
+				testSearchAPI(t, l, tc.wantStatus, tc.wantHosts, tc.wantMsg, u)
+			}))
+
+			require.True(t, t.Run("file", func(t *testing.T) {
+				ctx := testutil.ContextWithTimeout(t, testTimeout)
+				err := l.flushLogBuffer(ctx)
+				require.NoError(t, err)
+
+				testSearchAPI(t, l, tc.wantStatus, tc.wantHosts, tc.wantMsg, u)
+			}))
+		})
+	}
+}
+
+// newTestQueryLog is a helper that returns new *queryLog initialized with
+// common test values.  It also adds several test entries.
+func newTestQueryLog(tb testing.TB) (l *queryLog) {
+	tb.Helper()
+
 	l, err := newQueryLog(Config{
 		Logger:      testLogger,
 		Enabled:     true,
 		FileEnabled: true,
 		RotationIvl: timeutil.Day,
 		MemSize:     100,
-		BaseDir:     t.TempDir(),
+		BaseDir:     tb.TempDir(),
 		Anonymizer:  aghnet.NewIPMut(nil),
 	})
-	require.NoError(t, err)
+	require.NoError(tb, err)
 
 	addTestEntry(
 		l,
@@ -87,83 +174,37 @@ func TestQuerylog_HandleQueryLog_reasonSearchCriterion(t *testing.T) {
 		filtering.Rewritten,
 	)
 
-	testCases := []struct {
-		name       string
-		query      string
-		wantMsg    string
-		wantHosts  []string
-		wantStatus int
-	}{{
-		name:       "no_params",
-		query:      "",
-		wantMsg:    "",
-		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewritten, testDomainBlocked, testDomainNotFound},
-	}, {
-		name:  "reason_not_found",
-		query: "reason=" + filtering.NotFilteredNotFound.String(),
+	return l
+}
 
-		wantMsg:    "",
-		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainNotFound},
-	}, {
-		name:       "reason_block_list",
-		query:      "reason=" + filtering.FilteredBlockList.String(),
-		wantMsg:    "",
-		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainBlocked},
-	}, {
-		name:       "reason_rewritten",
-		query:      "reason=" + filtering.Rewritten.String(),
-		wantMsg:    "",
-		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewritten},
-	}, {
-		name: "multiple_reasons",
-		query: "reason=" + filtering.Rewritten.String() + "&reason=" +
-			filtering.FilteredBlockList.String(),
-		wantMsg:    "",
-		wantStatus: http.StatusOK,
-		wantHosts:  []string{testDomainRewritten, testDomainBlocked},
-	}, {
-		name:       "invalid_reason",
-		query:      "reason=InvalidReason",
-		wantMsg:    `parsing params: reason: bad enum value: "InvalidReason"` + "\n",
-		wantStatus: http.StatusBadRequest,
-		wantHosts:  nil,
-	}, {
-		name:  "reason_and_status_conflict",
-		query: "reason=Rewritten&response_status=all",
-		wantMsg: `parsing params: "reason" and "response_status"` +
-			` criteria cannot be used together` + "\n",
-		wantStatus: http.StatusBadRequest,
-		wantHosts:  nil,
-	}}
+// testSearchAPI is a helper that makes sure that l handles GET
+// /control/querylog HTTP API requests correctly.
+func testSearchAPI(
+	tb testing.TB,
+	l *queryLog,
+	wantStatus int,
+	wantHosts []string,
+	wantMsg string,
+	u string,
+) {
+	tb.Helper()
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			u := url.URL{
-				Path:     "/control/querylog",
-				RawQuery: tc.query,
-			}
-			req := httptest.NewRequest(http.MethodGet, u.String(), nil)
-			w := httptest.NewRecorder()
+	ctx := testutil.ContextWithTimeout(tb, testTimeout)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	w := httptest.NewRecorder()
 
-			l.handleQueryLog(w, req)
+	l.handleQueryLog(w, req)
 
-			assert.Equal(t, tc.wantStatus, w.Code)
-			if tc.wantStatus != http.StatusOK {
-				var msg []byte
-				msg, err = io.ReadAll(w.Body)
-				require.NoError(t, err)
+	assert.Equal(tb, wantStatus, w.Code)
+	if wantStatus != http.StatusOK {
+		msg, err := io.ReadAll(w.Body)
+		require.NoError(tb, err)
 
-				assert.Equal(t, tc.wantMsg, string(msg))
+		assert.Equal(tb, wantMsg, string(msg))
 
-				return
-			}
-
-			gotHosts := parseHostnamesFromEntry(t, w.Body)
-			assert.Equal(t, tc.wantHosts, gotHosts)
-		})
+		return
 	}
+
+	gotHosts := parseHostnamesFromEntry(tb, w.Body)
+	assert.Equal(tb, wantHosts, gotHosts)
 }

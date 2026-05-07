@@ -61,8 +61,7 @@ var filteringStatusValues = container.NewMapSet(
 )
 
 // reasonCodes is a set of all valid reason codes.
-var reasonCodes = []string{
-	filtering.NotFilteredNotFound:    "0",
+var reasonCodes = [12]string{
 	filtering.NotFilteredAllowList:   "1",
 	filtering.NotFilteredError:       "2",
 	filtering.FilteredBlockList:      "3",
@@ -78,12 +77,28 @@ var reasonCodes = []string{
 
 // searchCriterion is a search criterion that is used to match a record.
 type searchCriterion struct {
-	value         string
-	asciiVal      string
-	values        []string
+	// value is the target value for searching.  If
+	// [searchCriterion.criterionType] is [ctTerm] or [ctFilteringStatus] value
+	// must not be empty.
+	value string
+
+	// asciiVal is the ASCII representation of value for matching IDNA domain
+	// names.  It is used by [ctTerm].
+	asciiVal string
+
+	// values is a list of target values for searching.  It is used by
+	// [ctReason] type.
+	values []string
+
+	// criterionType is the type of search criterion.  It must be one of:
+	//	- [ctTerm]
+	//	- [ctFilteringStatus]
+	//	- [ctReason]
 	criterionType criterionType
+
 	// strict, if true, means that the criterion must be applied to the whole
 	// value rather than the part of it.  That is, equality and not containment.
+	// It is used by [ctTerm].
 	strict bool
 }
 
@@ -147,14 +162,13 @@ func (c *searchCriterion) quickMatch(
 		// filtering statuses.
 		return true
 	case ctReason:
-		reasonCode := readJSONValue(line, `"Reason":`)
+		reasonCode := readJSONNumericValue(line, `"Reason":`)
 		if reasonCode == "" {
 			// For [filtering.NotFilteredNotFound] reason can be empty.
 			return slices.Contains(c.values, filtering.NotFilteredNotFound.String())
 		}
 
-		reasonCode = strings.Trim(reasonCode, "},")
-		idx := slices.Index(reasonCodes, reasonCode)
+		idx := slices.Index(reasonCodes[:], reasonCode)
 		if idx == -1 {
 			return false
 		}

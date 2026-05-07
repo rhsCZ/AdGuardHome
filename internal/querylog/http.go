@@ -405,11 +405,11 @@ func (l *queryLog) parseSearchCriterion(
 	return true, sc, nil
 }
 
-// parseReason parses reason search criterion from url parameters.
+// parseReason parses reason search criterion from URL parameters.
 func parseReason(q url.Values, name string) (values []string, err error) {
 	var errs []error
 	for _, val := range q[name] {
-		_, ok := filtering.ReasonByString[val]
+		_, ok := filtering.ReasonByName[val]
 		if !ok {
 			errs = append(errs, fmt.Errorf("reason: %w: %q", errors.ErrBadEnumValue, val))
 
@@ -471,7 +471,7 @@ func (l *queryLog) parseSearchParams(
 	return p, nil
 }
 
-// parseSearchCriterions parses search criterions from the url query parameter
+// parseSearchCriterions parses search criterions from the URL query parameter
 // values.  p must not be nil.
 func (l *queryLog) parseSearchCriterions(
 	ctx context.Context,
