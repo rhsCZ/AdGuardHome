@@ -1075,7 +1075,7 @@
   "inactivity_schedule_no_schedules": "No schedule",
   "inactivity_schedule_all_day": "24h",
   "inactivity_schedule_delete_title": "Delete schedule?",
-  "inactivity_schedule_delete_desc": "Parental control will be active all day on <strong>%value%</strong>",
+  "inactivity_schedule_delete_desc": "Service blocking will be active all day on <strong>%value%</strong>",
   "inactivity_schedule_add": "Add schedule",
   "inactivity_schedule_edit": "Edit schedule",
   "inactivity_schedule_delete": "Delete schedule",

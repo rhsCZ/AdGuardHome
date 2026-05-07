@@ -60,21 +60,21 @@ export const ScheduleRow = ({ day, data, onEdit, onDelete, onAdd }: Props) => {
                     <div className={cn(s.actions, s.actionsDesktop)}>
                         <button
                             type="button"
-                            className={s.actionButton}
-                            onClick={() => onEdit(day)}
-                            aria-label={intl.getMessage('inactivity_schedule_edit')}
-                        >
-                            <Icon icon="edit" />
-                        </button>
-                    </div>
-                    <div className={cn(s.actions, s.actionsDesktop)}>
-                        <button
-                            type="button"
                             className={cn(s.actionButton, s.actionButtonDelete)}
                             onClick={() => onDelete(day)}
                             aria-label={intl.getMessage('delete_table_action')}
                         >
                             <Icon icon="delete" />
+                        </button>
+                    </div>
+                    <div className={cn(s.actions, s.actionsDesktop)}>
+                        <button
+                            type="button"
+                            className={s.actionButton}
+                            onClick={() => onEdit(day)}
+                            aria-label={intl.getMessage('inactivity_schedule_edit')}
+                        >
+                            <Icon icon="edit" />
                         </button>
                     </div>
                     <div className={cn(s.actions, s.actionsMobile)}>
@@ -111,6 +111,7 @@ export const ScheduleRow = ({ day, data, onEdit, onDelete, onAdd }: Props) => {
                 </>
             ) : (
                 <>
+                    <div className={cn(s.actions, s.actionsDesktop)} />
                     <div className={s.actions}>
                         <button
                             type="button"
@@ -121,7 +122,6 @@ export const ScheduleRow = ({ day, data, onEdit, onDelete, onAdd }: Props) => {
                             <Icon icon="plus" />
                         </button>
                     </div>
-                    <div className={cn(s.actions, s.actionsDesktop)} />
                 </>
             )}
         </div>
