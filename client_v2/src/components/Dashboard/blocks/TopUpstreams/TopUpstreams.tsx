@@ -30,12 +30,6 @@ export const TopUpstreams = ({ topUpstreamsResponses, numDnsQueries }: Props) =>
         <div className={s.card}>
             <div className={s.cardHeader}>
                 <div className={cn(theme.title.h5, s.cardTitle)}>{intl.getMessage('top_upstreams')}</div>
-
-                {hasStats && (
-                    <div className={cn(theme.text.t3, s.cardSubtitle)}>
-                        {intl.getPlural('queries_total', formatCompactNumber(numDnsQueries))}
-                    </div>
-                )}
             </div>
 
             {hasStats && (

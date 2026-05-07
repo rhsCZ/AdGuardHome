@@ -21,6 +21,7 @@ export const ICONS = {
     theme_light: 'theme_light',
     cross: 'cross',
     arrow_bottom: 'arrow_bottom',
+    arrows_sort: 'arrows_sort',
     butter: 'butter',
     loader: 'loader',
     check: 'check',
@@ -305,6 +306,11 @@ export const Icons = memo(() => (
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
+        </symbol>
+
+        <symbol id="arrows_sort" viewBox="0 0 24 24" fill="none" fillRule="evenodd" clipRule="evenodd">
+            <path stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" d="m8.00009 8.86453 4.01891-3.86453 3.9811 4"/>
+            <path stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" d="m15.9999 15.1355-4.0189 3.8645-3.98108-4"/>
         </symbol>
 
         <symbol id="butter" viewBox="0 0 24 24" fill="none">

@@ -2,6 +2,7 @@ import React from 'react';
 
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
+import { formatCompactNumber } from 'panel/helpers/helpers';
 import cn from 'clsx';
 import { EmptyState } from '../EmptyState';
 
@@ -36,6 +37,12 @@ export const GeneralStatistics = ({
         <div className={s.card}>
             <div className={s.cardHeader}>
                 <div className={cn(theme.title.h5, s.cardTitle)}>{intl.getMessage('general_statistics')}</div>
+
+                {hasStats && (
+                    <div className={cn(theme.text.t3, s.cardSubtitle)}>
+                        {intl.getPlural('queries_total', formatCompactNumber(numDnsQueries))}
+                    </div>
+                )}
             </div>
 
             {hasStats ? (

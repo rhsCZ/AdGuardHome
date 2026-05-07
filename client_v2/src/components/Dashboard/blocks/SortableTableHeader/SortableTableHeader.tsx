@@ -31,11 +31,8 @@ export const SortableTableHeader = ({
             onClick={() => onSort('name')}
         >
             {nameLabel}
-            {sortField === 'name' ? (
-                <Icon icon="arrow_bottom" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
-            ) : (
-                <span className={s.sortDash}>—</span>
-            )}
+
+            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
         </button>
         <button
             type="button"
@@ -43,11 +40,8 @@ export const SortableTableHeader = ({
             onClick={() => onSort('count')}
         >
             {countLabel}
-            {sortField === 'count' ? (
-                <Icon icon="arrow_bottom" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
-            ) : (
-                <span className={s.sortDash}>—</span>
-            )}
+
+            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
         </button>
     </div>
 );
