@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/errors"
@@ -457,7 +456,7 @@ func readJSONNumericValue(s, prefix string) (res string) {
 
 	start := i + len(prefix)
 	i = strings.IndexFunc(s[start:], func(r rune) (ok bool) {
-		return !unicode.IsDigit(r) && r != '.'
+		return (r > '9' || r < '0') && r != '.'
 	})
 	if i == -1 {
 		return ""
