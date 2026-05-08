@@ -61,7 +61,7 @@ var filteringStatusValues = container.NewMapSet(
 )
 
 // reasonCodes is a set of all valid reason codes.
-var reasonCodes = [12]string{
+var reasonCodes = [...]string{
 	filtering.NotFilteredAllowList:   "1",
 	filtering.NotFilteredError:       "2",
 	filtering.FilteredBlockList:      "3",
@@ -188,6 +188,8 @@ func (c *searchCriterion) match(entry *logEntry) bool {
 	case ctFilteringStatus:
 		return c.ctFilteringStatusCase(entry.Result.Reason, entry.Result.IsFiltered)
 	case ctReason:
+		// TODO(f.setrakov): Consider comparing [filtering.Reason] instead of
+		// strings.
 		return slices.Contains(c.values, entry.Result.Reason.String())
 	}
 

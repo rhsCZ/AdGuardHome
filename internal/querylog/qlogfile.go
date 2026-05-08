@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghos"
 	"github.com/AdguardTeam/golibs/errors"
@@ -446,9 +447,8 @@ func readJSONValue(s, prefix string) (res string) {
 	return s[start:end]
 }
 
-// readJSONNumericValue reads a JSON string in form of '"key":numeric_value' and
-// returns the numeric string that comes right after the first prefix
-// occurrence.  prefix must be of the form '"key":' to generate less garbage.
+// readJSONNumericValue reads a string containing unquoted JSON numeric value
+// from substring of s after prefix.
 func readJSONNumericValue(s, prefix string) (res string) {
 	i := strings.Index(s, prefix)
 	if i == -1 {
@@ -457,7 +457,7 @@ func readJSONNumericValue(s, prefix string) (res string) {
 
 	start := i + len(prefix)
 	i = strings.IndexFunc(s[start:], func(r rune) (ok bool) {
-		return (r > '9' || r < '0') && r != '.'
+		return !unicode.IsDigit(r) && r != '.'
 	})
 	if i == -1 {
 		return ""

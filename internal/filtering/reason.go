@@ -58,8 +58,6 @@ const (
 
 // reasonNames maps reason values to their string representations.
 //
-// NOTE: Keep in sync with [ReasonByString].
-//
 // TODO(a.garipov): Resync with actual code names or replace completely in the
 // next version of HTTP API.
 var reasonNames = []string{
