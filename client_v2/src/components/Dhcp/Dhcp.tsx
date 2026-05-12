@@ -240,7 +240,7 @@ export const Dhcp = () => {
     const enteredSomeValue =
         (v4 && Object.values(v4).some(Boolean)) || (v6 && Object.values(v6).some(Boolean)) || interfaceName;
 
-    const selectedIface = interfaces && interfaces[selectedInterface];
+    const selectedIface = interfaces && interfaces.find((iface) => iface.name === selectedInterface);
     const allIps: string[] = selectedIface?.ip_addresses || [];
     const visibleIps = showAllIps ? allIps : allIps.slice(0, MAX_VISIBLE_IPS);
     const hiddenIpsCount = allIps.length - MAX_VISIBLE_IPS;

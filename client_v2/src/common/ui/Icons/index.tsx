@@ -53,8 +53,6 @@ export const ICONS = {
     eye_open: 'eye_open',
     eye_close: 'eye_close',
     check_tiny: 'check_tiny',
-    eye_open: 'eye_open',
-    search: 'search',
 } as const;
 
 export type IconType = keyof typeof ICONS;
