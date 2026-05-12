@@ -32,7 +32,7 @@ export const SortableTableHeader = ({
         >
             {nameLabel}
 
-            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
+            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortField === 'name' && sortDirection === 'asc' && s.sortIconAsc)} />
         </button>
         <button
             type="button"
@@ -41,7 +41,7 @@ export const SortableTableHeader = ({
         >
             {countLabel}
 
-            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortDirection === 'asc' && s.sortIconAsc)} />
+            <Icon icon="arrows_sort" className={cn(s.sortIcon, sortField === 'count' && sortDirection === 'asc' && s.sortIconAsc)} />
         </button>
     </div>
 );
