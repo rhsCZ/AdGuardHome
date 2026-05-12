@@ -1,7 +1,6 @@
 import 'url-polyfill';
 import { parse as dateParse, format as dateFormat } from 'date-fns';
 import round from 'lodash/round';
-import axios from 'axios';
 import ipaddr, { IPv4, IPv6 } from 'ipaddr.js';
 import queryString from 'qs';
 import React from 'react';
@@ -146,8 +145,9 @@ export const normalizeLogs = (logs: any) =>
         };
     });
 
+// TODO (ik) type will fixed in query log task
 export const normalizeHistory = (history: any) =>
-    history.map((item, idx) => ({
+    history.map((item: any, idx: number) => ({
         x: idx,
         y: item,
     }));
@@ -310,22 +310,17 @@ export const checkRedirect = (url: any, attempts: number = 1) => {
 
     let timeout: any;
 
-    axios
-        .get(url)
+    fetch(url)
         .then((response) => {
             rmTimeout(timeout);
-            if (response) {
+            if (response.ok) {
                 window.location.replace(url);
                 return;
             }
             timeout = setRecursiveTimeout(CHECK_TIMEOUT, url, (count += 1));
         })
-        .catch((error) => {
+        .catch(() => {
             rmTimeout(timeout);
-            if (error.response) {
-                window.location.replace(url);
-                return;
-            }
             timeout = setRecursiveTimeout(CHECK_TIMEOUT, url, (count += 1));
         });
 
