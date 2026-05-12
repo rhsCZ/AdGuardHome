@@ -160,7 +160,7 @@ export const StaticLeasesTable = ({
                 },
             },
         ],
-        [processingDeleting, processingUpdating, onEdit, onDelete],
+        [processingDeleting, processingUpdating, onEdit, onDelete, openMenuId],
     );
 
     return (

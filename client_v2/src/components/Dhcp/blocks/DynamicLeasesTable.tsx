@@ -164,7 +164,7 @@ export const DynamicLeasesTable = ({ leases, onEdit, onDelete, onMakeStatic, onR
                 },
             },
         ],
-        [onEdit, onDelete],
+        [onEdit, onDelete, openMenuId],
     );
 
     return (
