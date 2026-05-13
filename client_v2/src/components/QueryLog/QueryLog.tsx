@@ -112,10 +112,6 @@ export const QueryLog = () => {
     const currentReason = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
     const persistentClientIds = persistentClients.flatMap((persistentClient) => persistentClient.ids ?? []);
     const visibleLogs = filterLogsByStatus(logs, currentStatus);
-    const hasActiveFilters =
-        Boolean(currentSearch)
-        || currentStatus !== DEFAULT_LOGS_FILTER.status
-        || currentReason !== DEFAULT_LOGS_FILTER.response_status;
     const isLogRotationDisabled = interval === 0;
     const hasMore = !isEntireLog;
 
@@ -148,13 +144,6 @@ export const QueryLog = () => {
         dispatch(refreshFilteredLogs());
     }, [dispatch]);
 
-    const handleToggleBlock = useCallback(
-        (type: string, domain: string) => {
-            dispatch(toggleBlocking(type, domain));
-        },
-        [dispatch],
-    );
-
     const handleBlockDomain = useCallback(
         (domain: string) => {
             dispatch(toggleBlocking('block', domain));
@@ -162,7 +151,7 @@ export const QueryLog = () => {
         [dispatch],
     );
 
-    const handleAddToAllowlist = useCallback(
+    const handleUnblockDomain = useCallback(
         (domain: string) => {
             dispatch(toggleBlocking('unblock', domain));
         },
@@ -177,8 +166,8 @@ export const QueryLog = () => {
     );
 
     const handleBlockClient = useCallback(
-        (type: string, domain: string, client: string) => {
-            dispatch(toggleBlockingForClient(type, domain, client));
+        (domain: string, client: string) => {
+            dispatch(toggleBlockingForClient('block', domain, client));
         },
         [dispatch],
     );
@@ -261,15 +250,14 @@ export const QueryLog = () => {
                 <div className={s.desktopView}>
                     <LogTable
                         logs={visibleLogs}
-                        hasActiveFilters={hasActiveFilters}
                         isLogRotationDisabled={isLogRotationDisabled}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
                         onLoadMore={handleLoadMore}
                         onRowClick={handleRowClick}
-                        onBlock={handleToggleBlock}
-                        onUnblock={handleToggleBlock}
+                        onBlock={handleBlockDomain}
+                        onUnblock={handleUnblockDomain}
                         onBlockClient={handleBlockClient}
                         onDisallowClient={handleDisallowClient}
                         onAddPersistentClient={handleAddPersistentClient}
@@ -286,7 +274,6 @@ export const QueryLog = () => {
                     {visibleLogs.length === 0 ? (
                         <EmptyState
                             className={s.emptyState}
-                            hasActiveFilters={hasActiveFilters}
                             isLogRotationDisabled={isLogRotationDisabled}
                             messageClassName={theme.text.t2}
                         />
@@ -298,8 +285,8 @@ export const QueryLog = () => {
                                         key={`${entry.time}-${entry.domain}-${entry.client}`}
                                         entry={entry}
                                         onRowClick={handleRowClick}
-                                        onBlock={handleToggleBlock}
-                                        onUnblock={handleToggleBlock}
+                                        onBlock={handleBlockDomain}
+                                        onUnblock={handleUnblockDomain}
                                         onBlockClient={handleBlockClient}
                                         onDisallowClient={handleDisallowClient}
                                         onAddPersistentClient={handleAddPersistentClient}
@@ -331,7 +318,7 @@ export const QueryLog = () => {
                         whitelistFilters={whitelistFilters}
                         onClose={handleCloseDetail}
                         onBlock={handleBlockDomain}
-                        onAddToAllowlist={handleAddToAllowlist}
+                        onAddToAllowlist={handleUnblockDomain}
                         onAllowService={handleAllowService}
                     />
                 )}

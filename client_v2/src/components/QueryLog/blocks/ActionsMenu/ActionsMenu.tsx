@@ -12,9 +12,9 @@ type Props = {
     domain: string;
     client: string;
     clientId?: string;
-    onBlock: (type: string, domain: string) => void;
-    onUnblock: (type: string, domain: string) => void;
-    onBlockClient: (type: string, domain: string, client: string) => void;
+    onBlock: (domain: string) => void;
+    onUnblock: (domain: string) => void;
+    onBlockClient: (domain: string, client: string) => void;
     onDisallowClient: () => void;
     onAddPersistentClient?: (clientId: string) => void;
     isBlocked: boolean;
@@ -39,19 +39,17 @@ export const ActionsMenu = ({
 
     const handleBlock = () => {
         if (isBlocked) {
-            onUnblock('unblock', domain);
+            onUnblock(domain);
         } else {
-            onBlock('block', domain);
+            onBlock(domain);
         }
+
         setOpen(false);
     };
 
     const handleBlockClient = () => {
-        if (isBlocked) {
-            onUnblock('unblock', domain);
-        } else {
-            onBlockClient('block', domain, client);
-        }
+        onBlockClient(domain, client);
+
         setOpen(false);
     };
 

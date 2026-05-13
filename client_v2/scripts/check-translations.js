@@ -1,3 +1,5 @@
+// CLI entry point for auditing client_v2 translation usage against src/__locales/en.json.
+// It reports missing locale keys, unused locale keys, and dynamic intl usages that make the audit best-effort.
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';

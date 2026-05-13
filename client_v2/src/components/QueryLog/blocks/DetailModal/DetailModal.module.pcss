@@ -1,37 +1,45 @@
 .wrap {
-    @media (width <= 1023px) {
-        top: 16px;
+    top: 16px;
+
+    @media (min-width: 1024px) {
+        top: 0;
     }
 }
 
 .dialog {
-    width: min(90vw, 600px);
+    width: min(720px, calc(100vw - 16px));
 
-    @media (width <= 1023px) {
-        width: min(720px, calc(100vw - 16px));
+    @media (min-width: 1024px) {
+        width: min(90vw, 600px);
     }
 }
 
 .content {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     min-height: 0;
     padding: 0;
 
-    @media (width <= 1023px), (height <= 720px) {
-        flex: 1 1 auto;
+    @media (min-width: 1024px) and (min-height: 720px) {
+        flex: 0 1 auto;
     }
 }
 
 .scrollArea {
+    flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
 
-    @media (width <= 1023px), (height <= 720px) {
-        flex: 1 1 auto;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding-bottom: 16px;
-        -webkit-overflow-scrolling: touch;
+    @media (min-width: 1024px) and (min-height: 720px) {
+        flex: 0 1 auto;
+        overflow-y: visible;
+        overscroll-behavior: auto;
+        padding-bottom: 0;
+        -webkit-overflow-scrolling: auto;
     }
 }
 
@@ -78,17 +86,23 @@
 .actionFooter {
     display: flex;
     flex-wrap: wrap;
+    flex-shrink: 0;
     gap: 16px;
-    padding: 16px;
+    padding: 16px 32px 24px;
+    background: var(--default-page-background);
+    border-radius: 8px 8px 16px 16px;
+    box-shadow: 0 -8px 16px 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
 
-    @media (width <= 1023px), (height <= 720px) {
-        flex-shrink: 0;
-        padding: 16px 32px 24px;
-        background: var(--default-page-background);
-        border-radius: 8px 8px 16px 16px;
-        box-shadow: 0 -8px 16px 0 rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 1;
+    @media (min-width: 1024px) and (min-height: 720px) {
+        flex-shrink: 1;
+        padding: 16px;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        position: static;
+        z-index: auto;
     }
 }
 
@@ -98,46 +112,64 @@
 }
 
 .dialog :global(.rc-dialog-header) {
-    @media (width <= 1023px), (height <= 720px) {
-        padding: 24px 56px 24px 32px;
-        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.1);
-        background: var(--default-page-background);
-        border-radius: 16px 16px 8px 8px;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
+    padding: 24px 56px 24px 32px;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.1);
+    background: var(--default-page-background);
+    border-radius: 16px 16px 8px 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        padding: 8px 48px 8px 16px;
+        box-shadow: none;
+        background: transparent;
+        border-radius: 0;
+        flex-shrink: 1;
+        position: static;
+        z-index: auto;
     }
 }
 
 .dialog :global(.rc-dialog-title) {
-    @media (width <= 1023px), (height <= 720px) {
-        font-size: 24px;
-        line-height: 1.2;
-    }
+    font-size: 24px;
+    line-height: 1.2;
 }
 
 .dialog :global(.rc-dialog-close) {
-    @media (width <= 1023px), (height <= 720px) {
-        right: 24px;
-        top: 24px;
+    right: 24px;
+    top: 24px;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        right: 16px;
+        top: 16px;
     }
 }
 
 .dialog :global(.rc-dialog-body) {
-    @media (width <= 1023px), (height <= 720px) {
-        display: flex;
-        flex: 1 1 auto;
-        min-height: 0;
-        padding: 0;
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        display: block;
+        flex: 0 1 auto;
+        min-height: auto;
     }
 }
 
 .dialog :global(.rc-dialog-section) {
-    @media (width <= 1023px), (height <= 720px) {
-        display: flex;
-        flex-direction: column;
-        max-height: min(600px, calc(100vh - 32px));
-        padding: 0;
-        overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: min(600px, calc(100vh - 32px));
+    padding: 0;
+    overflow: hidden;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        display: block;
+        max-height: none;
+        padding: 24px 16px;
+        overflow: visible;
     }
 }

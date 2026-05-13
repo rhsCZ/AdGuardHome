@@ -31,9 +31,9 @@ type Props = {
     services: Service[];
     whitelistFilters: Filter[];
     onRowClick: (entry: LogEntry) => void;
-    onBlock: (type: string, domain: string) => void;
-    onUnblock: (type: string, domain: string) => void;
-    onBlockClient: (type: string, domain: string, client: string) => void;
+    onBlock: (domain: string) => void;
+    onUnblock: (domain: string) => void;
+    onBlockClient: (domain: string, client: string) => void;
     onDisallowClient: (ip: string) => void;
     onAddPersistentClient: (clientId: string) => void;
     persistentClientIds: string[];

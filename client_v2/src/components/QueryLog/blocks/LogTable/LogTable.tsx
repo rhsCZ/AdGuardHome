@@ -18,16 +18,15 @@ import { ActionsMenu } from '../ActionsMenu';
 
 type Props = {
     logs: LogEntry[];
-    hasActiveFilters: boolean;
     isLogRotationDisabled: boolean;
     hasMore: boolean;
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
     onLoadMore: () => void;
     onRowClick: (entry: LogEntry) => void;
-    onBlock: (type: string, domain: string) => void;
-    onUnblock: (type: string, domain: string) => void;
-    onBlockClient: (type: string, domain: string, client: string) => void;
+    onBlock: (domain: string) => void;
+    onUnblock: (domain: string) => void;
+    onBlockClient: (domain: string, client: string) => void;
     onDisallowClient: (ip: string) => void;
     onAddPersistentClient: (clientId: string) => void;
     onSearchSelect: (value: string) => void;
@@ -40,7 +39,6 @@ type Props = {
 
 export const LogTable = ({
     logs,
-    hasActiveFilters,
     isLogRotationDisabled,
     hasMore,
     isLoadingMore,
@@ -169,7 +167,6 @@ export const LogTable = ({
                 emptyTable={(
                     <EmptyState
                         className={s.emptyTableWrapper}
-                        hasActiveFilters={hasActiveFilters}
                         isLogRotationDisabled={isLogRotationDisabled}
                         messageClassName={cn(s.emptyTableTitle, theme.text.t3)}
                     />

@@ -8,26 +8,18 @@ import { RoutePath } from 'panel/components/Routes/Paths';
 
 import s from './EmptyState.module.pcss';
 
-type Variant = 'default' | 'filtered' | 'rotation-disabled';
+type Variant = 'default' | 'rotation-disabled';
 
 type Props = {
     className?: string;
-    hasActiveFilters: boolean;
     isLogRotationDisabled: boolean;
     messageClassName?: string;
 };
 
-const getEmptyState = (hasActiveFilters: boolean, isLogRotationDisabled: boolean): {
+const getEmptyState = (isLogRotationDisabled: boolean): {
     message: ReactNode;
     variant: Variant;
 } => {
-    if (hasActiveFilters) {
-        return {
-            message: intl.getMessage('no_logs_found'),
-            variant: 'filtered',
-        };
-    }
-
     if (isLogRotationDisabled) {
         return {
             message: intl.getMessage('query_log_nothing_available_rotation', {
@@ -45,11 +37,10 @@ const getEmptyState = (hasActiveFilters: boolean, isLogRotationDisabled: boolean
 
 export const EmptyState = ({
     className,
-    hasActiveFilters,
     isLogRotationDisabled,
     messageClassName,
 }: Props) => {
-    const { message, variant } = getEmptyState(hasActiveFilters, isLogRotationDisabled);
+    const { message, variant } = getEmptyState(isLogRotationDisabled);
 
     return (
         <div
