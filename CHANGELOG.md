@@ -58,7 +58,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 [#6823]: https://github.com/AdguardTeam/AdGuardHome/issues/6823
 [#8348]: https://github.com/AdguardTeam/AdGuardHome/issues/8348
 
-[go-1.26.3]:      https://groups.google.com/g/golang-announce/c/qcCIEXso47M
+[go-1.26.3]: https://groups.google.com/g/golang-announce/c/qcCIEXso47M
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
