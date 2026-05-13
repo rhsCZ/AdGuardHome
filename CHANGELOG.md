@@ -15,7 +15,7 @@ See also the [v0.107.75 GitHub milestone][ms-v0.107.75].
 
 [ms-v0.107.75]: https://github.com/AdguardTeam/AdGuardHome/milestone/110?closed=1
 
-NOTE: Add new- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.2][go-1.26.2]. changes BELOW THIS COMMENT.
+NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
 ### Added
