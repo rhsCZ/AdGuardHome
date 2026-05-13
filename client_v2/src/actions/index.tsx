@@ -721,23 +721,29 @@ export const toggleBlocking =
 
         if (matchPreparedBlockingRule) {
             await dispatch(setRules(userRules.replace(`${blockingRule}`, '')));
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_removed_from_custom_filtering_toast', { rule: blockingRule })),
-            );
+            dispatch(addSuccessToast({
+                message: intl.getMessage('notify_user_rule_added'),
+                code: 'notify_user_rule_added',
+            }));
         } else if (!matchPreparedUnblockingRule) {
             await dispatch(setRules(`${userRules}${lineEnding}${unblockingRule}\n`));
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_added_to_custom_filtering_toast', { rule: unblockingRule })),
-            );
+            dispatch(addSuccessToast({
+                message: intl.getMessage('notify_user_rule_added'),
+                code: 'notify_user_rule_added',
+            }));
         } else if (matchPreparedUnblockingRule) {
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_added_to_custom_filtering_toast', { rule: unblockingRule })),
-            );
+            dispatch(addSuccessToast({
+                message: intl.getMessage('notify_user_rule_added'),
+                code: 'notify_user_rule_added',
+            }));
+
             return;
         } else if (!matchPreparedBlockingRule) {
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_removed_from_custom_filtering_toast', { rule: blockingRule })),
-            );
+            dispatch(addSuccessToast({
+                message: intl.getMessage('notify_user_rule_added'),
+                code: 'notify_user_rule_added',
+            }));
+
             return;
         }
 

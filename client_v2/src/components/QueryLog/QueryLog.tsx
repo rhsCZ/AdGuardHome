@@ -5,7 +5,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
-import intl from 'panel/common/intl';
 import { PageLoader } from 'panel/common/ui/Loader';
 import { RootState } from 'panel/initialState';
 import theme from 'panel/lib/theme';
@@ -16,13 +15,21 @@ import {
     refreshFilteredLogs,
     getLogsConfig,
 } from 'panel/actions/queryLogs';
-import { toggleBlocking, toggleBlockingForClient } from 'panel/actions';
+import { getClients, toggleBlocking, toggleBlockingForClient } from 'panel/actions';
 import { toggleClientBlock, getAccessList } from 'panel/actions/access';
-import { DEFAULT_LOGS_FILTER, RESPONSE_FILTER_QUERIES } from 'panel/helpers/constants';
+import { allowBlockedService } from 'panel/actions/services';
+import {
+    DEFAULT_LOGS_FILTER,
+    QUERY_LOG_REASON_FILTER_QUERIES,
+    QUERY_LOG_STATUS_FILTER_QUERIES,
+} from 'panel/helpers/constants';
 import { getLogsUrlParams } from 'panel/helpers/helpers';
+import { Paths } from 'panel/components/Routes/Paths';
 
+import { filterLogsByStatus } from './helpers';
 import { LogEntry } from './types';
 import { Header } from './blocks/Header';
+import { EmptyState } from './blocks/EmptyState/EmptyState';
 import { LogTable } from './blocks/LogTable';
 import { LogCard } from './blocks/LogCard';
 import { DetailModal } from './blocks/DetailModal';
@@ -38,6 +45,8 @@ export const QueryLog = () => {
 
     const queryLogs = useSelector((state: RootState) => state.queryLogs);
     const access = useSelector((state: RootState) => state.access);
+    const persistentClients = useSelector((state: RootState) => state.dashboard.clients);
+    const processingClients = useSelector((state: RootState) => state.dashboard.processingClients);
     const filters = useSelector((state: RootState) => state.filtering.filters);
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
     const services = useSelector((state: RootState) => state.services?.allServices);
@@ -48,6 +57,7 @@ export const QueryLog = () => {
         processingAdditionalLogs,
         filter,
         isEntireLog,
+        interval,
     } = queryLogs || {};
 
     const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
@@ -57,23 +67,29 @@ export const QueryLog = () => {
     useEffect(() => {
         dispatch(getLogsConfig());
         dispatch(getAccessList());
+        dispatch(getClients());
     }, [dispatch]);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const search = searchParams.get('search') || DEFAULT_LOGS_FILTER.search;
-        const responseStatusParam = searchParams.get('response_status') || '';
+        const statusParam = searchParams.get('status') || DEFAULT_LOGS_FILTER.status;
+        const responseStatusParam = searchParams.get('response_status') || DEFAULT_LOGS_FILTER.response_status;
+        const status = Object.prototype.hasOwnProperty.call(QUERY_LOG_STATUS_FILTER_QUERIES, statusParam)
+            ? statusParam
+            : DEFAULT_LOGS_FILTER.status;
         const response_status = Object.prototype.hasOwnProperty.call(
-            RESPONSE_FILTER_QUERIES,
+            QUERY_LOG_REASON_FILTER_QUERIES,
             responseStatusParam,
         )
             ? responseStatusParam
             : DEFAULT_LOGS_FILTER.response_status;
         const nextFilter = {
             search,
+            status,
             response_status,
         };
-        const nextSearch = getLogsUrlParams(search, response_status);
+        const nextSearch = getLogsUrlParams(search, status, response_status);
 
         if (location.search !== nextSearch) {
             history.replace(nextSearch);
@@ -92,23 +108,39 @@ export const QueryLog = () => {
     }, [processingAdditionalLogs, processingGetLogs]);
 
     const currentSearch = filter?.search ?? DEFAULT_LOGS_FILTER.search;
-    const currentFilter = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
+    const currentStatus = filter?.status ?? DEFAULT_LOGS_FILTER.status;
+    const currentReason = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
+    const persistentClientIds = persistentClients.flatMap((persistentClient) => persistentClient.ids ?? []);
+    const visibleLogs = filterLogsByStatus(logs, currentStatus);
+    const hasActiveFilters =
+        Boolean(currentSearch)
+        || currentStatus !== DEFAULT_LOGS_FILTER.status
+        || currentReason !== DEFAULT_LOGS_FILTER.response_status;
+    const isLogRotationDisabled = interval === 0;
     const hasMore = !isEntireLog;
 
     const handleSearch = useCallback(
         (search: string) => {
             setIsIncrementalLoad(false);
-            history.replace(getLogsUrlParams(search.trim(), currentFilter));
+            history.replace(getLogsUrlParams(search.trim(), currentStatus, currentReason));
         },
-        [currentFilter, history],
+        [currentReason, currentStatus, history],
     );
 
-    const handleFilterChange = useCallback(
-        (response_status: string) => {
+    const handleStatusFilterChange = useCallback(
+        (status: string) => {
             setIsIncrementalLoad(false);
-            history.replace(getLogsUrlParams(currentSearch, response_status));
+            history.replace(getLogsUrlParams(currentSearch, status, DEFAULT_LOGS_FILTER.response_status));
         },
         [currentSearch, history],
+    );
+
+    const handleReasonFilterChange = useCallback(
+        (response_status: string) => {
+            setIsIncrementalLoad(false);
+            history.replace(getLogsUrlParams(currentSearch, currentStatus, response_status));
+        },
+        [currentSearch, currentStatus, history],
     );
 
     const handleRefresh = useCallback(() => {
@@ -123,6 +155,27 @@ export const QueryLog = () => {
         [dispatch],
     );
 
+    const handleBlockDomain = useCallback(
+        (domain: string) => {
+            dispatch(toggleBlocking('block', domain));
+        },
+        [dispatch],
+    );
+
+    const handleAddToAllowlist = useCallback(
+        (domain: string) => {
+            dispatch(toggleBlocking('unblock', domain));
+        },
+        [dispatch],
+    );
+
+    const handleAllowService = useCallback(
+        (serviceId: string) => {
+            dispatch(allowBlockedService(serviceId));
+        },
+        [dispatch],
+    );
+
     const handleBlockClient = useCallback(
         (type: string, domain: string, client: string) => {
             dispatch(toggleBlockingForClient(type, domain, client));
@@ -133,6 +186,13 @@ export const QueryLog = () => {
     const handleDisallowClient = useCallback((ip: string) => {
         setDisallowTarget(ip);
     }, []);
+
+    const handleAddPersistentClient = useCallback(
+        (clientId: string) => {
+            history.push(`${Paths.Clients}?clientId=${encodeURIComponent(clientId)}`);
+        },
+        [history],
+    );
 
     const handleConfirmDisallow = useCallback(() => {
         if (disallowTarget) {
@@ -190,15 +250,19 @@ export const QueryLog = () => {
                 <Header
                     onSearch={handleSearch}
                     onRefresh={handleRefresh}
-                    onFilterChange={handleFilterChange}
+                    onStatusFilterChange={handleStatusFilterChange}
+                    onReasonFilterChange={handleReasonFilterChange}
                     currentSearch={currentSearch}
-                    currentFilter={currentFilter}
+                    currentStatus={currentStatus}
+                    currentReason={currentReason}
                     isLoading={!!isRequestInFlight}
                 />
 
                 <div className={s.desktopView}>
                     <LogTable
-                        logs={logs}
+                        logs={visibleLogs}
+                        hasActiveFilters={hasActiveFilters}
+                        isLogRotationDisabled={isLogRotationDisabled}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
@@ -208,22 +272,28 @@ export const QueryLog = () => {
                         onUnblock={handleToggleBlock}
                         onBlockClient={handleBlockClient}
                         onDisallowClient={handleDisallowClient}
+                        onAddPersistentClient={handleAddPersistentClient}
                         onSearchSelect={handleSearch}
                         filters={filters}
                         services={services}
                         whitelistFilters={whitelistFilters}
+                        persistentClientIds={persistentClientIds}
+                        persistentClientsLoaded={!processingClients}
                     />
                 </div>
 
                 <div className={s.mobileView}>
-                    {logs.length === 0 ? (
-                        <div className={s.emptyState}>
-                            <span className={theme.text.t2}>{intl.getMessage('no_logs_found')}</span>
-                        </div>
+                    {visibleLogs.length === 0 ? (
+                        <EmptyState
+                            className={s.emptyState}
+                            hasActiveFilters={hasActiveFilters}
+                            isLogRotationDisabled={isLogRotationDisabled}
+                            messageClassName={theme.text.t2}
+                        />
                     ) : (
                         <>
                             <div className={s.mobileList}>
-                                {logs.map((entry: LogEntry) => (
+                                {visibleLogs.map((entry: LogEntry) => (
                                     <LogCard
                                         key={`${entry.time}-${entry.domain}-${entry.client}`}
                                         entry={entry}
@@ -232,9 +302,12 @@ export const QueryLog = () => {
                                         onUnblock={handleToggleBlock}
                                         onBlockClient={handleBlockClient}
                                         onDisallowClient={handleDisallowClient}
+                                        onAddPersistentClient={handleAddPersistentClient}
                                         filters={filters}
                                         services={services}
                                         whitelistFilters={whitelistFilters}
+                                        persistentClientIds={persistentClientIds}
+                                        persistentClientsLoaded={!processingClients}
                                     />
                                 ))}
                             </div>
@@ -253,7 +326,13 @@ export const QueryLog = () => {
                 {selectedEntry && (
                     <DetailModal
                         entry={selectedEntry}
+                        filters={filters}
+                        services={services}
+                        whitelistFilters={whitelistFilters}
                         onClose={handleCloseDetail}
+                        onBlock={handleBlockDomain}
+                        onAddToAllowlist={handleAddToAllowlist}
+                        onAllowService={handleAllowService}
                     />
                 )}
 

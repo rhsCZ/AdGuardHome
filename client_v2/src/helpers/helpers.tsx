@@ -786,12 +786,14 @@ export const replaceZeroWithEmptyString = (value: any) => (parseInt(value, 10) =
 
 /**
  * @param {string} search
+ * @param {string} status
  * @param {string} [response_status]
  * @returns {string}
  */
-export const getLogsUrlParams = (search: any, response_status: any) =>
+export const getLogsUrlParams = (search: any, status: any, response_status: any) =>
     `?${queryString.stringify({
         search: search || undefined,
+        status: status || undefined,
         response_status: response_status || undefined,
     })}`;
 

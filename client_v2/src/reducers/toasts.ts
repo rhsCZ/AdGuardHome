@@ -5,6 +5,11 @@ import { addErrorToast, addNoticeToast, addSuccessToast } from '../actions/toast
 import { removeToast } from '../actions';
 import { TOAST_TYPES } from '../helpers/constants';
 
+type SuccessToastPayload = string | {
+    message: string;
+    code?: string;
+};
+
 const toasts = handleActions(
     {
         [addErrorToast.toString()]: (state: any, { payload }: any) => {
@@ -22,9 +27,15 @@ const toasts = handleActions(
             return newState;
         },
         [addSuccessToast.toString()]: (state: any, { payload }: any) => {
+            const successPayload = payload as SuccessToastPayload;
+            const message = typeof successPayload === 'string'
+                ? successPayload
+                : successPayload.message;
+
             const successToast = {
                 id: nanoid(),
-                message: payload,
+                message,
+                code: typeof successPayload === 'string' ? undefined : successPayload.code,
                 type: TOAST_TYPES.SUCCESS,
             };
 

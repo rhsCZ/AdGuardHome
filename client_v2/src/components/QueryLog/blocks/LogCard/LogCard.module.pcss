@@ -1,69 +1,104 @@
 .card {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--default-item-divider);
+    padding: 8px 0;
     cursor: pointer;
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0 16px;
+    background: var(--default-page-background);
+    border-radius: 8px;
+    box-shadow: 8px 8px 24px 0 rgba(0, 0, 0, 0.1);
 }
 
 .icon {
     flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    color: var(--default-product-icon);
+    width: 16px;
+    height: 16px;
 }
 
 .domain {
-    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.typeLine,
+.fieldLabel {
+    color: var(--default-description-text);
+}
+
+.typeLine {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fieldValue {
+    color: var(--default-main-text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 8px 8px 8px 12px;
+}
+
+.titleBlock {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    justify-content: center;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+}
+
+.iconsRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fieldGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 124px) minmax(0, 1fr);
+    gap: 0 8px;
+    padding-top: 4px;
 }
 
 .actions {
     flex-shrink: 0;
 }
 
-.row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    gap: 8px;
-
-    &_client {
-        flex-wrap: wrap;
-    }
-}
-
-.secondary {
-    color: var(--default-labels);
-}
-
-.clientIp {
-    color: var(--default-link);
-    cursor: pointer;
+.fieldLabel,
+.fieldValue {
+    min-height: 24px;
+    padding: 4px 12px;
 }
 
 .status {
     white-space: nowrap;
-}
-
-.clientName {
-    color: var(--default-labels);
-}
-
-.whoisItem {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-right: 8px;
-
-    &:last-child {
-        margin-right: 0;
-    }
-}
-
-.whoisIcon {
-    width: 16px;
-    height: 16px;
-    color: var(--default-description-text);
 }

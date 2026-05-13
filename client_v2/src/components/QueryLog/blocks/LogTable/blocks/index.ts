@@ -1,4 +1,5 @@
 export { TimeCell } from './TimeCell';
 export { RequestCell } from './RequestCell';
-export { ResponseCell } from './ResponseCell';
+export { StatusCell } from './StatusCell';
+export { ReasonCell } from './ReasonCell';
 export { ClientCell } from './ClientCell';

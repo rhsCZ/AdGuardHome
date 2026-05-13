@@ -273,6 +273,11 @@ Reducers. No layer may depend on a layer above it.
   <button className={cn(s.button, s[variant], { [s.active]: isActive })}>
   ```
 
+- **Responsive sizing** — do not use `max-width` in new component styles.
+  Express width limits with a single `width` value using `min()` or `clamp()`.
+  For breakpoints, prefer range media queries such as
+  `@media (width <= 1023px)` instead of `@media (max-width: 1023px)`.
+
 - **Component file structure** — each component lives in its own directory:
   ```text
   Button/

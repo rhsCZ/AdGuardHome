@@ -9,7 +9,11 @@ import { Icon } from 'panel/common/ui/Icon';
 import { Select } from 'panel/common/controls/Select';
 import { FaqTooltip } from 'panel/common/ui/FaqTooltip';
 import { IOption } from 'panel/lib/helpers/utils';
-import { RESPONSE_FILTER, DEBOUNCE_FILTER_TIMEOUT } from 'panel/helpers/constants';
+import {
+    QUERY_LOG_REASON_FILTER,
+    QUERY_LOG_STATUS_FILTER,
+    DEBOUNCE_FILTER_TIMEOUT,
+} from 'panel/helpers/constants';
 import { useIsMobile } from 'panel/hooks/useIsMobile';
 
 import s from './Header.module.pcss';
@@ -17,13 +21,20 @@ import s from './Header.module.pcss';
 type Props = {
     onSearch: (value: string) => void;
     onRefresh: () => void;
-    onFilterChange: (status: string) => void;
+    onStatusFilterChange: (status: string) => void;
+    onReasonFilterChange: (reason: string) => void;
     currentSearch: string;
-    currentFilter: string;
+    currentStatus: string;
+    currentReason: string;
     isLoading: boolean;
 };
 
-const FILTER_OPTIONS = Object.values(RESPONSE_FILTER).map((filter) => ({
+const STATUS_OPTIONS = Object.values(QUERY_LOG_STATUS_FILTER).map((filter) => ({
+    value: filter.QUERY,
+    label: filter.LABEL,
+}));
+
+const REASON_OPTIONS = Object.values(QUERY_LOG_REASON_FILTER).map((filter) => ({
     value: filter.QUERY,
     label: filter.LABEL,
 }));
@@ -31,9 +42,11 @@ const FILTER_OPTIONS = Object.values(RESPONSE_FILTER).map((filter) => ({
 export const Header = ({
     onSearch,
     onRefresh,
-    onFilterChange,
+    onStatusFilterChange,
+    onReasonFilterChange,
     currentSearch,
-    currentFilter,
+    currentStatus,
+    currentReason,
     isLoading,
 }: Props) => {
     const [searchValue, setSearchValue] = useState(currentSearch);
@@ -60,6 +73,15 @@ export const Header = ({
         [onSearch],
     );
 
+    const handleClearSearch = useCallback(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        setSearchValue('');
+        onSearch('');
+    }, [onSearch]);
+
     useEffect(() => {
         return () => {
             if (debounceRef.current) {
@@ -68,14 +90,8 @@ export const Header = ({
         };
     }, []);
 
-    const selectedFilter = FILTER_OPTIONS.find((opt) => opt.value === currentFilter) || FILTER_OPTIONS[0];
-
-    const handleFilterChange = useCallback(
-        (option: IOption<string>) => {
-            onFilterChange(option.value);
-        },
-        [onFilterChange],
-    );
+    const selectedStatus = STATUS_OPTIONS.find((opt) => opt.value === currentStatus) || STATUS_OPTIONS[0];
+    const selectedReason = REASON_OPTIONS.find((opt) => opt.value === currentReason) || REASON_OPTIONS[0];
 
     return (
         <div className={s.header}>
@@ -86,6 +102,7 @@ export const Header = ({
             <div className={s.actions}>
                 <div className={s.searchWrapper}>
                     <Input
+                        data-testid="query-log-search-input"
                         type="text"
                         className={s.searchField}
                         placeholder={intl.getMessage('domain_or_client')}
@@ -93,10 +110,29 @@ export const Header = ({
                         onChange={handleSearchChange}
                         size="small"
                         prefixIcon={<Icon icon="search" className={s.searchIcon} />}
-                        suffixIcon={<FaqTooltip text={intl.getMessage('query_log_strict_search')} />}
+                        suffixIcon={(
+                            <div className={s.searchSuffix}>
+                                {searchValue && (
+                                    <button
+                                        type="button"
+                                        className={s.searchClearButton}
+                                        data-testid="query-log-search-clear-button"
+                                        aria-label={intl.getMessage('reset')}
+                                        title={intl.getMessage('reset')}
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={handleClearSearch}
+                                    >
+                                        <Icon icon="cross" className={s.searchClearIcon} />
+                                    </button>
+                                )}
+
+                                <FaqTooltip text={intl.getMessage('query_log_strict_search')} />
+                            </div>
+                        )}
                     />
 
                     <Button
+                        data-testid="query-log-refresh-button-mobile"
                         className={s.refreshMobileButton}
                         variant="primary"
                         size="small"
@@ -107,29 +143,56 @@ export const Header = ({
                     </Button>
                 </div>
 
+                <div className={s.filters}>
+                    <div
+                        className={s.filterField}
+                        data-testid="query-log-status-filter"
+                        data-current-value={currentStatus}
+                    >
+                        <Select
+                            size="responsive"
+                            options={STATUS_OPTIONS}
+                            value={selectedStatus}
+                            optionTestIdPrefix="query-log-status-option"
+                            onChange={(option: IOption<string>) => onStatusFilterChange(option.value)}
+                            menuSize="medium"
+                            menuPosition="right"
+                            borderless={!isMobile}
+                            className={s.filterSelect}
+                        />
+                    </div>
+
+                    <div
+                        className={s.filterField}
+                        data-testid="query-log-reason-filter"
+                        data-current-value={currentReason}
+                    >
+                        <Select
+                            size="responsive"
+                            options={REASON_OPTIONS}
+                            value={selectedReason}
+                            optionTestIdPrefix="query-log-reason-option"
+                            onChange={(option: IOption<string>) => onReasonFilterChange(option.value)}
+                            menuSize="medium"
+                            menuPosition="right"
+                            borderless={!isMobile}
+                            className={s.filterSelect}
+                        />
+                    </div>
+                </div>
+
                 <Button
+                    data-testid="query-log-refresh-button-desktop"
                     className={s.refreshDesktopButton}
                     variant="ghost"
                     size="small"
-                    rightAddon={<Icon icon="refresh" className={s.refreshDesktopIcon} />}
+                    aria-label={intl.getMessage('refresh_btn')}
+                    title={intl.getMessage('refresh_btn')}
                     onClick={onRefresh}
                     disabled={isLoading}
                 >
-                    {intl.getMessage('refresh_btn')}
+                    <Icon icon="refresh" className={s.refreshDesktopIcon} />
                 </Button>
-
-                <div className={s.filterField}>
-                    <Select
-                        size="responsive"
-                        options={FILTER_OPTIONS}
-                        value={selectedFilter}
-                        onChange={handleFilterChange}
-                        menuSize="medium"
-                        menuPosition="right"
-                        borderless={!isMobile}
-                        className={s.filterSelect}
-                    />
-                </div>
             </div>
         </div>
     );

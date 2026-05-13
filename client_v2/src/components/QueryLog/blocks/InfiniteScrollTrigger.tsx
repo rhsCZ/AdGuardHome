@@ -100,7 +100,13 @@ export const InfiniteScrollTrigger = ({
     }
 
     return (
-        <div ref={sentinelRef} className={cn(s.loader, className, { [s.loading]: loading })}>
+        <div
+            ref={sentinelRef}
+            data-testid="query-log-infinite-scroll-trigger"
+            data-loading={String(loading)}
+            data-has-more={String(hasMore)}
+            className={cn(s.loader, className, { [s.loading]: loading })}
+        >
             {loading && (
                 <InlineLoader className={s.icon} />
             )}

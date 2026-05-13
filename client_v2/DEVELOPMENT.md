@@ -251,9 +251,9 @@ Equivalent Makefile targets (from the repository root):
    ```
 
 3. The test suite starts AdGuard Home automatically using the binary at
-   `../AdGuardHome` with a temporary config at `/tmp/AdGuard.e2e.yaml`.
-   On macOS, it uses `sudo` because binding to port 3000 may require
-   elevated permissions.
+   `../AdGuardHome` with a temporary config at `/tmp/AdGuard.e2e.yaml`
+   and a temporary work directory at `/tmp/AdGuard.e2e.work`.
+   The seeded config binds DNS to port `5353`, so `sudo` is not required.
 
 ### Running E2E Tests
 
@@ -280,8 +280,8 @@ npm run test:e2e:codegen
 ```
 
 E2E tests run in headless Chromium by default. The global setup performs
-the initial AdGuard Home installation wizard, and global teardown removes
-the temporary config file.
+login-friendly bootstrap checks, and global teardown removes the temporary
+config file and work directory.
 
 ## Project Configuration
 

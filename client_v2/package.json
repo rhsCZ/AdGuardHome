@@ -17,6 +17,7 @@
     "test:e2e:codegen": "npx playwright codegen",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
+    "translations:check": "node ./scripts/check-translations.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

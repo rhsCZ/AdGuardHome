@@ -9,15 +9,19 @@ import { Filter } from 'panel/helpers/helpers';
 import {
     formatLogDate,
     formatLogTime,
+    getClientLocation,
     getProtocolName,
-    getResponseDetails,
+    getQueryReasonLabel,
+    getQueryReasonDetails,
+    getQueryReasonKey,
+    getQueryStatusLabel,
+    getQueryStatusKey,
     getStatusClassName,
-    getStatusLabel,
+    hasPersistentClient,
     isBlockedReason,
 } from '../../helpers';
 import { LogEntry, Service } from '../../types';
 import { ActionsMenu } from '../ActionsMenu';
-import { WhoisInfo } from '../WhoisInfo';
 
 import s from './LogCard.module.pcss';
 
@@ -31,6 +35,9 @@ type Props = {
     onUnblock: (type: string, domain: string) => void;
     onBlockClient: (type: string, domain: string, client: string) => void;
     onDisallowClient: (ip: string) => void;
+    onAddPersistentClient: (clientId: string) => void;
+    persistentClientIds: string[];
+    persistentClientsLoaded: boolean;
 };
 
 export const LogCard = ({
@@ -43,84 +50,139 @@ export const LogCard = ({
     onUnblock,
     onBlockClient,
     onDisallowClient,
+    onAddPersistentClient,
+    persistentClientIds,
+    persistentClientsLoaded,
 }: Props) => {
-    const statusLabel = getStatusLabel(entry.reason, entry.originalResponse ?? [], false);
-    const statusClassName = getStatusClassName(entry.reason);
-    const clientName = entry.client_info?.name || '';
+    const displayDomain = entry.unicodeName || entry.domain;
     const proto = getProtocolName(entry.client_proto);
-
-    const responseDetails = getResponseDetails({
+    const clientDetails = entry.client_info?.name || entry.client_id;
+    const clientLocation = getClientLocation(entry.client_info?.whois);
+    const statusKey = getQueryStatusKey(entry.reason, entry.originalResponse ?? []);
+    const reasonKey = getQueryReasonKey(entry.reason, entry.rules ?? []);
+    const reasonDetails = getQueryReasonDetails({
         elapsedMs: entry.elapsedMs,
         filters,
         reason: entry.reason,
-        rules: entry.rules,
-        serviceName: entry.service_name,
+        rules: entry.rules ?? [],
+        serviceName: entry.service_name || entry.serviceName,
         services,
         whitelistFilters,
     });
+    const statusLabel = getQueryStatusLabel(statusKey);
+    const reasonLabel = getQueryReasonLabel(reasonKey);
 
     return (
-        <div className={s.card} onClick={() => onRowClick(entry)}>
-            <div className={s.row}>
-                {entry.answer_dnssec && (
-                    <Icon icon="lock" color="green" className={s.icon} />
-                )}
-                {entry.tracker && (
-                    <Icon icon="tracking" color="green" className={s.icon} />
-                )}
+        <div
+            className={s.card}
+            onClick={() => onRowClick(entry)}
+            data-testid="query-log-card"
+            data-domain={entry.domain}
+            data-client={entry.client}
+            data-status-key={statusKey}
+            data-reason-key={reasonKey}
+        >
+            <div className={s.cardBody} data-testid="query-log-card-body">
+                <div className={s.cardHeader}>
+                    <div className={s.titleBlock}>
+                        <div className={s.titleRow}>
+                            <span
+                                data-testid="query-log-card-domain"
+                                className={cn(s.domain, theme.text.t3, theme.text.condenced, theme.text.semibold)}
+                                title={displayDomain}
+                            >
+                                {displayDomain}
+                            </span>
 
-                <span className={cn(s.domain, theme.text.t2, theme.text.medium)} title={entry.domain}>
-                    {entry.domain}
-                </span>
+                            <div
+                                className={s.iconsRow}
+                                data-testid="query-log-card-icons"
+                                data-has-dnssec={String(entry.answer_dnssec)}
+                                data-has-tracker={String(Boolean(entry.tracker))}
+                            >
+                                <span className={s.iconWrapper} data-testid="query-log-card-tracker-icon" aria-hidden="true">
+                                    <Icon icon="tracking" color={entry.tracker ? 'green' : 'gray'} className={s.icon} />
+                                </span>
 
-                <div className={s.actions} onClick={(e) => e.stopPropagation()}>
-                    <ActionsMenu
-                        domain={entry.domain}
-                        client={entry.client}
-                        onBlock={onBlock}
-                        onUnblock={onUnblock}
-                        onBlockClient={onBlockClient}
-                        onDisallowClient={() => onDisallowClient(entry.client)}
-                        isBlocked={isBlockedReason(entry.reason)}
-                    />
+                                {entry.answer_dnssec && (
+                                    <span className={s.iconWrapper} data-testid="query-log-card-dnssec-icon" aria-hidden="true">
+                                        <Icon icon="lock" color="green" className={s.icon} />
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <span className={cn(s.typeLine, theme.text.t4, theme.text.condenced)}>
+                            {intl.getMessage('type_value', { value: entry.type })}, {proto}
+                        </span>
+                    </div>
+
+                    <div className={s.actions} onClick={(e) => e.stopPropagation()} data-testid="query-log-card-actions">
+                        <ActionsMenu
+                            domain={entry.domain}
+                            client={entry.client}
+                            clientId={entry.client_id || entry.client}
+                            onBlock={onBlock}
+                            onUnblock={onUnblock}
+                            onBlockClient={onBlockClient}
+                            onDisallowClient={() => onDisallowClient(entry.client)}
+                            onAddPersistentClient={onAddPersistentClient}
+                            isBlocked={isBlockedReason(entry.reason)}
+                            showAddPersistentClient={
+                                persistentClientsLoaded && !hasPersistentClient(entry, persistentClientIds)
+                            }
+                            testIdPrefix="query-log-card"
+                        />
+                    </div>
                 </div>
-            </div>
 
-            <div className={s.row}>
-                <span className={theme.text.t3}>
-                    {intl.getMessage('type_value', { value: entry.type })}, {proto}
-                </span>
-            </div>
+                <div className={s.fieldGrid}>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('time_table_header')}</span>
+                    <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                        {formatLogTime(entry.time)} {formatLogDate(entry.time)}
+                    </span>
 
-            <div className={s.row}>
-                <span className={theme.text.t3}>
-                    {formatLogTime(entry.time)}
-                </span>
-                <span className={cn(theme.text.t4, s.secondary)}>
-                    {formatLogDate(entry.time)}
-                </span>
-            </div>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('status_table_header')}</span>
+                    <span
+                        data-testid="query-log-card-status"
+                        className={cn(
+                            s.fieldValue,
+                            s.status,
+                            theme.text.t4,
+                            theme.text.condenced,
+                            getStatusClassName(entry.reason),
+                        )}
+                    >
+                        {statusLabel}
+                    </span>
 
-            <div className={s.row}>
-                <span
-                    className={cn(
-                        s.status,
-                        statusClassName,
-                        theme.text.t3,
+                    {reasonDetails && (
+                        <>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
+                            <span data-testid="query-log-card-reason" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                                {reasonLabel}
+                                {reasonDetails ? ` · ${reasonDetails}` : ''}
+                            </span>
+                        </>
                     )}
-                >
-                    {statusLabel}
-                </span>
-                <span className={cn(s.secondary, theme.text.t4)}>{responseDetails}</span>
-            </div>
 
-            <div className={cn(s.row, s.row_client)} onClick={(e) => e.stopPropagation()}>
-                <span className={cn(s.clientIp, theme.text.t3)}>
-                    {entry.client} {clientName && `(${clientName})`}
-                </span>
-                <span className={cn(s.secondary, theme.text.t4)}>
-                    <WhoisInfo whois={entry.client_info?.whois} className={s.secondary} />
-                </span>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_ip')}</span>
+                    <span data-testid="query-log-card-client-ip" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
+
+                    {clientDetails && (
+                        <>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_details')}</span>
+                            <span data-testid="query-log-card-client-details" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{clientDetails}</span>
+                        </>
+                    )}
+
+                    {clientLocation && (
+                        <>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_location')}</span>
+                            <span data-testid="query-log-card-client-location" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{clientLocation}</span>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

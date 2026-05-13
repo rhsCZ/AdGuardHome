@@ -11,9 +11,10 @@ interface ToastProps {
     id: string;
     message: string;
     type: string;
+    code?: string;
 }
 
-const Toast = ({ id, message, type }: ToastProps) => {
+const Toast = ({ id, message, type, code }: ToastProps) => {
     const dispatch = useDispatch();
     const [timerId, setTimerId] = useState(null);
 
@@ -31,7 +32,14 @@ const Toast = ({ id, message, type }: ToastProps) => {
     }, []);
 
     return (
-        <div className={s.toast} onMouseOver={clearRemoveToastTimeout} onMouseOut={setRemoveToastTimeout}>
+        <div
+            className={s.toast}
+            data-testid="toast"
+            data-toast-type={type}
+            data-toast-code={code}
+            onMouseOver={clearRemoveToastTimeout}
+            onMouseOut={setRemoveToastTimeout}
+        >
             <Icon icon={type === 'success' ? 'check' : 'attention'} className={cn(s.icon, s[type])} />
 
             <div className={s.content}>{message}</div>

@@ -4,6 +4,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 
 import intl from 'panel/common/intl';
 import { QueryLogsData, RootState } from 'panel/initialState';
+import { filterLogsByStatus } from 'panel/components/QueryLog/helpers';
 import { LogEntry } from 'panel/components/QueryLog/types';
 import { apiClient } from '../api/Api';
 
@@ -13,6 +14,7 @@ import { addErrorToast, addSuccessToast } from './toasts';
 
 export type SearchFormValues = {
     search: string;
+    status: string;
     response_status: string;
 };
 
@@ -45,8 +47,12 @@ type ShortPollTotal = {
 
 const getLogsWithParams = async (config: GetLogsParams): Promise<LogsResponse> => {
     const { older_than, filter, ...values } = config;
+    const requestFilter = {
+        search: filter?.search ?? DEFAULT_LOGS_FILTER.search,
+        response_status: filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status,
+    };
     const rawLogs = await apiClient.getQueryLog({
-        ...filter,
+        ...requestFilter,
         older_than,
     });
     const { data, oldest } = rawLogs;
@@ -72,41 +78,43 @@ const shortPollQueryLogs = async (
     total?: ShortPollTotal,
 ): Promise<ShortPollTotal | undefined> => {
     const { logs, oldest } = data;
-    const totalData = total || { logs };
+    const totalData = total
+        ? {
+            logs: [...total.logs, ...logs],
+            oldest,
+        }
+        : {
+            logs,
+            oldest,
+        };
+    const visibleCount = filterLogsByStatus(totalData.logs, filter?.status || DEFAULT_LOGS_FILTER.status).length;
 
     const previousQuery = filter?.search;
     const isQueryTheSame =
         typeof previousQuery === 'string' && typeof currentQuery === 'string' && previousQuery === currentQuery;
 
     const isShortPollingNeeded =
-        (logs.length < QUERY_LOGS_PAGE_LIMIT || totalData.logs.length < QUERY_LOGS_PAGE_LIMIT) &&
-        oldest !== '' &&
-        isQueryTheSame;
+        visibleCount < QUERY_LOGS_PAGE_LIMIT && oldest !== '' && isQueryTheSame;
 
-    if (isShortPollingNeeded) {
-        dispatch(getAdditionalLogsRequest());
-
-        try {
-            const additionalLogs = await getLogsWithParams({
-                older_than: oldest,
-                filter,
-            });
-            if (additionalLogs.oldest.length > 0) {
-                return await shortPollQueryLogs(additionalLogs, filter, dispatch, currentQuery, {
-                    logs: [...totalData.logs, ...additionalLogs.logs],
-                    oldest: additionalLogs.oldest,
-                });
-            }
-            dispatch(getAdditionalLogsSuccess());
-            return totalData;
-        } catch (error) {
-            dispatch(addErrorToast({ error }));
-            dispatch(getAdditionalLogsFailure(error));
-        }
+    if (!isShortPollingNeeded) {
+        dispatch(getAdditionalLogsSuccess());
+        return totalData;
     }
 
-    dispatch(getAdditionalLogsSuccess());
-    return totalData;
+    dispatch(getAdditionalLogsRequest());
+
+    try {
+        const additionalLogs = await getLogsWithParams({
+            older_than: oldest,
+            filter,
+        });
+
+        return await shortPollQueryLogs(additionalLogs, filter, dispatch, currentQuery, totalData);
+    } catch (error) {
+        dispatch(addErrorToast({ error }));
+        dispatch(getAdditionalLogsFailure(error));
+        return totalData;
+    }
 };
 
 export const toggleDetailedLogs = createAction('TOGGLE_DETAILED_LOGS');
@@ -172,7 +180,8 @@ export const setLogsFilterRequest = createAction('SET_LOGS_FILTER_REQUEST');
  *
  * @param filter
  * @param {string} filter.search
- * @param {string} filter.response_status 'QUERY' field of RESPONSE_FILTER object
+ * @param {string} filter.status 'QUERY' field of QUERY_LOG_STATUS_FILTER object
+ * @param {string} filter.response_status 'QUERY' field of QUERY_LOG_REASON_FILTER object
  * @returns function
  */
 export const setLogsFilter = (filter: SearchFormValues) => setLogsFilterRequest(filter);
@@ -181,7 +190,7 @@ export const setFilteredLogsRequest = createAction('SET_FILTERED_LOGS_REQUEST');
 export const setFilteredLogsFailure = createAction<unknown>('SET_FILTERED_LOGS_FAILURE');
 export const setFilteredLogsSuccess = createAction<LogsResponse & { filter?: SearchFormValues }>('SET_FILTERED_LOGS_SUCCESS');
 
-export const setFilteredLogs = (filter?: SearchFormValues): AppThunk<Promise<void>> => async (dispatch) => {
+export const setFilteredLogs = (filter?: SearchFormValues): AppThunk<Promise<boolean>> => async (dispatch) => {
     dispatch(setFilteredLogsRequest());
     try {
         const data = await getLogsWithParams({
@@ -200,22 +209,35 @@ export const setFilteredLogs = (filter?: SearchFormValues): AppThunk<Promise<voi
                 filter,
             }),
         );
+
+        return true;
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(setFilteredLogsFailure(error));
+
+        return false;
     }
 };
 
 export const resetFilteredLogs = () => setFilteredLogs(DEFAULT_LOGS_FILTER);
 
-export const refreshFilteredLogs = (): AppThunk<Promise<void>> => async (dispatch, getState) => {
+export const refreshFilteredLogs = (): AppThunk<Promise<boolean>> => async (dispatch, getState) => {
     const queryLogs = getState().queryLogs as QueryLogsDataState | undefined;
     if (!queryLogs) {
-        return;
+        return false;
     }
 
     const { filter } = queryLogs;
-    await dispatch(setFilteredLogs(filter));
+    const refreshed = await dispatch(setFilteredLogs(filter));
+
+    if (refreshed) {
+        dispatch(addSuccessToast({
+            message: intl.getMessage('notify_updated'),
+            code: 'notify_updated',
+        }));
+    }
+
+    return refreshed;
 };
 
 export const clearLogsRequest = createAction('CLEAR_LOGS_REQUEST');

@@ -21,7 +21,10 @@ const queryLogs = handleActions(
         [actions.setFilteredLogsSuccess.toString()]: (state: any, { payload }: any) => {
             const { logs, oldest, filter } = payload;
 
-            const isFiltered = filter && Object.keys(filter).some((key) => filter[key]);
+            const isFiltered = !!filter
+                && Object.entries(filter).some(
+                    ([key, value]) => value !== DEFAULT_LOGS_FILTER[key as keyof typeof DEFAULT_LOGS_FILTER],
+                );
 
             return {
                 ...state,

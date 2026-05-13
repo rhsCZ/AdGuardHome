@@ -1,18 +1,46 @@
+.wrap {
+    @media (width <= 1023px) {
+        top: 16px;
+    }
+}
+
 .dialog {
-    max-width: 600px;
-    width: 90vw;
+    width: min(90vw, 600px);
+
+    @media (width <= 1023px) {
+        width: min(720px, calc(100vw - 16px));
+    }
 }
 
 .content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     padding: 0;
+
+    @media (width <= 1023px), (height <= 720px) {
+        flex: 1 1 auto;
+    }
 }
 
-.section {
-    padding: 8px 0;
+.scrollArea {
+    min-height: 0;
+
+    @media (width <= 1023px), (height <= 720px) {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-bottom: 16px;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 .statusValue {
     display: inline;
+}
+
+.detailHint {
+    color: var(--default-description-text);
 }
 
 .sectionTitle {
@@ -43,19 +71,73 @@
     gap: 2px;
 }
 
-.responseItem {
-    font-family: monospace;
-}
-
 .link {
     color: var(--default-link);
 }
 
-.footer {
+.actionFooter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
     padding: 16px;
+
+    @media (width <= 1023px), (height <= 720px) {
+        flex-shrink: 0;
+        padding: 16px 32px 24px;
+        background: var(--default-page-background);
+        border-radius: 8px 8px 16px 16px;
+        box-shadow: 0 -8px 16px 0 rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 1;
+    }
 }
 
-.footerButton {
+.actionButton {
     width: auto;
-    min-width: 120px;
+    min-width: 200px;
+}
+
+.dialog :global(.rc-dialog-header) {
+    @media (width <= 1023px), (height <= 720px) {
+        padding: 24px 56px 24px 32px;
+        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.1);
+        background: var(--default-page-background);
+        border-radius: 16px 16px 8px 8px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.dialog :global(.rc-dialog-title) {
+    @media (width <= 1023px), (height <= 720px) {
+        font-size: 24px;
+        line-height: 1.2;
+    }
+}
+
+.dialog :global(.rc-dialog-close) {
+    @media (width <= 1023px), (height <= 720px) {
+        right: 24px;
+        top: 24px;
+    }
+}
+
+.dialog :global(.rc-dialog-body) {
+    @media (width <= 1023px), (height <= 720px) {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        padding: 0;
+    }
+}
+
+.dialog :global(.rc-dialog-section) {
+    @media (width <= 1023px), (height <= 720px) {
+        display: flex;
+        flex-direction: column;
+        max-height: min(600px, calc(100vh - 32px));
+        padding: 0;
+        overflow: hidden;
+    }
 }

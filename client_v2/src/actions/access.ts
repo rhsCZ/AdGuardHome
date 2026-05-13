@@ -76,12 +76,10 @@ export const toggleClientBlock = (ip: any, disallowed: any, disallowed_rule: any
 
         await apiClient.setAccessList(values);
         dispatch(toggleClientBlockSuccess(values));
-
-        if (disallowed) {
-            dispatch(addSuccessToast(intl.getMessage('client_unblocked', { ip: disallowed_rule || ip })));
-        } else {
-            dispatch(addSuccessToast(intl.getMessage('client_blocked', { ip })));
-        }
+        dispatch(addSuccessToast({
+            message: intl.getMessage('settings_notify_changes_saved'),
+            code: 'settings_notify_changes_saved',
+        }));
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(toggleClientBlockFailure());

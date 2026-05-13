@@ -46,6 +46,7 @@ export interface TableProps<T = any> {
     onSortChange?: (key: string, direction: 'asc' | 'desc') => void;
     getRowId?: (row: T, index: number) => string | number;
     onRowClick?: (row: T) => void;
+    tableHeaderClassName?: string;
     tableRowClassName?: string;
 }
 
@@ -71,6 +72,7 @@ export const Table = <T extends Record<string, any>>({
     getRowId = (row: T, index: number) => index,
     className,
     onRowClick,
+    tableHeaderClassName,
     tableRowClassName,
 }: TableProps<T>) => {
     const [state, setState] = useState<TableState>({
@@ -256,7 +258,7 @@ export const Table = <T extends Record<string, any>>({
         <div className={s.tableContainer}>
             <div className={s.tableMain}>
                 <div className={cn(s.table, className)}>
-                    <div className={s.tableHeader} style={tableStyle}>
+                    <div className={cn(s.tableHeader, tableHeaderClassName)} style={tableStyle}>
                         {columns.map((column) => (
                             <div
                                 key={column.key}

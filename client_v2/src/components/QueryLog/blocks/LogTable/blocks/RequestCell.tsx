@@ -3,10 +3,10 @@ import cn from 'clsx';
 
 import intl from 'panel/common/intl';
 import { Dropdown } from 'panel/common/ui/Dropdown';
-import { captitalizeWords } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
 import { Icon } from 'panel/common/ui/Icon';
 import { getProtocolName } from 'panel/components/QueryLog/helpers';
+import { QueryDetailsTooltipContent } from 'panel/components/QueryLog/blocks/LogTable/blocks/QueryDetailsTooltipContent';
 import { LogEntry } from 'panel/components/QueryLog/types';
 
 import s from '../LogTable.module.pcss';
@@ -16,85 +16,80 @@ type Props = {
 };
 
 export const RequestCell = ({ row }: Props) => {
-    const dnssecTooltip = intl.getMessage('validated_with_dnssec');
-    const trackerSource = row.tracker?.sourceData;
+    const renderDnsSec = () => {
+        if (!row.answer_dnssec) {
+            return null;
+        }
 
-    const trackerTooltip = row.tracker ? (
-        <div className={s.iconTooltipContent}>
-            <div className={cn(s.iconTooltipTitle, theme.text.t2, theme.text.semibold)}>
-                {intl.getMessage('known_tracker')}
-            </div>
-            <div className={s.iconTooltipGrid}>
-                <span className={cn(s.iconTooltipLabel, theme.text.t3)}>{intl.getMessage('name')}</span>
-                <span className={cn(s.iconTooltipValue, theme.text.t3)}>{row.tracker.name}</span>
-
-                <span className={cn(s.iconTooltipLabel, theme.text.t3)}>{intl.getMessage('category_label')}</span>
-                <span className={cn(s.iconTooltipValue, theme.text.t3)}>{captitalizeWords(row.tracker.category)}</span>
-
-                {trackerSource?.name && (
-                    <>
-                        <span className={cn(s.iconTooltipLabel, theme.text.t3)}>{intl.getMessage('source_label')}</span>
-                        <span className={cn(s.iconTooltipValue, theme.text.t3)}>
-                            {trackerSource.url ? (
-                                <a
-                                    href={trackerSource.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={s.iconTooltipLink}
-                                >
-                                    {trackerSource.name}
-                                </a>
-                            ) : (
-                                trackerSource.name
-                            )}
-                        </span>
-                    </>
-                )}
-            </div>
-        </div>
-    ) : null;
-
-    const renderDnsSec = () =>
-        row.answer_dnssec ? (
+        return (
             <Dropdown
                 trigger="hover"
                 position="bottomLeft"
                 overlayClassName={s.iconTooltipOverlay}
-                menu={<div className={cn(theme.dropdown.menu, s.iconTooltipMenu)}>{dnssecTooltip}</div>}
+                menu={<div className={cn(theme.dropdown.menu, s.iconTooltipMenu)}>{intl.getMessage('validated_with_dnssec')}</div>}
                 childrenClassName={s.iconTooltipTrigger}
                 noIcon
             >
-                <Icon icon="lock" color="green" className={s.requestIcon} />
+                <Icon icon="lock" color="green" className={s.requestIcon} data-testid="query-log-request-dnssec-icon" />
             </Dropdown>
-        ) : (
-            <Icon icon="lock" color="gray" className={s.requestIcon} />
         );
+    }
 
     return (
-        <div className={s.requestCell}>
-            <div className={s.requestIcons}>
-                {renderDnsSec()}
-
-                <Dropdown
-                    trigger="hover"
-                    position="bottomLeft"
-                    overlayClassName={s.iconTooltipOverlay}
-                    menu={<div className={cn(theme.dropdown.menu, s.iconTooltipMenu)}>{trackerTooltip}</div>}
-                    disabled={!row.tracker}
-                    childrenClassName={s.iconTooltipTrigger}
-                    noIcon
-                >
-                    <Icon icon="tracking" color={row.tracker ? 'green' : 'gray'} className={s.requestIcon} />
-                </Dropdown>
-            </div>
-
-            <div className={s.requestContent}>
+        <div
+            className={s.requestCell}
+            data-testid="query-log-request-cell"
+            data-domain={row.domain}
+            data-type={row.type}
+            data-protocol={row.client_proto}
+            data-has-dnssec={String(row.answer_dnssec)}
+            data-has-tracker={String(Boolean(row.tracker))}
+        >
+            <div className={s.requestContent} data-testid="query-log-request-content">
                 <div className={s.requestPrimary}>
-                    <span className={cn(s.domain, theme.text.t3)} title={row.unicodeName || row.domain}>
+                    <span
+                        className={cn(s.domain, theme.text.t3)}
+                        title={row.unicodeName || row.domain}
+                        data-testid="query-log-request-domain"
+                    >
                         {row.unicodeName || row.domain}
                     </span>
+
+                    <div className={s.requestIcons} data-testid="query-log-request-icons">
+                        <Dropdown
+                            trigger="hover"
+                            position="bottomLeft"
+                            overlayClassName={s.iconTooltipOverlay}
+                            menu={(
+                                <div className={cn(theme.dropdown.menu, s.queryDetailsTooltipMenu)}>
+                                    <QueryDetailsTooltipContent row={row} />
+                                </div>
+                            )}
+                            childrenClassName={s.iconTooltipTrigger}
+                            noIcon
+                        >
+                            <button
+                                type="button"
+                                className={s.queryDetailsTooltipButton}
+                                data-testid="query-log-query-details-trigger"
+                                data-domain={row.domain}
+                                aria-label={intl.getMessage('query_details')}
+                                title={intl.getMessage('query_details')}
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <Icon
+                                    icon="tracking"
+                                    color={row.tracker ? 'green' : 'gray'}
+                                    className={s.requestIcon}
+                                    data-testid="query-log-request-tracker-icon"
+                                />
+                            </button>
+                        </Dropdown>
+
+                        {renderDnsSec()}
+                    </div>
                 </div>
-                <span className={cn(s.secondaryLine, theme.text.t3)}>
+                <span className={cn(s.secondaryLine, theme.text.t4)}>
                     {intl.getMessage('type_value', { value: row.type })}, {getProtocolName(row.client_proto)}
                 </span>
             </div>

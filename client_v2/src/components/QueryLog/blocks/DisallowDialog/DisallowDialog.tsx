@@ -29,6 +29,8 @@ export const DisallowDialog = ({ ip, isAllowlistMode, onConfirm, onClose }: Prop
             buttonText={intl.getMessage('yes')}
             cancelText={intl.getMessage('cancel')}
             buttonVariant="primary"
+            submitTestId="query-log-disallow-confirm"
+            cancelTestId="query-log-disallow-cancel"
             onConfirm={onConfirm}
             onClose={onClose}
         />

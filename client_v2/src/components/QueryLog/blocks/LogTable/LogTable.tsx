@@ -6,18 +6,20 @@ import theme from 'panel/lib/theme';
 import { Table, TableColumn } from 'panel/common/ui/Table/Table';
 
 import { LogEntry, Service } from 'panel/components/QueryLog/types';
-import { isBlockedReason } from 'panel/components/QueryLog/helpers';
-import { Icon } from 'panel/common/ui/Icon';
+import { hasPersistentClient, isBlockedReason } from 'panel/components/QueryLog/helpers';
 
 import { Filter } from 'panel/helpers/helpers';
 import { InfiniteScrollTrigger } from '../InfiniteScrollTrigger';
-import { ClientCell, RequestCell, ResponseCell, TimeCell } from './blocks';
+import { EmptyState } from '../EmptyState/EmptyState';
+import { ClientCell, RequestCell, ReasonCell, StatusCell, TimeCell } from './blocks';
 
 import s from './LogTable.module.pcss';
 import { ActionsMenu } from '../ActionsMenu';
 
 type Props = {
     logs: LogEntry[];
+    hasActiveFilters: boolean;
+    isLogRotationDisabled: boolean;
     hasMore: boolean;
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
@@ -27,14 +29,19 @@ type Props = {
     onUnblock: (type: string, domain: string) => void;
     onBlockClient: (type: string, domain: string, client: string) => void;
     onDisallowClient: (ip: string) => void;
+    onAddPersistentClient: (clientId: string) => void;
     onSearchSelect: (value: string) => void;
     filters: Filter[];
     services: Service[];
     whitelistFilters: Filter[];
+    persistentClientIds: string[];
+    persistentClientsLoaded: boolean;
 };
 
 export const LogTable = ({
     logs,
+    hasActiveFilters,
+    isLogRotationDisabled,
     hasMore,
     isLoadingMore,
     isRequestInFlight,
@@ -44,10 +51,13 @@ export const LogTable = ({
     onUnblock,
     onBlockClient,
     onDisallowClient,
+    onAddPersistentClient,
     onSearchSelect,
     filters,
     services,
     whitelistFilters,
+    persistentClientIds,
+    persistentClientsLoaded,
 }: Props) => {
 
     const handleSearchSelect = useCallback(
@@ -64,7 +74,7 @@ export const LogTable = ({
                 key: 'time',
                 header: { text: intl.getMessage('time_table_header') },
                 render: (_value: unknown, row: LogEntry) => <TimeCell row={row} />,
-                width: 120,
+                width: 108,
                 sortable: false,
             },
             {
@@ -74,11 +84,18 @@ export const LogTable = ({
                 sortable: false,
             },
             {
-                key: 'response',
-                header: { text: intl.getMessage('response_table_header') },
+                key: 'status',
+                header: { text: intl.getMessage('status_table_header') },
+                render: (_value: unknown, row: LogEntry) => <StatusCell row={row} />,
+                width: 'minmax(108px, 0.7fr)',
+                sortable: false,
+            },
+            {
+                key: 'reason',
+                header: { text: intl.getMessage('reason_table_header') },
                 render: (_value: unknown, row: LogEntry) => {
                     return (
-                        <ResponseCell
+                        <ReasonCell
                             row={row}
                             filters={filters}
                             services={services}
@@ -86,6 +103,7 @@ export const LogTable = ({
                         />
                     );
                 },
+                width: 'minmax(136px, 0.9fr)',
                 sortable: false,
             },
             {
@@ -100,23 +118,47 @@ export const LogTable = ({
                 key: 'actions',
                 header: { text: intl.getMessage('actions_table_header') },
                 render: (_value: unknown, row: LogEntry) => (
-                    <div className={s.actionsCell} onClick={(e) => e.stopPropagation()}>
+                    <div
+                        className={s.actionsCell}
+                        data-testid="query-log-actions-cell"
+                        data-domain={row.domain}
+                        data-client={row.client}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <ActionsMenu
                             domain={row.domain}
                             client={row.client}
+                            clientId={row.client_id || row.client}
                             onBlock={onBlock}
                             onUnblock={onUnblock}
                             onBlockClient={onBlockClient}
                             onDisallowClient={() => onDisallowClient(row.client)}
+                            onAddPersistentClient={onAddPersistentClient}
                             isBlocked={isBlockedReason(row.reason)}
+                            showAddPersistentClient={
+                                persistentClientsLoaded && !hasPersistentClient(row, persistentClientIds)
+                            }
+                            testIdPrefix="query-log-row"
                         />
                     </div>
                 ),
-                width: 80,
+                width: 87,
                 sortable: false,
             },
         ],
-        [filters, handleSearchSelect, onBlock, onUnblock, onBlockClient, onDisallowClient, services, whitelistFilters],
+        [
+            filters,
+            handleSearchSelect,
+            onAddPersistentClient,
+            onBlock,
+            onUnblock,
+            onBlockClient,
+            onDisallowClient,
+            persistentClientIds,
+            persistentClientsLoaded,
+            services,
+            whitelistFilters,
+        ],
     );
 
     return (
@@ -125,18 +167,19 @@ export const LogTable = ({
                 data={logs}
                 columns={columns}
                 emptyTable={(
-                    <div className={s.emptyTableWrapper}>
-                        <Icon icon="not_found_search" className={s.emptyTableIcon} />
-                        <div className={cn(s.emptyTableTitle, theme.text.t3)}>
-                            {intl.getMessage('not_enough_data')}
-                        </div>
-                    </div>
+                    <EmptyState
+                        className={s.emptyTableWrapper}
+                        hasActiveFilters={hasActiveFilters}
+                        isLogRotationDisabled={isLogRotationDisabled}
+                        messageClassName={cn(s.emptyTableTitle, theme.text.t3)}
+                    />
                 )}
                 pagination={false}
                 sortable={false}
                 className={s.table}
                 onRowClick={onRowClick}
                 tableRowClassName={s.tableRow}
+                tableHeaderClassName={s.tableHeader}
             />
 
             {logs.length > 0 && (
