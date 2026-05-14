@@ -6,7 +6,7 @@ import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
 import { PageLoader } from 'panel/common/ui/Loader';
-import { RootState } from 'panel/initialState';
+import { initialState, RootState } from 'panel/initialState';
 import theme from 'panel/lib/theme';
 import {
     getLogs,
@@ -15,7 +15,7 @@ import {
     refreshFilteredLogs,
     getLogsConfig,
 } from 'panel/actions/queryLogs';
-import { getClients, toggleBlocking, toggleBlockingForClient } from 'panel/actions';
+import { blockDomain, blockDomainForClient, getClients, unblockDomain } from 'panel/actions';
 import { toggleClientBlock, getAccessList } from 'panel/actions/access';
 import { allowBlockedService } from 'panel/actions/services';
 import {
@@ -43,7 +43,7 @@ export const QueryLog = () => {
     const history = useHistory();
     const location = useLocation();
 
-    const queryLogs = useSelector((state: RootState) => state.queryLogs);
+    const queryLogs = useSelector((state: RootState) => state.queryLogs) ?? initialState.queryLogs;
     const access = useSelector((state: RootState) => state.access);
     const persistentClients = useSelector((state: RootState) => state.dashboard.clients);
     const processingClients = useSelector((state: RootState) => state.dashboard.processingClients);
@@ -57,8 +57,8 @@ export const QueryLog = () => {
         processingAdditionalLogs,
         filter,
         isEntireLog,
-        interval,
-    } = queryLogs || {};
+        enabled,
+    } = queryLogs;
 
     const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
     const [disallowTarget, setDisallowTarget] = useState<string | null>(null);
@@ -74,22 +74,22 @@ export const QueryLog = () => {
         const searchParams = new URLSearchParams(location.search);
         const search = searchParams.get('search') || DEFAULT_LOGS_FILTER.search;
         const statusParam = searchParams.get('status') || DEFAULT_LOGS_FILTER.status;
-        const responseStatusParam = searchParams.get('response_status') || DEFAULT_LOGS_FILTER.response_status;
+        const reasonParam = searchParams.get('reason') || DEFAULT_LOGS_FILTER.response_status;
         const status = Object.prototype.hasOwnProperty.call(QUERY_LOG_STATUS_FILTER_QUERIES, statusParam)
             ? statusParam
             : DEFAULT_LOGS_FILTER.status;
-        const response_status = Object.prototype.hasOwnProperty.call(
+        const reason = Object.prototype.hasOwnProperty.call(
             QUERY_LOG_REASON_FILTER_QUERIES,
-            responseStatusParam,
+            reasonParam,
         )
-            ? responseStatusParam
+            ? reasonParam
             : DEFAULT_LOGS_FILTER.response_status;
         const nextFilter = {
             search,
             status,
-            response_status,
+            response_status: reason,
         };
-        const nextSearch = getLogsUrlParams(search, status, response_status);
+        const nextSearch = getLogsUrlParams(search, status, reason);
 
         if (location.search !== nextSearch) {
             history.replace(nextSearch);
@@ -112,7 +112,7 @@ export const QueryLog = () => {
     const currentReason = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
     const persistentClientIds = persistentClients.flatMap((persistentClient) => persistentClient.ids ?? []);
     const visibleLogs = filterLogsByStatus(logs, currentStatus);
-    const isLogRotationDisabled = interval === 0;
+    const isLogEnabled = enabled;
     const hasMore = !isEntireLog;
 
     const handleSearch = useCallback(
@@ -132,9 +132,9 @@ export const QueryLog = () => {
     );
 
     const handleReasonFilterChange = useCallback(
-        (response_status: string) => {
+        (reason: string) => {
             setIsIncrementalLoad(false);
-            history.replace(getLogsUrlParams(currentSearch, currentStatus, response_status));
+            history.replace(getLogsUrlParams(currentSearch, currentStatus, reason));
         },
         [currentSearch, currentStatus, history],
     );
@@ -146,14 +146,14 @@ export const QueryLog = () => {
 
     const handleBlockDomain = useCallback(
         (domain: string) => {
-            dispatch(toggleBlocking('block', domain));
+            dispatch(blockDomain(domain));
         },
         [dispatch],
     );
 
     const handleUnblockDomain = useCallback(
         (domain: string) => {
-            dispatch(toggleBlocking('unblock', domain));
+            dispatch(unblockDomain(domain));
         },
         [dispatch],
     );
@@ -167,7 +167,7 @@ export const QueryLog = () => {
 
     const handleBlockClient = useCallback(
         (domain: string, client: string) => {
-            dispatch(toggleBlockingForClient('block', domain, client));
+            dispatch(blockDomainForClient(domain, client));
         },
         [dispatch],
     );
@@ -250,7 +250,7 @@ export const QueryLog = () => {
                 <div className={s.desktopView}>
                     <LogTable
                         logs={visibleLogs}
-                        isLogRotationDisabled={isLogRotationDisabled}
+                        isLogEnabled={isLogEnabled}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
@@ -274,8 +274,7 @@ export const QueryLog = () => {
                     {visibleLogs.length === 0 ? (
                         <EmptyState
                             className={s.emptyState}
-                            isLogRotationDisabled={isLogRotationDisabled}
-                            messageClassName={theme.text.t2}
+                            isLogEnabled={isLogEnabled}
                         />
                     ) : (
                         <>

@@ -1,8 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
-import cn from 'clsx';
+import type { MouseEvent } from 'react';
 
 import intl from 'panel/common/intl';
-import theme from 'panel/lib/theme';
 import { Table, TableColumn } from 'panel/common/ui/Table/Table';
 
 import { LogEntry, Service } from 'panel/components/QueryLog/types';
@@ -18,7 +17,7 @@ import { ActionsMenu } from '../ActionsMenu';
 
 type Props = {
     logs: LogEntry[];
-    isLogRotationDisabled: boolean;
+    isLogEnabled: boolean;
     hasMore: boolean;
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
@@ -39,7 +38,7 @@ type Props = {
 
 export const LogTable = ({
     logs,
-    isLogRotationDisabled,
+    isLogEnabled,
     hasMore,
     isLoadingMore,
     isRequestInFlight,
@@ -59,7 +58,7 @@ export const LogTable = ({
 }: Props) => {
 
     const handleSearchSelect = useCallback(
-        (value: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
+        (value: string) => (event: MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
             onSearchSelect(value);
         },
@@ -167,8 +166,8 @@ export const LogTable = ({
                 emptyTable={(
                     <EmptyState
                         className={s.emptyTableWrapper}
-                        isLogRotationDisabled={isLogRotationDisabled}
-                        messageClassName={cn(s.emptyTableTitle, theme.text.t3)}
+                        isLogEnabled={isLogEnabled}
+                        messageClassName={s.emptyTableTitle}
                     />
                 )}
                 pagination={false}

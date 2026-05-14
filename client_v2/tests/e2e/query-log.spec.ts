@@ -567,11 +567,11 @@ function expectPageFilters(
     {
         search,
         status,
-        responseStatus,
+        reason,
     }: {
         search: string | null;
         status: string;
-        responseStatus: string;
+        reason: string;
     },
 ) {
     const { route, params } = getPageLocation(page);
@@ -579,7 +579,7 @@ function expectPageFilters(
     expect(route).toBe('logs');
     expect(params.get('search')).toBe(search);
     expect(params.get('status')).toBe(status);
-    expect(params.get('response_status')).toBe(responseStatus);
+    expect(params.get('reason')).toBe(reason);
 }
 
 async function scrollToLoadMoreTrigger(page: Page) {
@@ -616,14 +616,14 @@ test.describe('Query log desktop', () => {
         await expect(searchInput).toHaveValue('192.168.0.40');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'plain.example')).toHaveCount(1);
-        expectPageFilters(page, { search: '192.168.0.40', status: 'all', responseStatus: 'all' });
+        expectPageFilters(page, { search: '192.168.0.40', status: 'all', reason: 'all' });
 
         await searchInput.fill('');
         const clearedSearchRequest = await expectQueryLogRequestCount(queryLogRequests, 3);
 
         expect(clearedSearchRequest?.searchParams.get('search')).toBeNull();
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(QUERY_LOG_ROWS.length);
-        expectPageFilters(page, { search: null, status: 'all', responseStatus: 'all' });
+        expectPageFilters(page, { search: null, status: 'all', reason: 'all' });
 
         const officeClientCell = getClientCellByIp(page, '192.168.0.10');
 
@@ -639,7 +639,7 @@ test.describe('Query log desktop', () => {
         await expect(searchInput).toHaveValue('Office Mac');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'example.org')).toHaveCount(1);
-        expectPageFilters(page, { search: 'Office Mac', status: 'all', responseStatus: 'all' });
+        expectPageFilters(page, { search: 'Office Mac', status: 'all', reason: 'all' });
 
         await searchInput.fill('plain.example');
         const manualSearchRequest = await expectQueryLogRequestCount(queryLogRequests, 5);
@@ -649,7 +649,7 @@ test.describe('Query log desktop', () => {
         await expect(page.getByTestId('query-log-search-clear-button')).toBeEnabled();
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'plain.example')).toHaveCount(1);
-        expectPageFilters(page, { search: 'plain.example', status: 'all', responseStatus: 'all' });
+        expectPageFilters(page, { search: 'plain.example', status: 'all', reason: 'all' });
 
         await page.getByTestId('query-log-refresh-button-desktop').click();
         const refreshRequest = await expectQueryLogRequestCount(queryLogRequests, 6);
@@ -665,7 +665,7 @@ test.describe('Query log desktop', () => {
         await expect(searchInput).toHaveValue('');
         await expect(page.getByTestId('query-log-search-clear-button')).toHaveCount(0);
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(QUERY_LOG_ROWS.length);
-        expectPageFilters(page, { search: null, status: 'all', responseStatus: 'all' });
+        expectPageFilters(page, { search: null, status: 'all', reason: 'all' });
     });
 
     test('supports client-side status filtering, server-backed reason filtering, and filtered empty states', async ({ page }) => {
@@ -681,7 +681,7 @@ test.describe('Query log desktop', () => {
         await expect(getRequestCellByDomain(page, 'example.org')).toHaveCount(1);
         await expect(page.locator('[data-testid="query-log-status-cell"][data-status-key="blocked"]')).toHaveCount(1);
         await expect(page.locator('[data-testid="query-log-reason-cell"][data-reason-key="blocked_by_filter"]')).toHaveCount(1);
-        expectPageFilters(page, { search: null, status: 'blocked', responseStatus: 'all' });
+        expectPageFilters(page, { search: null, status: 'blocked', reason: 'all' });
 
         await selectFilterOption(page, 'query-log-status-filter', 'all', 'query-log-status-option');
         await expectQueryLogRequestCount(queryLogRequests, 3);
@@ -696,7 +696,7 @@ test.describe('Query log desktop', () => {
         await expect(getRequestCellByDomain(page, 'search.example')).toHaveCount(1);
         await expect(page.locator('[data-testid="query-log-status-cell"][data-status-key="rewritten"]')).toHaveCount(1);
         await expect(page.locator('[data-testid="query-log-reason-cell"][data-reason-key="safe_search"]')).toHaveCount(1);
-        expectPageFilters(page, { search: null, status: 'all', responseStatus: 'safe_search' });
+        expectPageFilters(page, { search: null, status: 'all', reason: 'safe_search' });
 
         await selectFilterOption(page, 'query-log-status-filter', 'blocked', 'query-log-status-option');
         const emptyStateRequest = await expectQueryLogRequestCount(queryLogRequests, 5);
@@ -706,7 +706,7 @@ test.describe('Query log desktop', () => {
         await expect(page.getByTestId('query-log-reason-filter')).toHaveAttribute('data-current-value', 'all');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'example.org')).toHaveCount(1);
-        expectPageFilters(page, { search: null, status: 'blocked', responseStatus: 'all' });
+        expectPageFilters(page, { search: null, status: 'blocked', reason: 'all' });
     });
 
     test('shows the log-rotation empty state with a settings link', async ({ page }) => {
@@ -728,6 +728,32 @@ test.describe('Query log desktop', () => {
         const settingsLink = emptyState.locator('a');
 
         await expect(emptyState).toHaveCount(1);
+        await expect(emptyState).toHaveAttribute('data-empty-state-variant', 'rotation-disabled');
+        await expect(emptyState.getByTestId('query-log-empty-state-icon')).toBeVisible();
+        await expect(settingsLink).toHaveCount(1);
+        await expect(settingsLink).toHaveAttribute('href', /#\/?settings$/);
+    });
+
+    test('shows the disabled-log empty state with a settings link', async ({ page }) => {
+        await setupQueryLogMocks(page, {
+            queryLogResolver: () => ({
+                data: [],
+                oldest: '',
+            }),
+            queryLogConfig: {
+                ...MOCK_QUERY_LOG_CONFIG,
+                enabled: false,
+            },
+        });
+
+        await login(page);
+        await page.goto('/#logs');
+
+        const emptyState = page.locator('[data-testid="query-log-empty-state"]:visible');
+        const settingsLink = emptyState.locator('a');
+
+        await expect(emptyState).toHaveCount(1);
+        await expect(emptyState).toHaveAttribute('data-empty-state-variant', 'disabled');
         await expect(emptyState.getByTestId('query-log-empty-state-icon')).toBeVisible();
         await expect(settingsLink).toHaveCount(1);
         await expect(settingsLink).toHaveAttribute('href', /#\/?settings$/);
@@ -1029,6 +1055,32 @@ test.describe('Query log mobile', () => {
         const settingsLink = emptyState.locator('a');
 
         await expect(emptyState).toHaveCount(1);
+        await expect(emptyState).toHaveAttribute('data-empty-state-variant', 'rotation-disabled');
+        await expect(emptyState.getByTestId('query-log-empty-state-icon')).toBeVisible();
+        await expect(settingsLink).toHaveCount(1);
+        await expect(settingsLink).toHaveAttribute('href', /#\/?settings$/);
+    });
+
+    test('shows the disabled-log empty state with a settings link', async ({ page }) => {
+        await setupQueryLogMocks(page, {
+            queryLogResolver: () => ({
+                data: [],
+                oldest: '',
+            }),
+            queryLogConfig: {
+                ...MOCK_QUERY_LOG_CONFIG,
+                enabled: false,
+            },
+        });
+
+        await login(page);
+        await page.goto('/#logs');
+
+        const emptyState = page.locator('[data-testid="query-log-empty-state"]:visible');
+        const settingsLink = emptyState.locator('a');
+
+        await expect(emptyState).toHaveCount(1);
+        await expect(emptyState).toHaveAttribute('data-empty-state-variant', 'disabled');
         await expect(emptyState.getByTestId('query-log-empty-state-icon')).toBeVisible();
         await expect(settingsLink).toHaveCount(1);
         await expect(settingsLink).toHaveAttribute('href', /#\/?settings$/);

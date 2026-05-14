@@ -18,7 +18,7 @@ describe('Query Log filter model', () => {
 
     test('serializes all three filter fields into the URL', () => {
         expect(getLogsUrlParams('example.org', 'blocked', 'blocked_services')).toBe(
-            '?search=example.org&status=blocked&response_status=blocked_services',
+            '?search=example.org&status=blocked&reason=blocked_services',
         );
     });
 

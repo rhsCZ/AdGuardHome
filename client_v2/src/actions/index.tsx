@@ -29,6 +29,7 @@ import { getFilteringStatus, setRules } from './filtering';
 type SafeSearchConfig = Record<string, boolean> & { enabled: boolean };
 type ToggleSettingKey = keyof typeof SETTINGS_NAMES;
 type Theme = (typeof THEMES)[keyof typeof THEMES];
+type BlockAction = (typeof BLOCK_ACTIONS)[keyof typeof BLOCK_ACTIONS];
 
 export const toggleSettingStatus = createAction<{
     settingKey: ToggleSettingKey;
@@ -704,7 +705,12 @@ export const updateStaticLease = (config: any) => async (dispatch: any) => {
 export const removeToast = createAction('REMOVE_TOAST');
 
 export const toggleBlocking =
-    (type: any, domain: any, baseRule?: string, baseUnblocking?: string) => async (dispatch: any, getState: any) => {
+    (
+        type: BlockAction,
+        domain: string,
+        baseRule?: string,
+        baseUnblocking?: string,
+    ) => async (dispatch: any, getState: any) => {
         const baseBlockingRule = baseRule || `||${domain}^$important`;
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
         const { userRules } = getState().filtering;
@@ -750,7 +756,13 @@ export const toggleBlocking =
         dispatch(getFilteringStatus());
     };
 
-export const toggleBlockingForClient = (type: any, domain: any, client: any) => {
+export const blockDomain = (domain: string, baseRule?: string, baseUnblocking?: string) =>
+    toggleBlocking(BLOCK_ACTIONS.BLOCK, domain, baseRule, baseUnblocking);
+
+export const unblockDomain = (domain: string, baseRule?: string, baseUnblocking?: string) =>
+    toggleBlocking(BLOCK_ACTIONS.UNBLOCK, domain, baseRule, baseUnblocking);
+
+export const toggleBlockingForClient = (type: BlockAction, domain: string, client: string) => {
     const escapedClientName = client
         .replace(/'/g, "\\'")
         .replace(/"/g, '\\"')
@@ -761,3 +773,6 @@ export const toggleBlockingForClient = (type: any, domain: any, client: any) => 
 
     return toggleBlocking(type, domain, baseRule, baseUnblocking);
 };
+
+export const blockDomainForClient = (domain: string, client: string) =>
+    toggleBlockingForClient(BLOCK_ACTIONS.BLOCK, domain, client);

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import type { ChangeEvent } from 'react';
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
@@ -58,7 +59,7 @@ export const Header = ({
     }, [currentSearch]);
 
     const handleSearchChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
+        (e: ChangeEvent<HTMLInputElement>) => {
             const { value } = e.target;
             setSearchValue(value);
 

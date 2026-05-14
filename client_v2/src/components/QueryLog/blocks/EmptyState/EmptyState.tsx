@@ -2,45 +2,49 @@ import React, { ReactNode } from 'react';
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
-import { Icon } from 'panel/common/ui/Icon';
+import { Icon, IconType } from 'panel/common/ui/Icon';
 import { Link } from 'panel/common/ui/Link';
 import { RoutePath } from 'panel/components/Routes/Paths';
 
+import theme from 'panel/lib/theme';
 import s from './EmptyState.module.pcss';
 
-type Variant = 'default' | 'rotation-disabled';
+type Variant = 'default' | 'disabled' | 'rotation-disabled';
 
 type Props = {
     className?: string;
-    isLogRotationDisabled: boolean;
+    isLogEnabled: boolean;
     messageClassName?: string;
 };
 
-const getEmptyState = (isLogRotationDisabled: boolean): {
+const getEmptyState = (isLogEnabled: boolean): {
     message: ReactNode;
     variant: Variant;
+    icon: IconType;
 } => {
-    if (isLogRotationDisabled) {
+    if (!isLogEnabled) {
         return {
             message: intl.getMessage('query_log_nothing_available_rotation', {
                 a: (text: string) => <Link to={RoutePath.SettingsPage}>{text}</Link>,
             }),
-            variant: 'rotation-disabled',
+            variant: 'disabled',
+            icon: 'settings_info',
         };
     }
 
     return {
         message: intl.getMessage('query_log_nothing_available'),
         variant: 'default',
+        icon: 'not_found_search',
     };
 };
 
 export const EmptyState = ({
     className,
-    isLogRotationDisabled,
+    isLogEnabled,
     messageClassName,
 }: Props) => {
-    const { message, variant } = getEmptyState(isLogRotationDisabled);
+    const { message, variant, icon } = getEmptyState(isLogEnabled);
 
     return (
         <div
@@ -49,10 +53,10 @@ export const EmptyState = ({
             data-empty-state-variant={variant}
         >
             <div className={s.iconWrap} data-testid="query-log-empty-state-icon">
-                <Icon icon="not_found_search" color="gray" className={s.icon} />
+                <Icon icon={icon} color="gray" className={s.icon} />
             </div>
 
-            <div className={cn(s.message, messageClassName)}>{message}</div>
+            <div className={cn(s.message, theme.text.t2, messageClassName)}>{message}</div>
         </div>
     );
 };
