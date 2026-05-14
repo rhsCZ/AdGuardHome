@@ -73,39 +73,25 @@ export const LogCard = ({
     const reasonLabel = getQueryReasonLabel(reasonKey);
 
     return (
-        <div
-            className={s.card}
-            onClick={() => onRowClick(entry)}
-            data-testid="query-log-card"
-            data-domain={entry.domain}
-            data-client={entry.client}
-            data-status-key={statusKey}
-            data-reason-key={reasonKey}
-        >
-            <div className={s.cardBody} data-testid="query-log-card-body">
+        <div className={s.card} onClick={() => onRowClick(entry)} data-testid="query-log-card">
+            <div className={s.cardBody}>
                 <div className={s.cardHeader}>
                     <div className={s.titleBlock}>
                         <div className={s.titleRow}>
                             <span
-                                data-testid="query-log-card-domain"
                                 className={cn(s.domain, theme.text.t3, theme.text.condenced, theme.text.semibold)}
                                 title={displayDomain}
                             >
                                 {displayDomain}
                             </span>
 
-                            <div
-                                className={s.iconsRow}
-                                data-testid="query-log-card-icons"
-                                data-has-dnssec={String(entry.answer_dnssec)}
-                                data-has-tracker={String(Boolean(entry.tracker))}
-                            >
-                                <span className={s.iconWrapper} data-testid="query-log-card-tracker-icon" aria-hidden="true">
+                            <div className={s.iconsRow}>
+                                <span className={s.iconWrapper} aria-hidden="true">
                                     <Icon icon="tracking" color={entry.tracker ? 'green' : 'gray'} className={s.icon} />
                                 </span>
 
                                 {entry.answer_dnssec && (
-                                    <span className={s.iconWrapper} data-testid="query-log-card-dnssec-icon" aria-hidden="true">
+                                    <span className={s.iconWrapper} aria-hidden="true">
                                         <Icon icon="lock" color="green" className={s.icon} />
                                     </span>
                                 )}
@@ -117,7 +103,7 @@ export const LogCard = ({
                         </span>
                     </div>
 
-                    <div className={s.actions} onClick={(e) => e.stopPropagation()} data-testid="query-log-card-actions">
+                    <div className={s.actions} onClick={(e) => e.stopPropagation()}>
                         <ActionsMenu
                             domain={entry.domain}
                             client={entry.client}
@@ -144,7 +130,6 @@ export const LogCard = ({
 
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('status_table_header')}</span>
                     <span
-                        data-testid="query-log-card-status"
                         className={cn(
                             s.fieldValue,
                             s.status,
@@ -158,26 +143,30 @@ export const LogCard = ({
 
                     <>
                         <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
-                        <span data-testid="query-log-card-reason" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                        <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
                             {reasonLabel}
                             {reasonDetails ? ` · ${reasonDetails}` : ''}
                         </span>
                     </>
 
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_ip')}</span>
-                    <span data-testid="query-log-card-client-ip" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
+                    <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
 
                     {clientDetails && (
                         <>
                             <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_details')}</span>
-                            <span data-testid="query-log-card-client-details" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{clientDetails}</span>
+                            <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                                {clientDetails}
+                            </span>
                         </>
                     )}
 
                     {clientLocation && (
                         <>
                             <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_location')}</span>
-                            <span data-testid="query-log-card-client-location" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{clientLocation}</span>
+                            <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                                {clientLocation}
+                            </span>
                         </>
                     )}
                 </div>

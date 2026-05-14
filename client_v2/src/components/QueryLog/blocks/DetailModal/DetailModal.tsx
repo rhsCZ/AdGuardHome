@@ -128,7 +128,7 @@ export const DetailModal = ({
             className={s.dialog}
             wrapClassName={s.wrap}
         >
-            <div className={s.content} data-testid="query-log-detail-modal" data-domain={entry.domain}>
+            <div className={s.content} data-testid="query-log-detail-modal">
                 <div className={s.scrollArea} data-testid="query-log-detail-scroll-area">
                     <div className={s.section}>
                         {entry.answer_dnssec && (
@@ -161,8 +161,6 @@ export const DetailModal = ({
                             label={intl.getMessage('query_log_detail_status')}
                             value={(
                                 <span
-                                    data-testid="query-log-detail-status-value"
-                                    data-status-key={statusKey}
                                     className={cn(s.value, s.statusValue, theme.text.semibold, statusClassName)}
                                 >
                                     {getQueryStatusLabel(statusKey)}
@@ -175,11 +173,7 @@ export const DetailModal = ({
                                 dataField="reason"
                                 label={intl.getMessage('query_log_detail_reason')}
                                 value={
-                                    <div
-                                        data-testid="query-log-detail-reason-value"
-                                        data-reason-key={reasonKey}
-                                        className={cn(s.value, s.detailStack)}
-                                    >
+                                    <div className={cn(s.value, s.detailStack)}>
                                         <span>
                                             {getQueryReasonLabel(reasonKey)}&nbsp;{reasonDetails && (
                                                 <span className={s.detailHint}>{reasonDetails}</span>

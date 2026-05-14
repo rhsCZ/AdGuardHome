@@ -118,7 +118,6 @@ export const LogTable = ({
                     <div
                         className={s.actionsCell}
                         data-testid="query-log-actions-cell"
-                        data-domain={row.domain}
                         data-client={row.client}
                         onClick={(e) => e.stopPropagation()}
                     >

@@ -20,11 +20,10 @@ type Props = {
 type TooltipRowProps = {
     label: string;
     value: React.ReactNode;
-    testId: string;
 };
 
-const TooltipRow = ({ label, value, testId }: TooltipRowProps) => (
-    <div className={s.queryDetailsTooltipItem} data-testid={testId}>
+const TooltipRow = ({ label, value }: TooltipRowProps) => (
+    <div className={s.queryDetailsTooltipItem}>
         <span className={cn(s.queryDetailsTooltipLabel, theme.text.t3, theme.text.semibold)}>{label}</span>&nbsp;
         <span className={cn(s.queryDetailsTooltipValue, theme.text.t3)}>{value}</span>
     </div>
@@ -35,43 +34,17 @@ export const QueryDetailsTooltipContent = ({ row }: Props) => {
     const displayDomain = row.unicodeName || row.domain;
 
     return (
-        <div
-            className={s.queryDetailsTooltipContent}
-            data-testid="query-log-query-details-tooltip"
-            data-domain={row.domain}
-            data-has-tracker={String(Boolean(row.tracker))}
-            onClick={(e) => e.stopPropagation()}
-        >
+        <div className={s.queryDetailsTooltipContent} onClick={(e) => e.stopPropagation()}>
             <div className={cn(s.queryDetailsTooltipTitle, theme.text.t2, theme.text.semibold)}>
                 {intl.getMessage('query_details')}
             </div>
 
             <div className={s.queryDetailsTooltipSection}>
-                <TooltipRow
-                    testId="query-log-query-details-time"
-                    label={intl.getMessage('query_log_detail_time')}
-                    value={formatLogTimeDetailed(row.time)}
-                />
-                <TooltipRow
-                    testId="query-log-query-details-date"
-                    label={intl.getMessage('query_log_detail_date')}
-                    value={formatLogDate(row.time)}
-                />
-                <TooltipRow
-                    testId="query-log-query-details-domain"
-                    label={intl.getMessage('query_log_detail_domain')}
-                    value={displayDomain}
-                />
-                <TooltipRow
-                    testId="query-log-query-details-type"
-                    label={intl.getMessage('query_log_detail_type')}
-                    value={row.type}
-                />
-                <TooltipRow
-                    testId="query-log-query-details-protocol"
-                    label={intl.getMessage('query_log_detail_protocol')}
-                    value={getProtocolName(row.client_proto)}
-                />
+                <TooltipRow label={intl.getMessage('query_log_detail_time')} value={formatLogTimeDetailed(row.time)} />
+                <TooltipRow label={intl.getMessage('query_log_detail_date')} value={formatLogDate(row.time)} />
+                <TooltipRow label={intl.getMessage('query_log_detail_domain')} value={displayDomain} />
+                <TooltipRow label={intl.getMessage('query_log_detail_type')} value={row.type} />
+                <TooltipRow label={intl.getMessage('query_log_detail_protocol')} value={getProtocolName(row.client_proto)} />
             </div>
 
             {row.tracker && (
@@ -83,25 +56,15 @@ export const QueryDetailsTooltipContent = ({ row }: Props) => {
                             theme.text.t2,
                             theme.text.semibold,
                         )}
-                        data-testid="query-log-query-details-known-tracker"
                     >
                         {intl.getMessage('known_tracker')}
                     </div>
 
                     <div className={s.queryDetailsTooltipSection}>
-                        <TooltipRow
-                            testId="query-log-query-details-tracker-name"
-                            label={intl.getMessage('query_log_detail_name')}
-                            value={row.tracker.name}
-                        />
-                        <TooltipRow
-                            testId="query-log-query-details-tracker-category"
-                            label={intl.getMessage('query_log_detail_category')}
-                            value={captitalizeWords(row.tracker.category)}
-                        />
+                        <TooltipRow label={intl.getMessage('query_log_detail_name')} value={row.tracker.name} />
+                        <TooltipRow label={intl.getMessage('query_log_detail_category')} value={captitalizeWords(row.tracker.category)} />
                         {trackerSource?.name && (
                             <TooltipRow
-                                testId="query-log-query-details-tracker-source"
                                 label={intl.getMessage('query_log_detail_source')}
                                 value={trackerSource.url ? (
                                     <a

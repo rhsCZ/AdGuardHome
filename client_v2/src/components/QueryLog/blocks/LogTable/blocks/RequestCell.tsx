@@ -30,32 +30,20 @@ export const RequestCell = ({ row }: Props) => {
                 childrenClassName={s.iconTooltipTrigger}
                 noIcon
             >
-                <Icon icon="lock" color="green" className={s.requestIcon} data-testid="query-log-request-dnssec-icon" />
+                <Icon icon="lock" color="green" className={s.requestIcon} />
             </Dropdown>
         );
-    }
+    };
 
     return (
-        <div
-            className={s.requestCell}
-            data-testid="query-log-request-cell"
-            data-domain={row.domain}
-            data-type={row.type}
-            data-protocol={row.client_proto}
-            data-has-dnssec={String(row.answer_dnssec)}
-            data-has-tracker={String(Boolean(row.tracker))}
-        >
-            <div className={s.requestContent} data-testid="query-log-request-content">
+        <div className={s.requestCell} data-testid="query-log-request-cell">
+            <div className={s.requestContent}>
                 <div className={s.requestPrimary}>
-                    <span
-                        className={cn(s.domain, theme.text.t3)}
-                        title={row.unicodeName || row.domain}
-                        data-testid="query-log-request-domain"
-                    >
+                    <span className={cn(s.domain, theme.text.t3)} title={row.unicodeName || row.domain}>
                         {row.unicodeName || row.domain}
                     </span>
 
-                    <div className={s.requestIcons} data-testid="query-log-request-icons">
+                    <div className={s.requestIcons}>
                         <Dropdown
                             trigger="hover"
                             position="bottomLeft"
@@ -71,8 +59,6 @@ export const RequestCell = ({ row }: Props) => {
                             <button
                                 type="button"
                                 className={s.queryDetailsTooltipButton}
-                                data-testid="query-log-query-details-trigger"
-                                data-domain={row.domain}
                                 aria-label={intl.getMessage('query_details')}
                                 title={intl.getMessage('query_details')}
                                 onClick={(event) => event.stopPropagation()}
@@ -81,7 +67,6 @@ export const RequestCell = ({ row }: Props) => {
                                     icon="tracking"
                                     color={row.tracker ? 'green' : 'gray'}
                                     className={s.requestIcon}
-                                    data-testid="query-log-request-tracker-icon"
                                 />
                             </button>
                         </Dropdown>

@@ -46,15 +46,11 @@ export const EmptyState = ({
     mode,
     messageClassName,
 }: Props) => {
-    const { message, variant, icon } = getEmptyState(mode);
+    const { message, icon } = getEmptyState(mode);
 
     return (
-        <div
-            className={cn(s.root, className)}
-            data-testid="query-log-empty-state"
-            data-empty-state-variant={variant}
-        >
-            <div className={s.iconWrap} data-testid="query-log-empty-state-icon">
+        <div className={cn(s.root, className)} data-testid="query-log-empty-state">
+            <div className={s.iconWrap}>
                 <Icon icon={icon} color="gray" className={s.icon} />
             </div>
 

@@ -34,12 +34,7 @@ export const ReasonCell = ({ row, filters, services, whitelistFilters }: Props) 
     const reasonLabel = getQueryReasonLabel(reasonKey);
 
     return (
-        <div
-            className={s.reasonCell}
-            data-testid="query-log-reason-cell"
-            data-reason-key={reasonKey}
-            data-reason={row.reason}
-        >
+        <div className={s.reasonCell}>
             <span className={cn(theme.text.t3, s.reasonLabel)}>{reasonLabel}</span>
             <span className={cn(s.secondaryLine, theme.text.t4)} title={reasonDetails || undefined}>
                 {reasonDetails}

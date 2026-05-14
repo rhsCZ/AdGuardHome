@@ -72,7 +72,6 @@ export const ActionsMenu = ({
         <ul
             className={s.menu}
             data-testid={`${testIdPrefix}-actions-menu`}
-            data-domain={domain}
             data-client={client}
         >
             <li

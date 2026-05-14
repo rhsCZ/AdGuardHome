@@ -148,7 +148,6 @@ export const Header = ({
                     <div
                         className={s.filterField}
                         data-testid="query-log-status-filter"
-                        data-current-value={currentStatus}
                     >
                         <Select
                             size="responsive"
@@ -166,7 +165,6 @@ export const Header = ({
                     <div
                         className={s.filterField}
                         data-testid="query-log-reason-filter"
-                        data-current-value={currentReason}
                     >
                         <Select
                             size="responsive"

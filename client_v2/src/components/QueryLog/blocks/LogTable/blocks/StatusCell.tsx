@@ -20,13 +20,7 @@ export const StatusCell = ({ row }: Props) => {
     const statusKey = getQueryStatusKey(row.reason, row.originalResponse ?? []);
 
     return (
-        <div
-            className={s.statusCell}
-            data-testid="query-log-status-cell"
-            data-status-key={statusKey}
-            data-reason={row.reason}
-            data-elapsed-ms={row.elapsedMs}
-        >
+        <div className={s.statusCell}>
             <span className={cn(s.status, getStatusClassName(row.reason), theme.text.t3)}>
                 {getQueryStatusLabel(statusKey)}
             </span>
