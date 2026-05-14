@@ -9,42 +9,44 @@ import { RoutePath } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 import s from './EmptyState.module.pcss';
 
-type Variant = 'default' | 'disabled' | 'rotation-disabled';
+export type EmptyStateMode = 'default' | 'disabled' | 'rotation-disabled';
 
 type Props = {
     className?: string;
-    isLogEnabled: boolean;
+    mode: EmptyStateMode;
     messageClassName?: string;
 };
 
-const getEmptyState = (isLogEnabled: boolean): {
+const getEmptyState = (mode: EmptyStateMode): {
     message: ReactNode;
-    variant: Variant;
+    variant: EmptyStateMode;
     icon: IconType;
 } => {
-    if (!isLogEnabled) {
-        return {
-            message: intl.getMessage('query_log_nothing_available_rotation', {
-                a: (text: string) => <Link to={RoutePath.SettingsPage}>{text}</Link>,
-            }),
-            variant: 'disabled',
-            icon: 'settings_info',
-        };
+    switch (mode) {
+        case 'disabled':
+        case 'rotation-disabled':
+            return {
+                message: intl.getMessage('query_log_nothing_available_rotation', {
+                    a: (text: string) => <Link to={RoutePath.SettingsPage}>{text}</Link>,
+                }),
+                variant: 'rotation-disabled',
+                icon: 'settings_info',
+            };
+        default:
+            return {
+                message: intl.getMessage('query_log_nothing_available'),
+                variant: 'default',
+                icon: 'not_found_search',
+            };
     }
-
-    return {
-        message: intl.getMessage('query_log_nothing_available'),
-        variant: 'default',
-        icon: 'not_found_search',
-    };
 };
 
 export const EmptyState = ({
     className,
-    isLogEnabled,
+    mode,
     messageClassName,
 }: Props) => {
-    const { message, variant, icon } = getEmptyState(isLogEnabled);
+    const { message, variant, icon } = getEmptyState(mode);
 
     return (
         <div

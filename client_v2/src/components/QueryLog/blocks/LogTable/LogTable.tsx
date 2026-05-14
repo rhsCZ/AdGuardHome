@@ -9,7 +9,7 @@ import { hasPersistentClient, isBlockedReason } from 'panel/components/QueryLog/
 
 import { Filter } from 'panel/helpers/helpers';
 import { InfiniteScrollTrigger } from '../InfiniteScrollTrigger';
-import { EmptyState } from '../EmptyState/EmptyState';
+import { EmptyState, type EmptyStateMode } from '../EmptyState/EmptyState';
 import { ClientCell, RequestCell, ReasonCell, StatusCell, TimeCell } from './blocks';
 
 import s from './LogTable.module.pcss';
@@ -17,7 +17,7 @@ import { ActionsMenu } from '../ActionsMenu';
 
 type Props = {
     logs: LogEntry[];
-    isLogEnabled: boolean;
+    emptyStateMode: EmptyStateMode;
     hasMore: boolean;
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
@@ -38,7 +38,7 @@ type Props = {
 
 export const LogTable = ({
     logs,
-    isLogEnabled,
+    emptyStateMode,
     hasMore,
     isLoadingMore,
     isRequestInFlight,
@@ -166,7 +166,7 @@ export const LogTable = ({
                 emptyTable={(
                     <EmptyState
                         className={s.emptyTableWrapper}
-                        isLogEnabled={isLogEnabled}
+                        mode={emptyStateMode}
                         messageClassName={s.emptyTableTitle}
                     />
                 )}

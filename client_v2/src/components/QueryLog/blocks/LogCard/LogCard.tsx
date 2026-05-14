@@ -156,15 +156,13 @@ export const LogCard = ({
                         {statusLabel}
                     </span>
 
-                    {reasonDetails && (
-                        <>
-                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
-                            <span data-testid="query-log-card-reason" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
-                                {reasonLabel}
-                                {reasonDetails ? ` · ${reasonDetails}` : ''}
-                            </span>
-                        </>
-                    )}
+                    <>
+                        <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
+                        <span data-testid="query-log-card-reason" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                            {reasonLabel}
+                            {reasonDetails ? ` · ${reasonDetails}` : ''}
+                        </span>
+                    </>
 
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_ip')}</span>
                     <span data-testid="query-log-card-client-ip" className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>

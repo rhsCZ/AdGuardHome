@@ -104,6 +104,7 @@ type QueryLogSetupOptions = {
     blockedServicesList?: BlockedServicesList;
     clientsResponse?: ClientsResponse;
     queryLogConfig?: typeof MOCK_QUERY_LOG_CONFIG;
+    allBlockedServices?: Array<{ id: string; name: string }>;
 };
 
 type QueryLogSetupResult = {
@@ -273,6 +274,10 @@ const DEFAULT_BLOCKED_SERVICES_LIST: BlockedServicesList = {
     },
 };
 
+const DEFAULT_ALL_BLOCKED_SERVICES = [
+    { id: 'amazon', name: 'Amazon' },
+];
+
 const DEFAULT_CLIENTS_RESPONSE: ClientsResponse = {
     clients: [],
     auto_clients: [],
@@ -393,6 +398,7 @@ async function setupQueryLogMocks(
         blockedServicesList = DEFAULT_BLOCKED_SERVICES_LIST,
         clientsResponse = DEFAULT_CLIENTS_RESPONSE,
         queryLogConfig = MOCK_QUERY_LOG_CONFIG,
+        allBlockedServices = DEFAULT_ALL_BLOCKED_SERVICES,
     }: QueryLogSetupOptions = {},
 ): Promise<QueryLogSetupResult> {
     const queryLogRequests: URL[] = [];
@@ -478,6 +484,17 @@ async function setupQueryLogMocks(
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(blockedServicesState),
+        });
+    });
+
+    await page.route('**/control/blocked_services/all', (route) => {
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                blocked_services: allBlockedServices,
+                groups: [],
+            }),
         });
     });
 
@@ -900,6 +917,7 @@ test.describe('Query log desktop', () => {
         const detailModal = page.getByTestId('query-log-detail-modal');
 
         await expect(detailModal).toBeVisible();
+        await expect(page.getByTestId('query-log-detail-service-name')).toContainText('Amazon');
         await expect(page.getByTestId('query-log-detail-action-block')).toHaveCount(0);
         await expect(page.getByTestId('query-log-detail-action-allowlist')).toBeVisible();
         await expect(page.getByTestId('query-log-detail-action-allow-service')).toBeVisible();
@@ -1003,6 +1021,12 @@ test.describe('Query log mobile', () => {
         await expect(blockedCard.getByTestId('query-log-card-client-ip')).toContainText('192.168.0.10');
         await expect(blockedCard.getByTestId('query-log-card-client-details')).toContainText('Office Mac');
         await expect(blockedCard.getByTestId('query-log-card-client-location')).toContainText('London, United Kingdom');
+
+        const rewrittenCard = getCardByDomain(page, 'search.example');
+        const errorCard = getCardByDomain(page, 'failed.example');
+
+        await expect(rewrittenCard.getByTestId('query-log-card-reason')).toContainText('Safe search');
+        await expect(errorCard.getByTestId('query-log-card-reason')).toContainText('Error');
 
         const [domainWeight, cardBodyStyles, trackerIconStyles] = await Promise.all([
             blockedCard.getByTestId('query-log-card-domain').evaluate((element) => Number(getComputedStyle(element).fontWeight)),

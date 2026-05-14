@@ -6,7 +6,7 @@ import { Button } from 'panel/common/ui/Button';
 import { Dialog } from 'panel/common/ui/Dialog';
 import theme from 'panel/lib/theme';
 
-import { checkBlockedService, formatElapsedMs, type Filter } from 'panel/helpers/helpers';
+import { checkBlockedService, formatElapsedMs, getServiceName, type Filter } from 'panel/helpers/helpers';
 import {
     getQueryReasonDetails,
     getQueryReasonLabel,
@@ -98,7 +98,7 @@ export const DetailModal = ({
     const country = entry.client_info?.whois?.country;
     const network = entry.client_info?.whois?.orgname;
     const serviceId = entry.serviceName || entry.service_name;
-    const serviceName = serviceId;
+    const serviceName = serviceId ? getServiceName(services, serviceId) || serviceId : '';
     const sourceNode = getSourceNode(trackerSource);
 
     const handleBlock = () => {

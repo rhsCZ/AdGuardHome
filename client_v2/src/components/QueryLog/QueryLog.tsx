@@ -17,7 +17,7 @@ import {
 } from 'panel/actions/queryLogs';
 import { blockDomain, blockDomainForClient, getClients, unblockDomain } from 'panel/actions';
 import { toggleClientBlock, getAccessList } from 'panel/actions/access';
-import { allowBlockedService } from 'panel/actions/services';
+import { allowBlockedService, getAllBlockedServices } from 'panel/actions/services';
 import {
     DEFAULT_LOGS_FILTER,
     QUERY_LOG_REASON_FILTER_QUERIES,
@@ -29,7 +29,7 @@ import { Paths } from 'panel/components/Routes/Paths';
 import { filterLogsByStatus } from './helpers';
 import { LogEntry } from './types';
 import { Header } from './blocks/Header';
-import { EmptyState } from './blocks/EmptyState/EmptyState';
+import { EmptyState, type EmptyStateMode } from './blocks/EmptyState/EmptyState';
 import { LogTable } from './blocks/LogTable';
 import { LogCard } from './blocks/LogCard';
 import { DetailModal } from './blocks/DetailModal';
@@ -37,6 +37,18 @@ import { DisallowDialog } from './blocks/DisallowDialog';
 import { InfiniteScrollTrigger } from './blocks/InfiniteScrollTrigger';
 
 import s from './QueryLog.module.pcss';
+
+const getEmptyStateMode = (enabled: boolean, interval?: number): EmptyStateMode => {
+    if (!enabled) {
+        return 'disabled';
+    }
+
+    if (interval === 0) {
+        return 'rotation-disabled';
+    }
+
+    return 'default';
+};
 
 export const QueryLog = () => {
     const dispatch = useDispatch<ThunkDispatch<RootState, unknown, Action<string>>>();
@@ -49,7 +61,7 @@ export const QueryLog = () => {
     const processingClients = useSelector((state: RootState) => state.dashboard.processingClients);
     const filters = useSelector((state: RootState) => state.filtering.filters);
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
-    const services = useSelector((state: RootState) => state.services?.allServices);
+    const services = useSelector((state: RootState) => state.services?.allServices ?? []);
 
     const {
         logs = [],
@@ -58,6 +70,7 @@ export const QueryLog = () => {
         filter,
         isEntireLog,
         enabled,
+        interval,
     } = queryLogs;
 
     const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
@@ -68,6 +81,7 @@ export const QueryLog = () => {
         dispatch(getLogsConfig());
         dispatch(getAccessList());
         dispatch(getClients());
+        dispatch(getAllBlockedServices());
     }, [dispatch]);
 
     useEffect(() => {
@@ -112,7 +126,7 @@ export const QueryLog = () => {
     const currentReason = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
     const persistentClientIds = persistentClients.flatMap((persistentClient) => persistentClient.ids ?? []);
     const visibleLogs = filterLogsByStatus(logs, currentStatus);
-    const isLogEnabled = enabled;
+    const emptyStateMode = getEmptyStateMode(enabled, interval);
     const hasMore = !isEntireLog;
 
     const handleSearch = useCallback(
@@ -250,7 +264,7 @@ export const QueryLog = () => {
                 <div className={s.desktopView}>
                     <LogTable
                         logs={visibleLogs}
-                        isLogEnabled={isLogEnabled}
+                        emptyStateMode={emptyStateMode}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
@@ -274,7 +288,7 @@ export const QueryLog = () => {
                     {visibleLogs.length === 0 ? (
                         <EmptyState
                             className={s.emptyState}
-                            isLogEnabled={isLogEnabled}
+                            mode={emptyStateMode}
                         />
                     ) : (
                         <>

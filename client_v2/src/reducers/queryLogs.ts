@@ -32,7 +32,7 @@ const queryLogs = handleActions(
                 filter,
                 isFiltered,
                 logs,
-                isEntireLog: logs.length < 1,
+                isEntireLog: oldest === '',
                 processingGetLogs: false,
             };
         },
@@ -57,7 +57,7 @@ const queryLogs = handleActions(
                 ...state,
                 oldest,
                 logs: older_than ? [...state.logs, ...logs] : logs,
-                isEntireLog: logs.length < 1,
+                isEntireLog: oldest === '',
                 processingGetLogs: false,
             };
         },
