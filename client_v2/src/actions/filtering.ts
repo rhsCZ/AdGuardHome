@@ -28,20 +28,26 @@ export const setRulesRequest = createAction('SET_RULES_REQUEST');
 export const setRulesFailure = createAction('SET_RULES_FAILURE');
 export const setRulesSuccess = createAction('SET_RULES_SUCCESS');
 
-export const setRules = (rules: any) => async (dispatch: any) => {
-    dispatch(setRulesRequest());
-    try {
-        const normalizedRules = {
-            rules: normalizeRulesTextarea(rules)?.split('\n'),
-        };
-        await apiClient.setRules(normalizedRules);
-        dispatch(addSuccessToast(intl.getMessage('updated_custom_filtering_toast')));
-        dispatch(setRulesSuccess());
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(setRulesFailure());
-    }
-};
+export const setRules =
+    (rules: any, options: { showToast?: boolean } = {}) =>
+    async (dispatch: any) => {
+        dispatch(setRulesRequest());
+        try {
+            const normalizedRules = {
+                rules: normalizeRulesTextarea(rules)?.split('\n'),
+            };
+            await apiClient.setRules(normalizedRules);
+
+            if (options.showToast !== false) {
+                dispatch(addSuccessToast(intl.getMessage('updated_custom_filtering_toast')));
+            }
+
+            dispatch(setRulesSuccess());
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(setRulesFailure());
+        }
+    };
 
 export const addFilterRequest = createAction('ADD_FILTER_REQUEST');
 export const addFilterFailure = createAction('ADD_FILTER_FAILURE');

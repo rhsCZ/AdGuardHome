@@ -68,6 +68,7 @@ interface SelectProps<
     components?: SelectComponentsConfig<IOption<T> & ExtendOption, Multi, Group>;
     isSearchable?: boolean;
     id?: string;
+    inputId?: string;
     borderless?: boolean;
     adaptiveHeight?: boolean;
     lazyList?: boolean;
@@ -107,6 +108,7 @@ export const Select = <
     low,
     isSearchable,
     id,
+    inputId,
     borderless,
     adaptiveHeight,
     lazyList,
@@ -172,6 +174,7 @@ export const Select = <
             components={customComponents}
             isSearchable={isSearchable || options.length > SEARCH_ENABLE_LIMIT}
             id={id}
+            inputId={inputId}
             closeMenuOnSelect={closeMenuOnSelect}
             menuPlacement={menuPlacement}
             isClearable={isClearable}

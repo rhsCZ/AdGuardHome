@@ -23,6 +23,7 @@ import { RootState } from '../../initialState';
 
 import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
+import { UserRules } from '../UserRules';
 
 type RouteConfig = {
     path: string;
@@ -56,6 +57,11 @@ const ROUTES: RouteConfig[] = [
         component: Allowlists,
         exact: true,
     },
+    {
+        path: '/user_rules',
+        component: UserRules,
+        exact: true,
+    }
 ];
 
 const App = () => {

@@ -22,9 +22,12 @@ const toasts = handleActions(
             return newState;
         },
         [addSuccessToast.toString()]: (state: any, { payload }: any) => {
+            const normalizedPayload = typeof payload === 'string' ? { message: payload } : payload;
             const successToast = {
                 id: nanoid(),
-                message: payload,
+                message: normalizedPayload.message,
+                actionLabel: normalizedPayload.actionLabel,
+                onAction: normalizedPayload.onAction,
                 type: TOAST_TYPES.SUCCESS,
             };
 

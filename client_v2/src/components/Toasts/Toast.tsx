@@ -11,9 +11,11 @@ interface ToastProps {
     id: string;
     message: string;
     type: string;
+    actionLabel?: string;
+    onAction?: () => void | Promise<void>;
 }
 
-const Toast = ({ id, message, type }: ToastProps) => {
+const Toast = ({ id, message, type, actionLabel, onAction }: ToastProps) => {
     const dispatch = useDispatch();
     const [timerId, setTimerId] = useState(null);
 
@@ -28,13 +30,42 @@ const Toast = ({ id, message, type }: ToastProps) => {
 
     useEffect(() => {
         setRemoveToastTimeout();
+        return clearRemoveToastTimeout;
     }, []);
 
-    return (
-        <div className={s.toast} onMouseOver={clearRemoveToastTimeout} onMouseOut={setRemoveToastTimeout}>
-            <Icon icon={type === 'success' ? 'check' : 'attention'} className={cn(s.icon, s[type])} />
+    const handleAction = async () => {
+        clearRemoveToastTimeout();
 
-            <div className={s.content}>{message}</div>
+        if (onAction) {
+            await onAction();
+        }
+
+        removeCurrentToast();
+    };
+
+    return (
+        <div
+            className={s.toast}
+            data-testid="toast"
+            onMouseOver={clearRemoveToastTimeout}
+            onMouseOut={setRemoveToastTimeout}
+        >
+            <div className={s.messageRow}>
+                <Icon icon={type === 'success' ? 'check' : 'attention'} className={cn(s.icon, s[type])} />
+
+                <div className={s.content}>{message}</div>
+            </div>
+
+            {actionLabel && (
+                <button
+                    type="button"
+                    className={s.actionButton}
+                    data-testid="toast-action"
+                    onClick={() => void handleAction()}
+                >
+                    {actionLabel}
+                </button>
+            )}
         </div>
     );
 };

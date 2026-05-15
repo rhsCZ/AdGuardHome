@@ -58,7 +58,7 @@ export const toggleSetting =
                         await apiClient.enableSafebrowsing();
                     }
                     dispatch(toggleSettingStatus({ settingKey }));
-                    break;
+                    return true;
                 case SETTINGS_NAMES.parental:
                     if (status) {
                         await apiClient.disableParentalControl();
@@ -66,16 +66,17 @@ export const toggleSetting =
                         await apiClient.enableParentalControl();
                     }
                     dispatch(toggleSettingStatus({ settingKey }));
-                    break;
+                    return true;
                 case SETTINGS_NAMES.safesearch:
                     await apiClient.updateSafesearch(status as SafeSearchConfig);
                     dispatch(toggleSettingStatus({ settingKey, value: status }));
-                    break;
+                    return true;
                 default:
-                    break;
+                    return false;
             }
         } catch (error) {
             dispatch(addErrorToast({ error }));
+            return false;
         }
     };
 
@@ -722,6 +723,7 @@ export const toggleBlocking =
         const baseBlockingRule = baseRule || `||${domain}^$important`;
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
         const { userRules } = getState().filtering;
+        const previousRules = userRules;
 
         const lineEnding = !endsWith(userRules, '\n') ? '\n' : '';
 
@@ -732,21 +734,29 @@ export const toggleBlocking =
 
         const matchPreparedBlockingRule = userRules.match(preparedBlockingRule);
         const matchPreparedUnblockingRule = userRules.match(preparedUnblockingRule);
+        const addedRuleMessageKey =
+            type === BLOCK_ACTIONS.BLOCK
+                ? 'user_rules_rule_added_to_custom_filtering_rules'
+                : 'user_rules_rule_added_to_allowlist';
+        const undoToastPayload = {
+            message: intl.getMessage(addedRuleMessageKey),
+            actionLabel: intl.getMessage('notify_undo'),
+            onAction: async () => {
+                await dispatch(setRules(previousRules, { showToast: false }));
+                dispatch(getFilteringStatus());
+            },
+        };
 
         if (matchPreparedBlockingRule) {
-            await dispatch(setRules(userRules.replace(`${blockingRule}`, '')));
+            await dispatch(setRules(userRules.replace(`${blockingRule}`, ''), { showToast: false }));
             dispatch(
                 addSuccessToast(intl.getMessage('rule_removed_from_custom_filtering_toast', { rule: blockingRule })),
             );
         } else if (!matchPreparedUnblockingRule) {
-            await dispatch(setRules(`${userRules}${lineEnding}${unblockingRule}\n`));
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_added_to_custom_filtering_toast', { rule: unblockingRule })),
-            );
+            await dispatch(setRules(`${userRules}${lineEnding}${unblockingRule}\n`, { showToast: false }));
+            dispatch(addSuccessToast(undoToastPayload));
         } else if (matchPreparedUnblockingRule) {
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_added_to_custom_filtering_toast', { rule: unblockingRule })),
-            );
+            dispatch(addSuccessToast(intl.getMessage(addedRuleMessageKey)));
             return;
         } else if (!matchPreparedBlockingRule) {
             dispatch(

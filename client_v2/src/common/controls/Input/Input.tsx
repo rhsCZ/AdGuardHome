@@ -41,6 +41,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
             errorMessage,
             size = 'large',
             autoComplete,
+            ...rest
         },
         ref,
     ) => {
@@ -76,7 +77,8 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                             [s.error]: error || !!errorMessage,
                         },
                         className,
-                    )}>
+                    )}
+                >
                     {prefixIcon && prefixIcon}
                     <input
                         ref={ref}
@@ -102,6 +104,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                         maxLength={maxLength}
                         disabled={disabled}
                         autoComplete={autoComplete}
+                        {...rest}
                     />
                     {suffixIcon && suffixIcon}
                 </div>
