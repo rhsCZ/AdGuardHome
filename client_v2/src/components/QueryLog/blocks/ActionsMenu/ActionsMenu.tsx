@@ -79,7 +79,7 @@ export const ActionsMenu = ({
                 className={cn(
                     s.menuItem,
                     theme.text.t3,
-                    isBlocked ? theme.status.statusGreen : theme.status.statusRed,
+                    isBlocked ? s.statusGreen : s.statusRed,
                 )}
                 onClick={handleBlock}
             >

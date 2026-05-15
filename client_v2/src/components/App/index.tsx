@@ -28,6 +28,7 @@ import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
 import { BlockedServices } from '../BlockedServices';
 import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
+import { UserRules } from '../UserRules';
 
 type RouteConfig = {
     path: string;
@@ -88,6 +89,11 @@ const ROUTES: RouteConfig[] = [
         component: BlockedServices,
         exact: true,
     },
+    {
+        path: '/user_rules',
+        component: UserRules,
+        exact: true,
+    }
 ];
 
 const App = () => {

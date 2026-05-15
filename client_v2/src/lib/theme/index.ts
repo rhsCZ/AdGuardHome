@@ -9,6 +9,7 @@ import select from './Select.module.pcss';
 import form from './Form.module.pcss';
 import pagination from './Pagination.module.pcss';
 import status from './Status.module.pcss';
+import highlight from './Highlight.module.pcss';
 
 const theme = {
     link,
@@ -22,6 +23,7 @@ const theme = {
     form,
     pagination,
     status,
+    highlight,
 };
 
 export default theme;
