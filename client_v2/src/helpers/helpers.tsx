@@ -1,7 +1,6 @@
 import 'url-polyfill';
 import { parse as dateParse, format as dateFormat } from 'date-fns';
 import round from 'lodash/round';
-import axios from 'axios';
 import i18n from 'i18next';
 import ipaddr, { IPv4, IPv6 } from 'ipaddr.js';
 import queryString from 'qs';
@@ -92,9 +91,9 @@ export const normalizeLogs = (logs: any) =>
         const processResponse = (data: any) =>
             data
                 ? data.map((response: any) => {
-                      const { value, type, ttl } = response;
-                      return `${type}: ${value} (ttl=${ttl})`;
-                  })
+                    const { value, type, ttl } = response;
+                    return `${type}: ${value} (ttl=${ttl})`;
+                })
                 : [];
 
         let newRules = rules;
@@ -134,8 +133,9 @@ export const normalizeLogs = (logs: any) =>
         };
     });
 
+// TODO (ik) type will fixed in query log task
 export const normalizeHistory = (history: any) =>
-    history.map((item, idx) => ({
+    history.map((item: any, idx: number) => ({
         x: idx,
         y: item,
     }));
@@ -169,17 +169,17 @@ export const addClientInfo = (data: any, clients: any, ...params: any[]) =>
 export const normalizeFilters = (filters: any) =>
     filters
         ? filters.map((filter: any) => {
-              const { id, url, enabled, last_updated, name = 'Default name', rules_count = 0 } = filter;
+            const { id, url, enabled, last_updated, name = 'Default name', rules_count = 0 } = filter;
 
-              return {
-                  id,
-                  url,
-                  enabled,
-                  lastUpdated: last_updated,
-                  name,
-                  rulesCount: rules_count,
-              };
-          })
+            return {
+                id,
+                url,
+                enabled,
+                lastUpdated: last_updated,
+                name,
+                rulesCount: rules_count,
+            };
+        })
         : [];
 
 export const normalizeFilteringStatus = (filteringStatus: any) => {
@@ -209,18 +209,24 @@ export const captitalizeWords = (text: any) =>
         .join(' ');
 
 export const getInterfaceIp = (option: any) => {
-    const onlyIPv6 = option.ip_addresses.every((ip: any) => ip.includes(':'));
-    let [interfaceIP] = option.ip_addresses;
+    const addresses = (option?.ip_addresses ?? []).filter((ip: any) => typeof ip === 'string');
 
-    if (!onlyIPv6) {
-        option.ip_addresses.forEach((ip: any) => {
-            if (!ip.includes(':')) {
-                interfaceIP = ip;
-            }
-        });
+    const isIpv6 = (ip: string) => ip.includes(':');
+    const isIpv6LinkLocal = (ip: string) => ip.toLowerCase().startsWith('fe80:');
+    const hasZoneId = (ip: string) => ip.includes('%');
+
+    const ipv4 = addresses.find((ip: string) => !isIpv6(ip));
+    if (ipv4) {
+        return ipv4;
     }
 
-    return interfaceIP;
+    const ipv6Global = addresses.find((ip: string) => isIpv6(ip) && !isIpv6LinkLocal(ip) && !hasZoneId(ip));
+    if (ipv6Global) {
+        return ipv6Global;
+    }
+
+    const ipv6NoZone = addresses.find((ip: string) => isIpv6(ip) && !hasZoneId(ip));
+    return ipv6NoZone || addresses[0];
 };
 
 export const getIpList = (interfaces: InstallInterface[]) =>
@@ -248,6 +254,22 @@ export const getDnsAddress = (ip: any, port = 0) => {
     return address;
 };
 
+const normalizeHost = (host: string) => {
+    const isIpv6 = host.includes(':');
+    if (!isIpv6) {
+        return host;
+    }
+
+    const encodeZone = (s: string) => s.replaceAll('%', '%25');
+
+    if (host.startsWith('[') && host.endsWith(']')) {
+        const inner = host.slice(1, -1);
+        return `[${encodeZone(inner)}]`;
+    }
+
+    return `[${encodeZone(host)}]`;
+};
+
 /**
  * @param {string} ip
  * @param {number} [port]
@@ -255,17 +277,12 @@ export const getDnsAddress = (ip: any, port = 0) => {
  */
 export const getWebAddress = (ip: any, port = 0) => {
     const isStandardWebPort = port === STANDARD_WEB_PORT;
-    let address = `http://${ip}`;
+    const rawHost = String(ip);
 
-    if (port && !isStandardWebPort) {
-        if (ip.includes(':') && !ip.includes('[')) {
-            address = `http://[${ip}]:${port}`;
-        } else {
-            address = `http://${ip}:${port}`;
-        }
-    }
+    const host = normalizeHost(rawHost);
+    const portPart = port && !isStandardWebPort ? `:${port}` : '';
 
-    return address;
+    return `http://${host}${portPart}`;
 };
 
 export const checkRedirect = (url: any, attempts: number = 1) => {
@@ -281,22 +298,17 @@ export const checkRedirect = (url: any, attempts: number = 1) => {
 
     let timeout: any;
 
-    axios
-        .get(url)
+    fetch(url)
         .then((response) => {
             rmTimeout(timeout);
-            if (response) {
+            if (response.ok) {
                 window.location.replace(url);
                 return;
             }
             timeout = setRecursiveTimeout(CHECK_TIMEOUT, url, (count += 1));
         })
-        .catch((error) => {
+        .catch(() => {
             rmTimeout(timeout);
-            if (error.response) {
-                window.location.replace(url);
-                return;
-            }
             timeout = setRecursiveTimeout(CHECK_TIMEOUT, url, (count += 1));
         });
 

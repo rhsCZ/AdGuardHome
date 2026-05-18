@@ -16,6 +16,7 @@ const DEFAULT_PAGE_SIZE = 10;
 export const TABLE_IDS = {
     ALLOWLISTS_TABLE: 'allowlists_table',
     BLOCKLISTS_TABLE: 'blocklists_table',
+    DNSREWRITES_TABLE: 'dnsrewrites_table',
 } as const;
 
 type TableIdsType = (typeof TABLE_IDS)[keyof typeof TABLE_IDS];
@@ -227,7 +228,7 @@ export const ListsTable = ({
             );
         };
 
-        const DESC_TEXT = {
+        const DESC_TEXT: Record<string, string> = {
             [TABLE_IDS.ALLOWLISTS_TABLE]: intl.getMessage('allowlist_empty', {
                 button: (text: string) => renderButton(text),
             }),

@@ -1,5 +1,5 @@
 import React from 'react';
-import RSelect, { GroupBase, MenuListProps, SelectComponentsConfig } from 'react-select';
+import RSelect, { GroupBase, MenuListProps, OptionProps, SelectComponentsConfig } from 'react-select';
 import cn from 'clsx';
 import { IOption } from 'panel/lib/helpers/utils';
 
@@ -8,6 +8,7 @@ import { CustomDropdownIndicator } from './CustomDropdownIndicator';
 import { CustomLoadingIndicator } from './CustomLoadingIndicator';
 import { CustomLoadingMessage } from './CustomLoadingMessage';
 import { CustomOption } from './CustomOption';
+import { Icon } from '../../ui/Icon/Icon';
 
 import './Select.pcss';
 import s from './MenuList.module.pcss';
@@ -42,6 +43,37 @@ const CustomMenuList = <
     );
 };
 
+const CustomIconOption = ({ data, isSelected, selectOption, isFocused }: any) => (
+    <div
+        className={cn(s.customOption, {
+            [s.isSelected]: isSelected,
+            [s.isFocused]: isFocused
+        })}
+        onClick={() => selectOption(data)}
+    >
+        {data.icon && (
+            <div className={s.selectIconContainer}>
+                <Icon icon={data.icon} />
+            </div>
+        )}
+        <span>{data.label}</span>
+    </div>
+);
+
+const CustomIconValueContainer = ({ children, getValue, hasValue }: any) => {
+    const selectedValue = getValue()[0];
+    return (
+        <div className={s.selectValueContainer}>
+            {hasValue && selectedValue?.icon && (
+                <div className={s.selectIconContainer}>
+                    <Icon icon={selectedValue.icon} />
+                </div>
+            )}
+            {children}
+        </div>
+    );
+};
+
 interface SelectProps<
     T,
     Multi extends boolean,
@@ -52,7 +84,6 @@ interface SelectProps<
     height?: ISelectHeight;
     menuSize?: ISelectMenuSize;
     menuPosition?: 'right';
-    checkmark?: boolean;
     mobile?: boolean; // true: mobile-always, false: desktop-always, undefined: responsive
     isDisabled?: boolean;
     isMulti?: Multi;
@@ -81,6 +112,8 @@ interface SelectProps<
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
     onBlur?: () => void;
+    showIcons?: boolean;
+    showOptionIcon?: boolean;
 }
 
 export const Select = <
@@ -102,7 +135,6 @@ export const Select = <
     mobile,
     menuIsOpen,
     menuPosition,
-    checkmark = true,
     size,
     height,
     menuSize,
@@ -122,6 +154,8 @@ export const Select = <
     onMenuOpen,
     onMenuClose,
     onBlur,
+    showIcons = false,
+    showOptionIcon = true,
 }: SelectProps<T, Multi, ExtendOption, Group>) => {
     const selectClass = cn(
         { 'desktop-select-always': mobile === false },
@@ -147,8 +181,13 @@ export const Select = <
         className,
     );
 
+    const DefaultOption = (props: OptionProps<IOption<T> & ExtendOption, Multi, Group>) => (
+        <CustomOption {...props} showIcon={showOptionIcon} />
+    );
+
     const customComponents = {
-        ...(checkmark ? { Option: CustomOption } : {}),
+        ...(!showIcons ? { Option: DefaultOption } : {}),
+        ...(showIcons ? { Option: CustomIconOption, ValueContainer: CustomIconValueContainer } : {}),
         ...(lazyList ? { MenuList: CustomMenuList } : {}),
         ClearIndicator: CustomClearIndicator,
         DropdownIndicator: CustomDropdownIndicator,

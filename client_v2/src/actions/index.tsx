@@ -1,6 +1,5 @@
 import { createAction } from 'redux-actions';
 import i18next from 'i18next';
-import axios from 'axios';
 
 import React from 'react';
 import { compose } from 'redux';
@@ -139,7 +138,7 @@ const getDisabledMessage = (time: any) => {
 };
 
 export const toggleProtection =
-    (status: any, time = null) =>
+    (status: any, time: number | null = null) =>
     async (dispatch: any) => {
         dispatch(toggleProtectionRequest());
         try {
@@ -201,11 +200,12 @@ const checkStatus = async (handleRequestSuccess: any, handleRequestError: any, a
     const rmTimeout = (t: any) => t && clearTimeout(t);
 
     try {
-        const response = await axios.get(`${apiClient.baseUrl}/status`);
+        const response = await fetch(`${apiClient.baseUrl}/status`);
         rmTimeout(timeout);
-        if (response?.status === 200) {
-            handleRequestSuccess(response);
-            if (response.data.running === false) {
+        if (response.ok) {
+            const data = await response.json();
+            handleRequestSuccess({ status: response.status, data });
+            if (data.running === false) {
                 timeout = setTimeout(
                     checkStatus,
                     CHECK_TIMEOUT,

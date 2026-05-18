@@ -14,6 +14,8 @@ import { Blocklists } from 'panel/components/FilterLists/Blocklists';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
 
 import { Allowlists } from 'panel/components/FilterLists/Allowlists';
+import { DNSRewrites } from 'panel/components/FilterLists/DNSRewrites';
+import { SetupGuide } from 'panel/components/SetupGuide';
 import Toasts from '../Toasts';
 import i18n from '../../i18n';
 import { THEMES } from '../../helpers/constants';
@@ -24,12 +26,16 @@ import { RootState } from '../../initialState';
 import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
 import { UserRules } from '../UserRules';
+import { BlockedServices } from '../BlockedServices';
+import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
 
 type RouteConfig = {
     path: string;
     component: ComponentType;
     exact: boolean;
 };
+
+const SetupGuideRoute = () => <SetupGuide />;
 
 const ROUTES: RouteConfig[] = [
     {
@@ -61,7 +67,27 @@ const ROUTES: RouteConfig[] = [
         path: '/user_rules',
         component: UserRules,
         exact: true,
-    }
+    },
+    {
+        path: '/dns_rewrites',
+        component: DNSRewrites,
+        exact: true,
+    },
+    {
+        path: '/guide',
+        component: SetupGuideRoute,
+        exact: true,
+    },
+    {
+        path: '/blocked_services/schedule',
+        component: InactivitySchedule,
+        exact: true,
+    },
+    {
+        path: '/blocked_services',
+        component: BlockedServices,
+        exact: true,
+    },
 ];
 
 const App = () => {

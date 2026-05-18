@@ -23,6 +23,12 @@ export type InstallData = {
     processingDefault: boolean;
     processingSubmit: boolean;
     processingCheck: boolean;
+    submitted: boolean;
+    auth: {
+        username: string;
+        password: string;
+        privacy_consent: boolean;
+    };
     web: {
         ip: string;
         port: number;
@@ -162,16 +168,20 @@ export type RewritesData = {
     processingAdd: boolean;
     processingDelete: boolean;
     processingUpdate: boolean;
+    processingSettings: boolean;
     isModalOpen: boolean;
     modalType: string;
     currentRewrite?: {
         answer: string;
         domain: string;
+        enabled: boolean;
     };
     list: {
         answer: string;
         domain: string;
+        enabled: boolean;
     }[];
+    enabled: boolean;
 };
 
 export type NormalizedTopClients = {
@@ -373,6 +383,7 @@ export type ServicesData = {
     processingSet: boolean;
     list: any;
     allServices: any[];
+    allGroups: any[];
 };
 
 export type ModalsData = {
@@ -404,9 +415,10 @@ export type InstallState = {
 
 export type LoginState = {
     login: {
-        processingLogin: false;
+        processingLogin: boolean;
         email: string;
         password: string;
+        error: unknown;
     };
     toasts: { notices: any[] };
 };
@@ -580,9 +592,11 @@ export const initialState: RootState = {
         processingAdd: false,
         processingDelete: false,
         processingUpdate: false,
+        processingSettings: false,
         isModalOpen: false,
         modalType: '',
         list: [],
+        enabled: true,
     },
     services: {
         processing: true,
@@ -590,6 +604,7 @@ export const initialState: RootState = {
         processingSet: false,
         list: {},
         allServices: [],
+        allGroups: [],
     },
     settings: {
         processing: true,

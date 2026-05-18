@@ -19,6 +19,7 @@ type Props = Omit<ComponentProps<'input'>, 'size'> & {
     errorMessage?: string;
     isClearable?: boolean;
     onClear?: () => void;
+    inputError?: string;
     size?: 'small' | 'medium' | 'large';
 };
 
@@ -66,6 +67,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
             errorMessage,
             isClearable,
             onClear,
+            inputError,
             size = 'large',
             autoComplete,
             ...rest
@@ -113,6 +115,8 @@ export const Input = forwardRef<HTMLInputElement, Props>(
             onClear?.();
         };
 
+        const computedErrorMessage = inputError ?? errorMessage;
+
         const inputWrapperClass = cn(
             s.inputWrapper,
             {
@@ -140,7 +144,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                             [s.invalid]: invalid,
                             [s.focused]: focused,
                             [s.disabled]: disabled,
-                            [s.error]: error || !!errorMessage,
+                            [s.error]: error || !!computedErrorMessage,
                         },
                         className,
                     )}
@@ -190,7 +194,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                         </div>
                     )}
                 </div>
-                {errorMessage && <div className={s.inputError}>{errorMessage}</div>}
+                {computedErrorMessage && <div className={s.inputError}>{computedErrorMessage}</div>}
             </>
         );
     },

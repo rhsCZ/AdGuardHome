@@ -16,6 +16,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/agh"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghtest"
+	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/httphdr"
 	"github.com/AdguardTeam/golibs/testutil"
@@ -58,10 +59,13 @@ func TestWeb_HandleGetProfile(t *testing.T) {
 		PasswordHash: string(passwordHash),
 	}
 
+	baseMux := http.NewServeMux()
+
 	auth, err := newAuth(testutil.ContextWithTimeout(t, testTimeout), &authConfig{
 		baseLogger:     testLogger,
+		mux:            baseMux,
 		rateLimiter:    emptyRateLimiter{},
-		trustedProxies: nil,
+		trustedProxies: testTrustedProxies,
 		dbFilename:     sessionsDB,
 		users:          nil,
 		sessionTTL:     testTTL * time.Second,
@@ -71,11 +75,10 @@ func TestWeb_HandleGetProfile(t *testing.T) {
 
 	t.Cleanup(func() { auth.close(testutil.ContextWithTimeout(t, testTimeout)) })
 
-	baseMux := http.NewServeMux()
-
 	tlsMgr, err := newTLSManager(testutil.ContextWithTimeout(t, testTimeout), &tlsManagerConfig{
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
+		manager:      aghtls.EmptyManager{},
 	})
 	require.NoError(t, err)
 

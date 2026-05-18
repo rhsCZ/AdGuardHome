@@ -40,6 +40,7 @@ export const MAX_PASSWORD_LENGTH = 72;
 export const HTML_PAGES = {
     INSTALL: '/install.html',
     LOGIN: '/login.html',
+    FORGOT_PASSWORD: '/forgot_password.html',
     MAIN: '/',
 };
 
@@ -70,6 +71,7 @@ export const CLIENT_ID_LINK = 'https://github.com/AdguardTeam/AdGuardHome/wiki/C
 export const MANUAL_UPDATE_LINK = 'https://github.com/AdguardTeam/AdGuardHome/wiki/FAQ#manual-update';
 export const PORT_53_FAQ_LINK = 'https://github.com/AdguardTeam/AdGuardHome/wiki/FAQ#bindinuse';
 export const PRIVACY_POLICY_LINK = 'https://link.adtidy.org/forward.html?action=privacy&from=ui&app=home';
+export const TERMS_LINK = 'https://link.adtidy.org/forward.html?action=terms_and_conditions&from=ui&app=home';
 export const UPSTREAM_CONFIGURATION_WIKI_LINK =
     'https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration#upstreams';
 
@@ -78,7 +80,7 @@ export const FILTERS_RELATIVE_LINK = '#filters';
 export const ADDRESS_IN_USE_TEXT = 'address already in use';
 
 export const INSTALL_FIRST_STEP = 1;
-export const INSTALL_TOTAL_STEPS = 5;
+export const INSTALL_TOTAL_STEPS = 6;
 
 export const SETTINGS_NAMES = {
     filtering: 'filtering',
@@ -125,6 +127,7 @@ export const MODAL_TYPE = {
     CHOOSE_FILTERING_LIST: 'CHOOSE_FILTERING_LIST',
     ADD_REWRITE: 'ADD_REWRITE',
     EDIT_REWRITE: 'EDIT_REWRITE',
+    DELETE_REWRITE: 'DELETE_REWRITE',
     EDIT_LEASE: 'EDIT_LEASE',
     ADD_LEASE: 'ADD_LEASE',
     ADD_CLIENT: 'ADD_CLIENT',

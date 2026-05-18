@@ -221,8 +221,13 @@
         'schema':
           'type': 'string'
       - 'name': 'response_status'
+        'deprecated': true
         'in': 'query'
-        'description': 'Filter by response status'
+        'description': >
+          Deprecated: Use 'reason' parameter instead
+          Filter by response status
+
+          NOTE: This parameter cannot be used with 'reason' parameter.
         'schema':
           'type': 'string'
           'enum':
@@ -235,6 +240,14 @@
           - 'rewritten'
           - 'safe_search'
           - 'processed'
+      - 'name': 'reason'
+        'in': 'query'
+        'description': >
+          Filter by response filtering reason
+
+          NOTE: This parameter cannot be used with 'response_status' parameter.
+        'schema':
+          '$ref': '#/components/schemas/FilteringReason'
       'responses':
         '200':
           'description': 'OK.'
@@ -323,6 +336,17 @@
       - 'stats'
       'operationId': 'stats'
       'summary': 'Get DNS server statistics'
+      'parameters':
+      - 'name': 'recent'
+        'in': 'query'
+        'description': |
+          The lookback period for statistics in milliseconds.  The interval must
+          be a multiple of one hour and must not be greater than the value of
+          `statistics.interval`.
+        'required': false
+        'example': 604800000
+        'schema':
+          'type': 'integer'
       'responses':
         '200':
           'description': 'Returns statistics data'
@@ -330,6 +354,8 @@
             'application/json':
               'schema':
                 '$ref': '#/components/schemas/Stats'
+        '400':
+          'description': 'Invalid value of parameter `recent`'
   '/stats_reset':
     'post':
       'tags':
@@ -1455,6 +1481,22 @@
             '$ref': '#/components/schemas/RewriteUpdate'
       'required': true
   'schemas':
+    'FilteringReason':
+      'type': 'string'
+      'description': 'Request filtering status.'
+      'enum':
+        - 'NotFilteredNotFound'
+        - 'NotFilteredWhiteList'
+        - 'NotFilteredError'
+        - 'FilteredBlackList'
+        - 'FilteredSafeBrowsing'
+        - 'FilteredParental'
+        - 'FilteredInvalid'
+        - 'FilteredSafeSearch'
+        - 'FilteredBlockedService'
+        - 'Rewrite'
+        - 'RewriteEtcHosts'
+        - 'RewriteRule'
     'ServerStatus':
       'type': 'object'
       'description': 'AdGuard Home server status and configuration'
@@ -1781,21 +1823,7 @@
       'description': 'Check Host Result'
       'properties':
         'reason':
-          'type': 'string'
-          'description': 'Request filtering status.'
-          'enum':
-          - 'NotFilteredNotFound'
-          - 'NotFilteredWhiteList'
-          - 'NotFilteredError'
-          - 'FilteredBlackList'
-          - 'FilteredSafeBrowsing'
-          - 'FilteredParental'
-          - 'FilteredInvalid'
-          - 'FilteredSafeSearch'
-          - 'FilteredBlockedService'
-          - 'Rewrite'
-          - 'RewriteEtcHosts'
-          - 'RewriteRule'
+          '$ref': '#/components/schemas/FilteringReason'
         'filter_id':
           'deprecated': true
           'description': >
@@ -2000,6 +2028,11 @@
           'type': 'array'
           'items':
             'type': 'string'
+        'ignored_enabled':
+          'type': 'boolean'
+          'description': >
+            If true, the host names in the `ignored` array are excluded from the
+            statistics.
     'PutStatsConfigUpdateRequest':
       '$ref': '#/components/schemas/GetStatsConfigResponse'
     'DhcpConfig':
@@ -2306,21 +2339,7 @@
           'items':
             '$ref': '#/components/schemas/ResultRule'
         'reason':
-          'type': 'string'
-          'description': 'Request filtering status.'
-          'enum':
-          - 'NotFilteredNotFound'
-          - 'NotFilteredWhiteList'
-          - 'NotFilteredError'
-          - 'FilteredBlackList'
-          - 'FilteredSafeBrowsing'
-          - 'FilteredParental'
-          - 'FilteredInvalid'
-          - 'FilteredSafeSearch'
-          - 'FilteredBlockedService'
-          - 'Rewrite'
-          - 'RewriteEtcHosts'
-          - 'RewriteRule'
+          '$ref': '#/components/schemas/FilteringReason'
         'service_name':
           'type': 'string'
           'description': 'Set if reason=FilteredBlockedService'
@@ -2429,6 +2448,11 @@
           'type': 'array'
           'items':
             'type': 'string'
+        'ignored_enabled':
+          'type': 'boolean'
+          'description': >
+            If true, the host names in the `ignored` array are excluded from the
+            query log.
     'PutQueryLogConfigUpdateRequest':
       '$ref': '#/components/schemas/GetQueryLogConfigResponse'
     'ResultRule':
@@ -2866,45 +2890,45 @@
           'type': 'string'
           'description': 'Client IP address, CIDR, MAC address, or ClientID'
     'ClientsFindResponse':
-      'type': 'array'
       'description': 'Client search results.'
       'items':
         '$ref': '#/components/schemas/ClientsFindEntry'
       'example':
       - 'cli42':
-        'name': 'Client 42'
-        'ids': ['cli42']
-        'use_global_settings': true
-        'filtering_enabled': true
-        'parental_enabled': true
-        'safebrowsing_enabled': true
-        'safesearch_enabled': true
-        'safe_search': {}
-        'use_global_blocked_services': true
-        'blocked_services': null
-        'upstreams': null
-        'whois_info': {}
-        'disallowed': false
-        'disallowed_rule': ''
-        'ignore_querylog': false
-        'ignore_statistics': false
+          'name': 'Client 42'
+          'ids': ['cli42']
+          'use_global_settings': true
+          'filtering_enabled': true
+          'parental_enabled': true
+          'safebrowsing_enabled': true
+          'safesearch_enabled': true
+          'safe_search': {}
+          'use_global_blocked_services': true
+          'blocked_services': []
+          'upstreams': []
+          'whois_info': {}
+          'disallowed': false
+          'disallowed_rule': ''
+          'ignore_querylog': false
+          'ignore_statistics': false
       - '1.2.3.4':
-        'name': 'Client 1-2-3-4'
-        'ids': ['1.2.3.4']
-        'use_global_settings': true
-        'filtering_enabled': true
-        'parental_enabled': true
-        'safebrowsing_enabled': true
-        'safesearch_enabled': true
-        'safe_search': {}
-        'use_global_blocked_services': true
-        'blocked_services': null
-        'upstreams': null
-        'whois_info': {}
-        'disallowed': false
-        'disallowed_rule': ''
-        'ignore_querylog': false
-        'ignore_statistics': false
+          'name': 'Client 1-2-3-4'
+          'ids': ['1.2.3.4']
+          'use_global_settings': true
+          'filtering_enabled': true
+          'parental_enabled': true
+          'safebrowsing_enabled': true
+          'safesearch_enabled': true
+          'safe_search': {}
+          'use_global_blocked_services': true
+          'blocked_services': []
+          'upstreams': []
+          'whois_info': {}
+          'disallowed': false
+          'disallowed_rule': ''
+          'ignore_querylog': false
+          'ignore_statistics': false
+      'type': 'array'
     'AccessListResponse':
       '$ref': '#/components/schemas/AccessList'
     'AccessSetRequest':
