@@ -47,33 +47,43 @@ export const updateRewriteSuccess = createAction('UPDATE_REWRITE_SUCCESS');
  * @param {string} config.target - current DNS rewrite value
  * @param {string} config.update - updated DNS rewrite value
  */
-export const updateRewrite = (config: any) => async (dispatch: any) => {
-    dispatch(updateRewriteRequest());
-    try {
-        await apiClient.updateRewrite(config);
-        dispatch(updateRewriteSuccess());
-        dispatch(toggleRewritesModal());
-        dispatch(getRewritesList());
-        dispatch(addSuccessToast(i18next.t('rewrite_updated', { key: config.domain })));
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(updateRewriteFailure());
-    }
-};
+export const updateRewrite =
+    (config: any, options: { showToast?: boolean } = {}) =>
+    async (dispatch: any) => {
+        dispatch(updateRewriteRequest());
+        try {
+            await apiClient.updateRewrite(config);
+            dispatch(updateRewriteSuccess());
+            dispatch(toggleRewritesModal());
+            dispatch(getRewritesList());
+
+            if (options.showToast !== false) {
+                dispatch(addSuccessToast(i18next.t('rewrite_updated', { key: config.domain })));
+            }
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(updateRewriteFailure());
+        }
+    };
 
 export const deleteRewriteRequest = createAction('DELETE_REWRITE_REQUEST');
 export const deleteRewriteFailure = createAction('DELETE_REWRITE_FAILURE');
 export const deleteRewriteSuccess = createAction('DELETE_REWRITE_SUCCESS');
 
-export const deleteRewrite = (config: any) => async (dispatch: any) => {
-    dispatch(deleteRewriteRequest());
-    try {
-        await apiClient.deleteRewrite(config);
-        dispatch(deleteRewriteSuccess());
-        dispatch(getRewritesList());
-        dispatch(addSuccessToast(i18next.t('rewrite_deleted', { key: config.domain })));
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(deleteRewriteFailure());
-    }
-};
+export const deleteRewrite =
+    (config: any, options: { showToast?: boolean } = {}) =>
+    async (dispatch: any) => {
+        dispatch(deleteRewriteRequest());
+        try {
+            await apiClient.deleteRewrite(config);
+            dispatch(deleteRewriteSuccess());
+            dispatch(getRewritesList());
+
+            if (options.showToast !== false) {
+                dispatch(addSuccessToast(i18next.t('rewrite_deleted', { key: config.domain })));
+            }
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(deleteRewriteFailure());
+        }
+    };

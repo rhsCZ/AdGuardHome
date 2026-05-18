@@ -7,9 +7,9 @@ import { Input } from 'panel/common/controls/Input';
 import { Select } from 'panel/common/controls/Select';
 import { Button } from 'panel/common/ui/Button';
 import theme from 'panel/lib/theme';
-import { CheckFormValues, DNS_RECORD_TYPE_OPTIONS } from '../types';
+import { CheckFormValues, DNS_RECORD_TYPE_OPTIONS } from '../../types';
 
-import s from '../UserRules.module.pcss';
+import s from './CheckForm.module.pcss';
 
 type Props = {
     control: Control<CheckFormValues>;
@@ -39,6 +39,8 @@ export const CheckForm = ({ control, handleSubmit, onSubmit, isValid, processing
                             label={intl.getMessage('user_rules_check_hostname_label')}
                             placeholder={intl.getMessage('user_rules_check_hostname_placeholder')}
                             errorMessage={fieldState.error?.message}
+                            isClearable
+                            onClear={() => field.onChange('')}
                         />
                     </div>
                 )}
@@ -58,6 +60,8 @@ export const CheckForm = ({ control, handleSubmit, onSubmit, isValid, processing
                             label={intl.getMessage('user_rules_check_client_label')}
                             placeholder={intl.getMessage('user_rules_check_client_placeholder')}
                             errorMessage={fieldState.error?.message}
+                            isClearable
+                            onClear={() => field.onChange('')}
                         />
                     </div>
                 )}
@@ -66,7 +70,10 @@ export const CheckForm = ({ control, handleSubmit, onSubmit, isValid, processing
             <Controller
                 name="qtype"
                 control={control}
-                render={({ field }) => (
+                rules={{
+                    required: intl.getMessage('form_error_required'),
+                }}
+                render={({ field, fieldState }) => (
                     <div className={s.formGroup}>
                         <div className={s.selectField} data-testid="user-rules-check-qtype">
                             <label className={cn(s.selectLabel, theme.text.t3)} htmlFor="user-rules-qtype-input">
@@ -83,8 +90,10 @@ export const CheckForm = ({ control, handleSubmit, onSubmit, isValid, processing
                                 options={DNS_RECORD_TYPE_OPTIONS}
                                 value={DNS_RECORD_TYPE_OPTIONS.find((option) => option.value === field.value)}
                                 onChange={(option) => field.onChange(option?.value || '')}
-                                isClearable
+                                onBlur={field.onBlur}
                             />
+
+                            {fieldState.error && <div className={theme.form.error}>{fieldState.error.message}</div>}
                         </div>
                     </div>
                 )}

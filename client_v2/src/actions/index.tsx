@@ -2,8 +2,6 @@ import { createAction } from 'redux-actions';
 import i18next from 'i18next';
 import axios from 'axios';
 
-import endsWith from 'lodash/endsWith';
-import escapeRegExp from 'lodash/escapeRegExp';
 import React from 'react';
 import { compose } from 'redux';
 import type { Dispatch } from 'redux';
@@ -724,16 +722,10 @@ export const toggleBlocking =
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
         const { userRules } = getState().filtering;
         const previousRules = userRules;
-
-        const lineEnding = !endsWith(userRules, '\n') ? '\n' : '';
-
-        const blockingRule = type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule;
-        const unblockingRule = type === BLOCK_ACTIONS.BLOCK ? baseBlockingRule : baseUnblockingRule;
-        const preparedBlockingRule = new RegExp(`(^|\n)${escapeRegExp(blockingRule)}($|\n)`);
-        const preparedUnblockingRule = new RegExp(`(^|\n)${escapeRegExp(unblockingRule)}($|\n)`);
-
-        const matchPreparedBlockingRule = userRules.match(preparedBlockingRule);
-        const matchPreparedUnblockingRule = userRules.match(preparedUnblockingRule);
+        const desiredRule = type === BLOCK_ACTIONS.BLOCK ? baseBlockingRule : baseUnblockingRule;
+        const oppositeRule = type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule;
+        const currentRules = splitByNewLine(userRules);
+        const hasDesiredRule = currentRules.includes(desiredRule);
         const addedRuleMessageKey =
             type === BLOCK_ACTIONS.BLOCK
                 ? 'user_rules_rule_added_to_custom_filtering_rules'
@@ -747,23 +739,16 @@ export const toggleBlocking =
             },
         };
 
-        if (matchPreparedBlockingRule) {
-            await dispatch(setRules(userRules.replace(`${blockingRule}`, ''), { showToast: false }));
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_removed_from_custom_filtering_toast', { rule: blockingRule })),
-            );
-        } else if (!matchPreparedUnblockingRule) {
-            await dispatch(setRules(`${userRules}${lineEnding}${unblockingRule}\n`, { showToast: false }));
-            dispatch(addSuccessToast(undoToastPayload));
-        } else if (matchPreparedUnblockingRule) {
+        if (hasDesiredRule) {
             dispatch(addSuccessToast(intl.getMessage(addedRuleMessageKey)));
             return;
-        } else if (!matchPreparedBlockingRule) {
-            dispatch(
-                addSuccessToast(intl.getMessage('rule_removed_from_custom_filtering_toast', { rule: blockingRule })),
-            );
-            return;
         }
+
+        const updatedRules = currentRules.filter((rule) => rule !== desiredRule && rule !== oppositeRule);
+        updatedRules.push(desiredRule);
+
+        await dispatch(setRules(`${updatedRules.join('\n')}\n`, { showToast: false }));
+        dispatch(addSuccessToast(undoToastPayload));
 
         dispatch(getFilteringStatus());
     };

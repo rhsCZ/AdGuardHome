@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +13,9 @@ const mocks = vi.hoisted(() => ({
     getFilteringStatus: vi.fn(() => ({ type: 'getFilteringStatus' })),
     setRules: vi.fn((rules) => ({ type: 'setRules', payload: rules })),
     checkHost: vi.fn((payload) => ({ type: 'checkHost', payload })),
+    toggleFilterStatus: vi.fn((url, data, whitelist) =>
+        Promise.resolve({ type: 'toggleFilterStatus', payload: { url, data, whitelist } }),
+    ),
     initSettings: vi.fn(() => ({ type: 'initSettings' })),
     toggleBlocking: vi.fn((type, domain) => ({ type: 'toggleBlocking', payload: { type, domain } })),
     toggleBlockingForClient: vi.fn((type, domain, client) => ({
@@ -21,11 +24,13 @@ const mocks = vi.hoisted(() => ({
     })),
     toggleSetting: vi.fn(() => Promise.resolve(true)),
     getRewritesList: vi.fn(() => ({ type: 'getRewritesList' })),
-    updateRewrite: vi.fn((payload) => Promise.resolve({ type: 'updateRewrite', payload })),
-    deleteRewrite: vi.fn((payload) => Promise.resolve({ type: 'deleteRewrite', payload })),
+    updateRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'updateRewrite', payload, options })),
+    deleteRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'deleteRewrite', payload, options })),
     getBlockedServices: vi.fn(() => ({ type: 'getBlockedServices' })),
     getAllBlockedServices: vi.fn(() => ({ type: 'getAllBlockedServices' })),
-    updateBlockedServices: vi.fn((payload) => Promise.resolve({ type: 'updateBlockedServices', payload })),
+    updateBlockedServices: vi.fn((payload, options) =>
+        Promise.resolve({ type: 'updateBlockedServices', payload, options }),
+    ),
     addSuccessToast: vi.fn((message) => ({ type: 'addSuccessToast', payload: message })),
 }));
 
@@ -38,6 +43,7 @@ vi.mock('panel/actions/filtering', () => ({
     getFilteringStatus: mocks.getFilteringStatus,
     setRules: mocks.setRules,
     checkHost: mocks.checkHost,
+    toggleFilterStatus: mocks.toggleFilterStatus,
 }));
 
 vi.mock('panel/actions', () => ({
@@ -68,6 +74,22 @@ type RenderOptions = {
     settings?: Partial<RootState['settings']>;
     rewrites?: Partial<RootState['rewrites']>;
     services?: Partial<RootState['services']>;
+};
+
+type CheckResult = NonNullable<RootState['filtering']['check']>;
+
+const EXAMPLE_FILTER = {
+    id: 101,
+    name: 'Example Blocklist',
+    url: 'https://filters.example/blocklist.txt',
+    enabled: true,
+    lastUpdated: '',
+    rulesCount: 12,
+};
+
+const MATCHED_REWRITE = {
+    domain: 'rewrite.example',
+    answer: 'target.example',
 };
 
 const createState = (overrides: RenderOptions = {}): RootState => ({
@@ -106,56 +128,198 @@ const renderUserRules = (overrides: RenderOptions = {}) => {
     return render(<UserRules />);
 };
 
+const createCheckResult = (overrides: Partial<CheckResult> = {}): CheckResult =>
+    ({
+        hostname: 'example.test',
+        reason: FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
+        rules: [],
+        ...overrides,
+    }) as CheckResult;
+
+const renderCheckResult = (check: Partial<CheckResult>, overrides: RenderOptions = {}) =>
+    renderUserRules({
+        ...overrides,
+        filtering: {
+            ...overrides.filtering,
+            check: createCheckResult(check),
+        },
+    });
+
+const renderMatchedFilterResult = (hostname = 'filtered.example') =>
+    renderCheckResult(
+        {
+            hostname,
+            reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
+            rules: [{ filter_list_id: EXAMPLE_FILTER.id, text: `||${hostname}^` }],
+        },
+        {
+            filtering: {
+                filters: [EXAMPLE_FILTER],
+            },
+        },
+    );
+
+const renderMatchedRewriteResult = () =>
+    renderCheckResult(
+        {
+            hostname: MATCHED_REWRITE.domain,
+            reason: FILTERED_STATUS.REWRITE_RULE,
+            cname: MATCHED_REWRITE.answer,
+        },
+        {
+            rewrites: {
+                list: [MATCHED_REWRITE],
+            },
+        },
+    );
+
 const getBootstrapDispatchTypes = () => mocks.dispatch.mock.calls.map(([action]) => action?.type);
 
 const submitCheckForm = async (
     user: ReturnType<typeof userEvent.setup>,
     options: { hostname: string; client?: string; qtype?: string },
 ) => {
-    await user.type(screen.getByLabelText('Hostname or domain name'), options.hostname);
+    const qtype = options.qtype ?? 'A';
+
+    await user.type(screen.getByTestId('user-rules-check-hostname'), options.hostname);
 
     if (options.client) {
-        await user.type(screen.getByLabelText('Client identifier (name, ClientID, or IP address)'), options.client);
+        await user.type(screen.getByTestId('user-rules-check-client'), options.client);
     }
 
-    if (options.qtype) {
+    if (qtype !== 'A') {
         await user.click(screen.getByLabelText('DNS record type'));
-        await user.click(screen.getByText(options.qtype));
+        await user.click(within(screen.getByRole('listbox')).getByText(qtype));
     }
 
     await user.tab();
-    await user.click(screen.getByRole('button', { name: 'Check' }));
+    await user.click(screen.getByTestId('user-rules-check-submit'));
 };
+
+const expectRecheck = (hostname: string, client?: string, qtype = 'A') => {
+    expect(mocks.checkHost).toHaveBeenCalledWith({
+        name: hostname,
+        client,
+        qtype,
+    });
+};
+
+const resultActionScenarios = [
+    {
+        name: 'custom filtering blocks',
+        renderScenario: () =>
+            renderCheckResult({
+                hostname: 'blocked.example',
+                reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
+                rules: [{ filter_list_id: 0, text: '||blocked.example^' }],
+            }),
+        title: 'Domain is blocked',
+        actions: [['allow', 'Add to allowlist']],
+    },
+    {
+        name: 'parental results',
+        renderScenario: () =>
+            renderCheckResult({
+                hostname: 'adult.example',
+                reason: FILTERED_STATUS.FILTERED_PARENTAL,
+            }),
+        actions: [
+            ['allow', 'Add to allowlist'],
+            ['disable-parental', 'Disable Parental control'],
+        ],
+    },
+    {
+        name: 'non-custom filter blocks',
+        renderScenario: () => renderMatchedFilterResult(),
+        actions: [
+            ['allow', 'Add to allowlist'],
+            ['disable-filter', 'Disable filter'],
+        ],
+    },
+    {
+        name: 'processed results',
+        renderScenario: () =>
+            renderCheckResult({
+                hostname: 'plain.example',
+                reason: FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
+            }),
+        title: 'Domain is processed',
+        description: 'No rules matched',
+        rejectsObjectObject: true,
+        actions: [
+            ['allow', 'Add to allowlist'],
+            ['block', 'Block'],
+        ],
+    },
+    {
+        name: 'allowed results',
+        renderScenario: () =>
+            renderCheckResult({
+                hostname: 'allowed.example',
+                reason: FILTERED_STATUS.NOT_FILTERED_WHITE_LIST,
+                rules: [{ filter_list_id: 0, text: '@@||allowed.example^$important' }],
+            }),
+        title: 'Domain is allowed',
+        actions: [['block', 'Block']],
+    },
+];
+
+const settingToggleScenarios = [
+    {
+        name: 'safe browsing',
+        actionKind: 'disable-safebrowsing',
+        hostname: 'malware.example',
+        reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
+        settingKey: SETTINGS_NAMES.safebrowsing,
+        expectedSettingValue: true,
+        toast: 'Browsing security disabled',
+    },
+    {
+        name: 'parental control',
+        actionKind: 'disable-parental',
+        hostname: 'adult.example',
+        reason: FILTERED_STATUS.FILTERED_PARENTAL,
+        settingKey: SETTINGS_NAMES.parental,
+        expectedSettingValue: true,
+        toast: 'Parental control disabled',
+    },
+    {
+        name: 'safe search',
+        actionKind: 'disable-safesearch',
+        hostname: 'search.example',
+        reason: FILTERED_STATUS.FILTERED_SAFE_SEARCH,
+        settingKey: SETTINGS_NAMES.safesearch,
+        expectedSettingValue: expect.objectContaining({ enabled: false }),
+        toast: 'Safe search disabled',
+    },
+];
 
 beforeEach(() => {
     mocks.state = createState();
     mocks.dispatch.mockReset();
     mocks.dispatch.mockImplementation((action) => action);
 
-    mocks.getFilteringStatus.mockClear();
-    mocks.setRules.mockClear();
-    mocks.checkHost.mockClear();
-    mocks.initSettings.mockClear();
-    mocks.toggleBlocking.mockClear();
-    mocks.toggleBlockingForClient.mockClear();
-    mocks.toggleSetting.mockClear();
+    [
+        mocks.getFilteringStatus,
+        mocks.setRules,
+        mocks.checkHost,
+        mocks.toggleFilterStatus,
+        mocks.initSettings,
+        mocks.toggleBlocking,
+        mocks.toggleBlockingForClient,
+        mocks.toggleSetting,
+        mocks.getRewritesList,
+        mocks.updateRewrite,
+        mocks.deleteRewrite,
+        mocks.getBlockedServices,
+        mocks.getAllBlockedServices,
+        mocks.updateBlockedServices,
+        mocks.addSuccessToast,
+    ].forEach((mock) => mock.mockClear());
     mocks.toggleSetting.mockResolvedValue(true);
-    mocks.getRewritesList.mockClear();
-    mocks.updateRewrite.mockClear();
-    mocks.deleteRewrite.mockClear();
-    mocks.getBlockedServices.mockClear();
-    mocks.getAllBlockedServices.mockClear();
-    mocks.updateBlockedServices.mockClear();
-    mocks.addSuccessToast.mockClear();
 });
 
 describe('UserRules harness', () => {
-    it('loads Testing Library matchers', () => {
-        const view = render(<div>ready</div>);
-
-        expect(view.getByText('ready')).toBeInTheDocument();
-    });
-
     it('submits hostname, client, and qtype from the check form', async () => {
         const user = userEvent.setup();
 
@@ -174,18 +338,25 @@ describe('UserRules harness', () => {
         });
     });
 
+    it('uses the default qtype when submitting the check form', async () => {
+        const user = userEvent.setup();
+
+        renderUserRules();
+
+        await submitCheckForm(user, { hostname: 'required.example' });
+
+        expect(screen.getByTestId('user-rules-check-submit')).toBeEnabled();
+        expect(mocks.checkHost).toHaveBeenCalledWith({
+            name: 'required.example',
+            client: undefined,
+            qtype: 'A',
+        });
+    });
+
     it('bootstraps supporting state and hides the result card after dismiss', async () => {
         const user = userEvent.setup();
 
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'example.com',
-                    reason: FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
-                    rules: [],
-                },
-            },
-        });
+        renderCheckResult({ hostname: 'example.com' });
 
         await waitFor(() => {
             expect(getBootstrapDispatchTypes()).toEqual([
@@ -202,49 +373,60 @@ describe('UserRules harness', () => {
         expect(screen.queryByText('Domain is processed')).not.toBeInTheDocument();
     });
 
-    it('renders the allowlist action for a custom filtering block', () => {
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'blocked.example',
-                    reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
-                    rules: [{ filter_list_id: 0, text: '||blocked.example^' }],
-                },
-            },
-        });
+    resultActionScenarios.forEach(({ name, renderScenario, title, description, rejectsObjectObject, actions }) => {
+        it(`renders expected result actions for ${name}`, () => {
+            renderScenario();
 
-        expect(screen.getByText('Domain is blocked')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Add to allowlist' })).toBeInTheDocument();
+            if (title) {
+                expect(screen.getByText(title)).toBeInTheDocument();
+            }
+
+            if (description) {
+                expect(screen.getByText(description)).toBeInTheDocument();
+            }
+
+            if (rejectsObjectObject) {
+                expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+            }
+
+            actions.forEach(([actionKind, label]) => {
+                expect(screen.getByTestId(`user-rules-result-action-${actionKind}`)).toHaveTextContent(label);
+            });
+        });
     });
 
-    it('renders the custom-rule action for an unmatched domain', () => {
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'plain.example',
-                    reason: FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
-                    rules: [],
-                },
-            },
+    it('does not show qtype or source rows in the result details', async () => {
+        const user = userEvent.setup();
+
+        renderMatchedFilterResult();
+
+        await submitCheckForm(user, { hostname: 'filtered.example', qtype: 'A' });
+
+        const resultCard = screen.getByTestId('user-rules-result-card');
+
+        expect(within(resultCard).queryByText(/DNS record type:/)).not.toBeInTheDocument();
+        expect(within(resultCard).queryByText(/Source:/)).not.toBeInTheDocument();
+    });
+
+    it('does not show a reason row when a matched filter has no source name', () => {
+        renderCheckResult({
+            hostname: 'filtered.example',
+            reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
+            rules: [{ filter_list_id: 999, text: '||filtered.example^' }],
         });
 
-        expect(screen.getByText('Domain is processed')).toBeInTheDocument();
-        expect(screen.getByText('No rules matched')).toBeInTheDocument();
-        expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Add to custom filtering rules' })).toBeInTheDocument();
+        const resultCard = screen.getByTestId('user-rules-result-card');
+
+        expect(within(resultCard).queryByText('Reason:', { selector: 'strong' })).not.toBeInTheDocument();
     });
 
     it('uses the client-specific toggle when allowlisting a client-specific block', async () => {
         const user = userEvent.setup();
 
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'blocked.example',
-                    reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
-                    rules: [{ filter_list_id: 0, text: '||blocked.example^' }],
-                },
-            },
+        renderCheckResult({
+            hostname: 'blocked.example',
+            reason: FILTERED_STATUS.FILTERED_BLACK_LIST,
+            rules: [{ filter_list_id: 0, text: '||blocked.example^' }],
         });
 
         await submitCheckForm(user, {
@@ -261,117 +443,126 @@ describe('UserRules harness', () => {
             'office-laptop',
         );
         expect(mocks.toggleBlocking).not.toHaveBeenCalled();
-        expect(mocks.checkHost).toHaveBeenCalledWith({
-            name: 'blocked.example',
-            client: 'office-laptop',
-            qtype: undefined,
-        });
+        expectRecheck('blocked.example', 'office-laptop');
     });
 
-    it('disables safe browsing from a blocked result and rechecks the target', async () => {
+    settingToggleScenarios.forEach(
+        ({ name, actionKind, hostname, reason, settingKey, expectedSettingValue, toast }) => {
+            it(`disables ${name} from result actions and rechecks the target`, async () => {
+                const user = userEvent.setup();
+
+                renderCheckResult({ hostname, reason });
+
+                await submitCheckForm(user, { hostname });
+                mocks.checkHost.mockClear();
+
+                await user.click(screen.getByTestId(`user-rules-result-action-${actionKind}`));
+
+                expect(mocks.toggleSetting).toHaveBeenCalledWith(settingKey, expectedSettingValue);
+                expect(mocks.addSuccessToast).toHaveBeenCalledWith(toast);
+                expectRecheck(hostname);
+            });
+        },
+    );
+
+    it('disables the matched filter and rechecks the host', async () => {
         const user = userEvent.setup();
 
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'malware.example',
-                    reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
-                    rules: [],
-                },
-            },
-        });
+        renderMatchedFilterResult();
 
-        await submitCheckForm(user, {
-            hostname: 'malware.example',
-        });
-
+        await submitCheckForm(user, { hostname: 'filtered.example', qtype: 'A' });
         mocks.checkHost.mockClear();
-        await user.click(screen.getByRole('button', { name: 'Disable Browsing security' }));
 
-        expect(mocks.toggleSetting).toHaveBeenCalledWith(SETTINGS_NAMES.safebrowsing, true);
-        expect(mocks.checkHost).toHaveBeenCalledWith({
-            name: 'malware.example',
-            client: undefined,
-            qtype: undefined,
-        });
+        await user.click(screen.getByTestId('user-rules-result-action-disable-filter'));
+
+        expect(mocks.toggleFilterStatus).toHaveBeenCalledWith(
+            'https://filters.example/blocklist.txt',
+            {
+                name: EXAMPLE_FILTER.name,
+                url: EXAMPLE_FILTER.url,
+                enabled: false,
+            },
+            false,
+        );
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Example Blocklist was disabled');
+        expectRecheck('filtered.example');
     });
 
-    it('removes the matched blocked service and rechecks the current target', async () => {
+    it('allows the blocked service with the user-rules toast copy', async () => {
         const user = userEvent.setup();
 
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'video.example',
-                    reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
-                    rules: [],
-                    service_name: 'YouTube',
+        renderCheckResult(
+            {
+                hostname: 'video.example',
+                reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
+                service_name: 'YouTube',
+            },
+            {
+                services: {
+                    list: {
+                        ids: ['youtube'],
+                    },
+                    allServices: [{ id: 'youtube', name: 'YouTube' }],
                 },
             },
-            services: {
-                list: {
-                    ids: ['youtube'],
-                },
-                allServices: [{ id: 'youtube', name: 'YouTube' }],
-            },
-        });
+        );
 
         await submitCheckForm(user, {
             hostname: 'video.example',
         });
 
         mocks.checkHost.mockClear();
-        await user.click(screen.getByRole('button', { name: 'Disable blocked service' }));
+        await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
 
-        expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] });
-        expect(mocks.checkHost).toHaveBeenCalledWith({
-            name: 'video.example',
-            client: undefined,
-            qtype: undefined,
-        });
-    });
-
-    it('shows edit and delete actions only for rewrite-list results', () => {
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'rewrite.example',
-                    reason: FILTERED_STATUS.REWRITE_RULE,
-                    cname: 'target.example',
-                    rules: [],
-                },
-            },
-            rewrites: {
-                list: [{ domain: 'rewrite.example', answer: 'target.example' }],
-            },
-        });
-
-        expect(screen.getByRole('button', { name: 'Edit DNS rewrite' })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+        expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] }, { showToast: false });
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith('The YouTube service was allowed');
+        expectRecheck('video.example');
     });
 
     it('does not show rewrite edit actions for hosts-file rewrites', () => {
-        renderUserRules({
-            filtering: {
-                check: {
-                    hostname: 'hosts.example',
-                    reason: FILTERED_STATUS.REWRITE_HOSTS,
-                    ip_addrs: ['127.0.0.1'],
-                    rules: [],
-                },
-            },
+        renderCheckResult({
+            hostname: 'hosts.example',
+            reason: FILTERED_STATUS.REWRITE_HOSTS,
+            ip_addrs: ['127.0.0.1'],
         });
 
-        expect(screen.queryByRole('button', { name: 'Edit DNS rewrite' })).not.toBeInTheDocument();
+        expect(screen.queryByTestId('user-rules-result-action-edit-rewrite')).not.toBeInTheDocument();
     });
 
-    it('renders the check card before the result card in the right column', () => {
-        renderUserRules();
+    it('uses the User Rules delete toast when removing a matched rewrite', async () => {
+        const user = userEvent.setup();
 
-        const checkCard = screen.getByText('Check domain filtering globally or for a client').closest('div');
-        const resultCard = screen.queryByTestId('user-rules-result-card');
+        renderMatchedRewriteResult();
 
-        expect(checkCard).toBeTruthy();
-        expect(resultCard).toBeNull();
+        expect(screen.getByTestId('user-rules-result-action-edit-rewrite')).toHaveTextContent('Edit DNS rewrite');
+        expect(screen.getByTestId('user-rules-result-action-delete-rewrite')).toHaveTextContent('Remove DNS rewrite');
+
+        await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
+        await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+        expect(mocks.deleteRewrite).toHaveBeenCalledWith(MATCHED_REWRITE, { showToast: false });
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Rule removed from DNS rewrite');
+    });
+
+    it('uses the generic changes-saved toast when editing a matched rewrite', async () => {
+        const user = userEvent.setup();
+
+        renderMatchedRewriteResult();
+
+        await user.click(screen.getByTestId('user-rules-result-action-edit-rewrite'));
+        await user.clear(screen.getByLabelText('Answer'));
+        await user.type(screen.getByLabelText('Answer'), 'new-target.example');
+
+        const dialog = screen.getByRole('dialog');
+        await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+
+        expect(mocks.updateRewrite).toHaveBeenCalledWith(
+            {
+                target: MATCHED_REWRITE,
+                update: { ...MATCHED_REWRITE, answer: 'new-target.example' },
+            },
+            { showToast: false },
+        );
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Changes saved');
     });
 });

@@ -33,8 +33,12 @@ export type ResultActionKind =
     | 'disable-blocked-service'
     | 'disable-filter'
     | 'edit-rewrite'
-    | 'delete-rewrite'
-    | 'none';
+    | 'delete-rewrite';
+
+export type ResultAction = {
+    kind: ResultActionKind;
+    label: string;
+};
 
 export type RewriteEntry = {
     domain: string;

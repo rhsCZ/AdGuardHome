@@ -7,7 +7,7 @@ import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import intl from 'panel/common/intl';
 import { PageLoader } from 'panel/common/ui/Loader';
 import { initSettings, toggleBlocking, toggleBlockingForClient, toggleSetting } from 'panel/actions';
-import { getFilteringStatus, setRules, checkHost } from 'panel/actions/filtering';
+import { getFilteringStatus, setRules, checkHost, toggleFilterStatus } from 'panel/actions/filtering';
 import { getRewritesList, updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
 import { getBlockedServices, getAllBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
@@ -20,14 +20,32 @@ import { CheckResult } from './blocks/CheckResult';
 import { Examples } from './blocks/Examples';
 import { RewriteDialog } from './blocks/RewriteDialog';
 import { RulesEditor } from './blocks/RulesEditor';
-import { CheckFormValues, ResultActionKind, RewriteDialogState, RewriteEntry, UserRulesFormValues } from './types';
+import { CheckFormValues, DNS_RECORD_TYPE_OPTIONS, ResultActionKind, RewriteDialogState, RewriteEntry, UserRulesFormValues } from './types';
 
 import s from './UserRules.module.pcss';
+
+const getPlainText = (value: React.ReactNode): string => {
+    if (typeof value === 'string' || typeof value === 'number') {
+        return String(value);
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(getPlainText).join('');
+    }
+
+    if (React.isValidElement(value)) {
+        return getPlainText(value.props.children);
+    }
+
+    return '';
+};
 
 export const UserRules = () => {
     const dispatch = useDispatch();
 
     const userRules = useSelector((state: RootState) => state.filtering.userRules);
+    const filters = useSelector((state: RootState) => state.filtering.filters);
+    const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
     const processingRules = useSelector((state: RootState) => state.filtering.processingRules);
     const processingCheck = useSelector((state: RootState) => state.filtering.processingCheck);
     const processingFilters = useSelector((state: RootState) => state.filtering.processingFilters);
@@ -71,7 +89,7 @@ export const UserRules = () => {
         defaultValues: {
             userRules: userRules || '',
         },
-        mode: 'onBlur',
+        mode: 'onChange',
     });
 
     useEffect(() => {
@@ -86,9 +104,9 @@ export const UserRules = () => {
         defaultValues: {
             hostname: '',
             client: '',
-            qtype: '',
+            qtype: DNS_RECORD_TYPE_OPTIONS[0].value,
         },
-        mode: 'onBlur',
+        mode: 'onChange',
     });
 
     const matchedRewrite = useMemo(() => {
@@ -161,7 +179,7 @@ export const UserRules = () => {
             return;
         }
 
-        dispatch(addSuccessToast(intl.getMessage('disabled_browsing_security_toast')));
+        dispatch(addSuccessToast(intl.getMessage('user_rules_browsing_security_disabled')));
         await recheckCurrentTarget();
     };
 
@@ -171,7 +189,7 @@ export const UserRules = () => {
             return;
         }
 
-        dispatch(addSuccessToast(intl.getMessage('disabled_parental_toast')));
+        dispatch(addSuccessToast(intl.getMessage('user_rules_parental_control_disabled')));
         await recheckCurrentTarget();
     };
 
@@ -186,21 +204,63 @@ export const UserRules = () => {
             return;
         }
 
-        dispatch(addSuccessToast(intl.getMessage('disabled_safe_search_toast')));
+        dispatch(addSuccessToast(intl.getMessage('user_rules_safe_search_disabled')));
         await recheckCurrentTarget();
     };
 
-    const handleDisableBlockedService = async () => {
+    const handleDisableFilter = async () => {
+        const filterId = checkResult?.rules?.[0]?.filter_list_id;
+        if (filterId === undefined) {
+            return;
+        }
+
+        const matchedFilter =
+            filters.find((filter) => filter.id === filterId) ??
+            whitelistFilters.find((filter) => filter.id === filterId);
+        if (!matchedFilter) {
+            return;
+        }
+
+        const isWhitelist = whitelistFilters.some((filter) => filter.id === filterId);
+
+        await dispatch(
+            toggleFilterStatus(
+                matchedFilter.url,
+                {
+                    name: matchedFilter.name,
+                    url: matchedFilter.url,
+                    enabled: false,
+                },
+                isWhitelist,
+            ),
+        );
+        dispatch(
+            addSuccessToast(
+                getPlainText(intl.getMessage('user_rules_filter_was_disabled', { value: matchedFilter.name })),
+            ),
+        );
+        await recheckCurrentTarget();
+    };
+
+    const handleAllowBlockedService = async () => {
         const matchedService = services.allServices.find((service) => service.name === checkResult?.service_name);
         if (!matchedService) {
             return;
         }
 
         await dispatch(
-            updateBlockedServices({
-                ...services.list,
-                ids: (services.list.ids || []).filter((id) => id !== matchedService.id),
-            }),
+            updateBlockedServices(
+                {
+                    ...services.list,
+                    ids: (services.list.ids || []).filter((id) => id !== matchedService.id),
+                },
+                { showToast: false },
+            ),
+        );
+        dispatch(
+            addSuccessToast(
+                getPlainText(intl.getMessage('user_rules_service_allowed', { value: matchedService.name })),
+            ),
         );
         await recheckCurrentTarget();
     };
@@ -210,7 +270,8 @@ export const UserRules = () => {
             return;
         }
 
-        await dispatch(updateRewrite({ target: matchedRewrite, update }));
+        await dispatch(updateRewrite({ target: matchedRewrite, update }, { showToast: false }));
+        dispatch(addSuccessToast(intl.getMessage('settings_notify_changes_saved')));
         setRewriteDialogState(null);
         await recheckCurrentTarget();
     };
@@ -220,7 +281,8 @@ export const UserRules = () => {
             return;
         }
 
-        await dispatch(deleteRewrite(rewriteToDelete));
+        await dispatch(deleteRewrite(rewriteToDelete, { showToast: false }));
+        dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
         setRewriteToDelete(null);
         await recheckCurrentTarget();
     };
@@ -243,12 +305,13 @@ export const UserRules = () => {
                 await handleDisableSafeSearch();
                 break;
             case 'disable-blocked-service':
-                await handleDisableBlockedService();
+                await handleAllowBlockedService();
                 break;
             case 'disable-filter':
+                await handleDisableFilter();
+                break;
             case 'edit-rewrite':
             case 'delete-rewrite':
-            case 'none':
             default:
                 break;
         }
@@ -285,7 +348,7 @@ export const UserRules = () => {
 
                     <div className={s.check}>
                         <div className={s.card}>
-                            <h2 className={cn(theme.title.h6, s.sectionTitle)}>
+                            <h2 className={cn(theme.title.h6, s.checkTitle)}>
                                 {intl.getMessage('user_rules_check_title')}
                             </h2>
 
@@ -309,7 +372,6 @@ export const UserRules = () => {
                                 }
                                 onDeleteRewrite={() => matchedRewrite && setRewriteToDelete(matchedRewrite)}
                                 hasMatchedRewrite={Boolean(matchedRewrite)}
-                                checkedQtype={lastSubmittedCheck?.qtype}
                             />
                         )}
                     </div>

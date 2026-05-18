@@ -2,27 +2,87 @@ import intl from 'panel/common/intl';
 import { FILTERED_STATUS, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
 import { checkFiltered, getFilterName, type Filter } from 'panel/helpers/helpers';
 
-import { CheckResultData, ResultActionKind } from './types';
+import { CheckResultData, ResultAction, ResultActionKind } from './types';
 
 type CheckResultMeta = {
     tone: 'blocked' | 'allowed' | 'rewritten' | 'processed';
     title: string;
-    reason: string;
-    action: ResultActionKind;
+    reason?: string;
+    actions: ResultAction[];
     rule?: string;
     source?: string;
 };
+
+const getActionLabel = (action: ResultActionKind) => {
+    switch (action) {
+        case 'allow':
+            return intl.getMessage('user_rules_add_to_allowlist');
+        case 'block':
+            return intl.getMessage('block');
+        case 'disable-parental':
+            return intl.getMessage('user_rules_disable_parental_control');
+        case 'disable-safebrowsing':
+            return intl.getMessage('user_rules_disable_browsing_security');
+        case 'disable-safesearch':
+            return intl.getMessage('user_rules_disable_safe_search');
+        case 'disable-blocked-service':
+            return intl.getMessage('user_rules_allow_service');
+        case 'disable-filter':
+            return intl.getMessage('user_rules_disable_filter');
+        case 'edit-rewrite':
+            return intl.getMessage('user_rules_edit_dns_rewrite');
+        case 'delete-rewrite':
+            return intl.getMessage('user_rules_remove_dns_rewrite');
+        default:
+            return '';
+    }
+};
+
+const createAction = (kind: ResultActionKind): ResultAction => ({
+    kind,
+    label: getActionLabel(kind),
+});
 
 const getPrimaryRule = (rules: CheckResultData['rules']) => rules?.[0];
 
 const getSourceName = (rules: CheckResultData['rules'], filters: Filter[], whitelistFilters: Filter[]) => {
     const primaryRule = getPrimaryRule(rules);
+    const filterListId = primaryRule?.filter_list_id;
 
-    if (primaryRule?.filter_list_id === undefined) {
+    if (filterListId === undefined) {
         return undefined;
     }
 
-    return getFilterName(filters, whitelistFilters, primaryRule.filter_list_id);
+    if (Object.values(SPECIAL_FILTER_ID).includes(filterListId)) {
+        return getFilterName(filters, whitelistFilters, filterListId);
+    }
+
+    return (
+        filters.find((filter) => filter.id === filterListId)?.name ||
+        whitelistFilters.find((filter) => filter.id === filterListId)?.name
+    );
+};
+
+const getMatchedFilterReason = (isCustomRule: boolean, sourceName?: string) => {
+    if (isCustomRule) {
+        return intl.getMessage('user_rules_reason_blocked_by', {
+            source: intl.getMessage('custom_filtering_rules'),
+        });
+    }
+
+    if (!sourceName) {
+        return undefined;
+    }
+
+    return intl.getMessage('user_rules_reason_filtered_by', { source: sourceName });
+};
+
+const getMatchedAllowlistReason = (sourceName?: string) => {
+    if (!sourceName) {
+        return undefined;
+    }
+
+    return intl.getMessage('user_rules_reason_allowed_by', { source: sourceName });
 };
 
 export const getCheckResultMeta = ({
@@ -45,8 +105,10 @@ export const getCheckResultMeta = ({
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: isCustomRule ? 'Blocked by Custom filtering rules' : `Filtered by ${sourceName || 'filter'}`,
-                action: isCustomRule ? 'allow' : 'disable-filter',
+                reason: getMatchedFilterReason(isCustomRule, sourceName),
+                actions: isCustomRule
+                    ? [createAction('allow')]
+                    : [createAction('allow'), createAction('disable-filter')],
                 rule: primaryRule?.text,
                 source: sourceName,
             };
@@ -54,47 +116,51 @@ export const getCheckResultMeta = ({
             return {
                 tone: 'allowed',
                 title: intl.getMessage('user_rules_domain_is_allowed'),
-                reason: `Allowed by ${sourceName || 'allowlist'}`,
-                action: 'block',
+                reason: getMatchedAllowlistReason(sourceName),
+                actions: [createAction('block')],
                 rule: primaryRule?.text,
                 source: sourceName,
             };
         case FILTERED_STATUS.NOT_FILTERED_NOT_FOUND:
-        case 'NotFilteredError':
-        case 'FilteredInvalid':
+        case FILTERED_STATUS.NOT_FILTERED_ERROR:
+        case FILTERED_STATUS.FILTERED_INVALID:
             return {
                 tone: 'processed',
                 title: intl.getMessage('user_rules_domain_is_processed'),
                 reason: intl.getMessage('user_rules_no_rules_matched'),
-                action: 'block',
+                actions: [createAction('allow'), createAction('block')],
             };
         case FILTERED_STATUS.FILTERED_SAFE_BROWSING:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: `Blocked by ${intl.getMessage('safe_browsing')}`,
-                action: 'disable-safebrowsing',
+                reason: intl.getMessage('user_rules_reason_blocked_by', { source: intl.getMessage('safe_browsing') }),
+                actions: [createAction('allow'), createAction('disable-safebrowsing')],
             };
         case FILTERED_STATUS.FILTERED_PARENTAL:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: `Blocked by ${intl.getMessage('parental_control')}`,
-                action: 'disable-parental',
+                reason: intl.getMessage('user_rules_reason_blocked_by', {
+                    source: intl.getMessage('parental_control'),
+                }),
+                actions: [createAction('allow'), createAction('disable-parental')],
             };
         case FILTERED_STATUS.FILTERED_SAFE_SEARCH:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: `Blocked by ${intl.getMessage('safe_search')}`,
-                action: 'disable-safesearch',
+                reason: intl.getMessage('user_rules_reason_blocked_by', { source: intl.getMessage('safe_search') }),
+                actions: [createAction('allow'), createAction('disable-safesearch')],
             };
         case FILTERED_STATUS.FILTERED_BLOCKED_SERVICE:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: `Blocked by ${intl.getMessage('blocked_services')}`,
-                action: 'disable-blocked-service',
+                reason: intl.getMessage('user_rules_reason_blocked_by', {
+                    source: intl.getMessage('blocked_services'),
+                }),
+                actions: [createAction('allow'), createAction('disable-blocked-service')],
             };
         case FILTERED_STATUS.REWRITE:
         case FILTERED_STATUS.REWRITE_RULE:
@@ -102,14 +168,14 @@ export const getCheckResultMeta = ({
                 tone: 'rewritten',
                 title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
                 reason: intl.getMessage('rewrite_applied'),
-                action: 'none',
+                actions: [],
             };
         case FILTERED_STATUS.REWRITE_HOSTS:
             return {
                 tone: 'rewritten',
                 title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
                 reason: intl.getMessage('rewrite_hosts_applied'),
-                action: 'none',
+                actions: [],
                 source: intl.getMessage('system_host_files'),
             };
         default: {
@@ -121,31 +187,10 @@ export const getCheckResultMeta = ({
                     ? intl.getMessage('user_rules_domain_blocked')
                     : intl.getMessage('user_rules_domain_is_processed'),
                 reason: reason || intl.getMessage('check_not_found'),
-                action: 'none',
+                actions: [],
                 rule: primaryRule?.text,
                 source: sourceName,
             };
         }
-    }
-};
-
-export const getActionLabel = (action: ResultActionKind) => {
-    switch (action) {
-        case 'allow':
-            return intl.getMessage('user_rules_add_to_allowlist');
-        case 'block':
-            return intl.getMessage('user_rules_add_to_custom_filtering_rules');
-        case 'disable-parental':
-            return intl.getMessage('user_rules_disable_parental_control');
-        case 'disable-safebrowsing':
-            return intl.getMessage('user_rules_disable_browsing_security');
-        case 'disable-safesearch':
-            return intl.getMessage('user_rules_disable_safe_search');
-        case 'disable-blocked-service':
-            return intl.getMessage('user_rules_disable_blocked_service');
-        case 'disable-filter':
-            return intl.getMessage('user_rules_disable_filter');
-        default:
-            return '';
     }
 };

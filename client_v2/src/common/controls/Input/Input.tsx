@@ -1,6 +1,9 @@
-import React, { ComponentProps, forwardRef, type ReactNode, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import type { ComponentProps, ChangeEvent, ReactNode } from 'react';
 import cn from 'clsx';
+import { Icon } from 'panel/common/ui/Icon';
 
+import intl from 'panel/common/intl';
 import s from './Input.module.pcss';
 
 type Props = Omit<ComponentProps<'input'>, 'size'> & {
@@ -14,7 +17,29 @@ type Props = Omit<ComponentProps<'input'>, 'size'> & {
     maxLength?: number | undefined;
     error?: boolean;
     errorMessage?: string;
+    isClearable?: boolean;
+    onClear?: () => void;
     size?: 'small' | 'medium' | 'large';
+};
+
+const assignInputRef = (ref: React.ForwardedRef<HTMLInputElement>, node: HTMLInputElement | null) => {
+    if (typeof ref === 'function') {
+        ref(node);
+        return;
+    }
+
+    if (ref) {
+        const mutableRef = ref;
+        mutableRef.current = node;
+    }
+};
+
+const hasInputValue = (value: ComponentProps<'input'>['value'] | ComponentProps<'input'>['defaultValue']) => {
+    if (Array.isArray(value)) {
+        return value.length > 0;
+    }
+
+    return String(value ?? '').length > 0;
 };
 
 export const Input = forwardRef<HTMLInputElement, Props>(
@@ -39,6 +64,8 @@ export const Input = forwardRef<HTMLInputElement, Props>(
             disabled,
             error,
             errorMessage,
+            isClearable,
+            onClear,
             size = 'large',
             autoComplete,
             ...rest
@@ -46,6 +73,45 @@ export const Input = forwardRef<HTMLInputElement, Props>(
         ref,
     ) => {
         const [focused, setFocused] = useState(false);
+        const inputRef = useRef<HTMLInputElement | null>(null);
+        const [hasValue, setHasValue] = useState(() => hasInputValue(value ?? rest.defaultValue));
+
+        useEffect(() => {
+            if (value !== undefined) {
+                setHasValue(hasInputValue(value));
+            }
+        }, [value]);
+
+        const setInputRef = (node: HTMLInputElement | null) => {
+            inputRef.current = node;
+            assignInputRef(ref, node);
+        };
+
+        const showClearButton = Boolean(isClearable && !disabled && !rest.readOnly && hasValue);
+        const hasActions = Boolean(suffixIcon || showClearButton);
+
+        const handleChange: ComponentProps<'input'>['onChange'] = (event) => {
+            setHasValue(event.currentTarget.value.length > 0);
+            onChange?.(event);
+        };
+
+        const handleClear = () => {
+            const node = inputRef.current;
+            if (!node) {
+                onClear?.();
+                setHasValue(false);
+                return;
+            }
+
+            node.value = '';
+            onChange?.({
+                target: node,
+                currentTarget: node,
+            } as ChangeEvent<HTMLInputElement>);
+
+            setHasValue(false);
+            onClear?.();
+        };
 
         const inputWrapperClass = cn(
             s.inputWrapper,
@@ -70,7 +136,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                         inputWrapperClass,
                         {
                             [s.prefix]: prefixIcon,
-                            [s.suffix]: suffixIcon,
+                            [s.suffix]: hasActions,
                             [s.invalid]: invalid,
                             [s.focused]: focused,
                             [s.disabled]: disabled,
@@ -81,14 +147,14 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                 >
                     {prefixIcon && prefixIcon}
                     <input
-                        ref={ref}
+                        ref={setInputRef}
                         accept={accept}
                         autoFocus={autoFocus}
                         className={cn(s.input, innerClassName, {
                             [s.prefix]: prefixIcon,
-                            [s.postfix]: suffixIcon,
+                            [s.postfix]: hasActions,
                         })}
-                        onChange={onChange}
+                        onChange={handleChange}
                         type={type}
                         id={id}
                         placeholder={placeholder}
@@ -106,7 +172,23 @@ export const Input = forwardRef<HTMLInputElement, Props>(
                         autoComplete={autoComplete}
                         {...rest}
                     />
-                    {suffixIcon && suffixIcon}
+                    {hasActions && (
+                        <div className={s.actions}>
+                            {showClearButton && (
+                                <button
+                                    type="button"
+                                    className={s.clearButton}
+                                    aria-label={intl.getMessage('aria_clear_input')}
+                                    data-testid="input-clear-button"
+                                    onMouseDown={(event) => event.preventDefault()}
+                                    onClick={handleClear}
+                                >
+                                    <Icon icon="cross" />
+                                </button>
+                            )}
+                            {suffixIcon && <div className={s.suffixIcon}>{suffixIcon}</div>}
+                        </div>
+                    )}
                 </div>
                 {errorMessage && <div className={s.inputError}>{errorMessage}</div>}
             </>

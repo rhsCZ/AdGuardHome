@@ -420,6 +420,7 @@ async function selectDnsRecordType(page: Page, value: string) {
     await control.click();
     await expect(page.locator('.select__menu')).toBeVisible();
     await page.locator('.select__menu').getByText(value, { exact: true }).click();
+    await page.keyboard.press('Tab');
 }
 
 test.describe('User rules desktop', () => {
@@ -450,7 +451,7 @@ test.describe('User rules desktop', () => {
         expect(checkHostRequests[0].searchParams.get('qtype')).toBe('CNAME');
         await expect(page.getByTestId('user-rules-result-title')).toHaveText('Domain is blocked');
 
-        await page.getByTestId('user-rules-result-primary-action').click();
+        await page.getByTestId('user-rules-result-action-allow').click();
 
         await expect.poll(() => setRulesPayloads.length).toBe(1);
         expect(setRulesPayloads[0].rules?.filter(Boolean)).toEqual([
@@ -459,7 +460,30 @@ test.describe('User rules desktop', () => {
         ]);
         await expect.poll(() => checkHostRequests.length).toBe(2);
         expect(checkHostRequests[1].searchParams.get('qtype')).toBe('CNAME');
+        await expect(page.getByTestId('toast')).toHaveCount(1);
+        await expect(page.getByTestId('toast').last()).toContainText('Rule added to allowlist');
+        await expect(page.getByTestId('toast-action')).toHaveText('Undo');
         await expect(page.getByTestId('user-rules-result-title')).toHaveText('Domain is allowed');
+    });
+
+    test('offers both actions for blocked services and allows the service', async ({ page }) => {
+        await openUserRules(page, {
+            blockedServicesList: {
+                ...DEFAULT_BLOCKED_SERVICES_LIST,
+                ids: ['youtube'],
+            },
+        });
+
+        await page.getByTestId('user-rules-check-hostname').fill('service.example');
+        await selectDnsRecordType(page, 'A');
+        await page.getByTestId('user-rules-check-submit').click();
+
+        await expect(page.getByTestId('user-rules-result-action-allow')).toHaveText('Add to allowlist');
+        await expect(page.getByTestId('user-rules-result-action-disable-blocked-service')).toHaveText('Allow service');
+
+        await page.getByTestId('user-rules-result-action-disable-blocked-service').click();
+
+        await expect(page.getByTestId('toast').last()).toContainText('The YouTube service was allowed');
     });
 });
 
@@ -475,11 +499,11 @@ test.describe('User rules mobile', () => {
         });
 
         await page.getByTestId('user-rules-check-hostname').fill('mobile.example');
-        await page.getByTestId('user-rules-check-hostname').press('Tab');
+        await selectDnsRecordType(page, 'A');
         await page.getByTestId('user-rules-check-submit').click();
 
         await expect(page.getByTestId('user-rules-check-submit')).toBeVisible();
         await expect(page.getByTestId('user-rules-result-card')).toBeVisible();
-        await expect(page.getByTestId('user-rules-result-primary-action')).toBeVisible();
+        await expect(page.getByTestId('user-rules-result-action-allow')).toBeVisible();
     });
 });

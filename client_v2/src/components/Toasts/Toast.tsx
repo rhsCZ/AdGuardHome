@@ -61,7 +61,7 @@ const Toast = ({ id, message, type, actionLabel, onAction }: ToastProps) => {
                     type="button"
                     className={s.actionButton}
                     data-testid="toast-action"
-                    onClick={() => void handleAction()}
+                    onClick={handleAction}
                 >
                     {actionLabel}
                 </button>

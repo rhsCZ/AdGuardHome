@@ -80,6 +80,7 @@ interface SelectProps<
     isDropdownSelect?: boolean;
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
+    onBlur?: () => void;
 }
 
 export const Select = <
@@ -120,6 +121,7 @@ export const Select = <
     isDropdownSelect,
     onMenuOpen,
     onMenuClose,
+    onBlur,
 }: SelectProps<T, Multi, ExtendOption, Group>) => {
     const selectClass = cn(
         { 'desktop-select-always': mobile === false },
@@ -183,6 +185,7 @@ export const Select = <
             isLoading={isLoading}
             onMenuOpen={onMenuOpen}
             onMenuClose={onMenuClose}
+            onBlur={onBlur}
         />
     );
 };

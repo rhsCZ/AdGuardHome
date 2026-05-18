@@ -974,6 +974,9 @@
     "user_rules_add_to_custom_filtering_rules": "Add to custom filtering rules",
     "user_rules_domain": "<strong>Domain:</strong> %value%",
     "user_rules_source": "<strong>Source:</strong> %value%",
+    "user_rules_reason_blocked_by": "Blocked by %source%",
+    "user_rules_reason_filtered_by": "Filtered by %source%",
+    "user_rules_reason_allowed_by": "Allowed by %source%",
     "user_rules_rule_added_to_allowlist": "Rule added to allowlist",
     "notify_undo": "Undo",
     "user_rules_domain_is_allowed": "Domain is allowed",
@@ -995,5 +998,6 @@
     "user_rules_service_allowed": "The <strong>%value%</strong> service was allowed",
     "user_rules_remove_dns_rewrite": "Remove DNS rewrite",
     "user_rules_edit_dns_rewrite": "Edit DNS rewrite",
-    "user_rules_dns_rewrite_removed": "Rule removed from DNS rewrite"
+    "user_rules_dns_rewrite_removed": "Rule removed from DNS rewrite",
+    "aria_clear_input": "Clear input"
 }

@@ -8,10 +8,16 @@ import { Icon } from 'panel/common/ui/Icon';
 import { FILTERED_STATUS } from 'panel/helpers/constants';
 import { RootState } from 'panel/initialState';
 
-import { getActionLabel, getCheckResultMeta } from '../checkResultHelpers';
-import { CheckResultData, ResultActionKind } from '../types';
+import { getCheckResultMeta } from '../../checkResultHelpers';
+import { CheckResultData, ResultActionKind } from '../../types';
 
-import s from '../UserRules.module.pcss';
+import s from './CheckResult.module.pcss';
+
+const STANDALONE_RESULT_REASONS = new Set([
+    FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
+    FILTERED_STATUS.NOT_FILTERED_ERROR,
+    FILTERED_STATUS.FILTERED_INVALID,
+]);
 
 type Props = {
     checkResult: CheckResultData;
@@ -21,7 +27,6 @@ type Props = {
     onEditRewrite?: () => void;
     onDeleteRewrite?: () => void;
     hasMatchedRewrite?: boolean;
-    checkedQtype?: string;
 };
 
 const getStatusClassName = (tone: ReturnType<typeof getCheckResultMeta>['tone']) => {
@@ -48,7 +53,6 @@ export const CheckResult = ({
     onEditRewrite,
     onDeleteRewrite,
     hasMatchedRewrite = false,
-    checkedQtype,
 }: Props) => {
     const filters = useSelector((state: RootState) => state.filtering.filters);
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
@@ -61,18 +65,28 @@ export const CheckResult = ({
 
     const meta = getCheckResultMeta({ reason, rules, filters, whitelistFilters });
     const statusClassName = getStatusClassName(meta.tone);
-    const actionLabel = getActionLabel(meta.action);
     const showRewriteActions = reason === FILTERED_STATUS.REWRITE_RULE && hasMatchedRewrite;
-    const hasStandaloneResultMessage =
-        reason === FILTERED_STATUS.NOT_FILTERED_NOT_FOUND ||
-        reason === 'NotFilteredError' ||
-        reason === 'FilteredInvalid';
+    const hasStandaloneResultMessage = reason ? STANDALONE_RESULT_REASONS.has(reason) : false;
+
+    const getReasonContent = () => {
+        if (hasStandaloneResultMessage) {
+           return meta.reason;
+        }
+
+        if (meta.reason) {
+            return intl.getMessage('user_rules_reason', { reason: meta.reason });
+        }
+
+        return null
+    }
+
+    const reasonContent = getReasonContent();
 
     return (
-        <div className={cn(s.checkResult, theme.text.t2)} data-testid="user-rules-result-card">
+        <div className={cn(s.checkResult, theme.text.t3)} data-testid="user-rules-result-card">
             <div className={s.checkResultHeader}>
                 <h3
-                    className={cn(theme.title.h6, s.checkResultTitle, statusClassName)}
+                    className={cn(s.checkResultTitle, theme.text.t3, theme.text.semibold, statusClassName)}
                     data-testid="user-rules-result-title"
                 >
                     {meta.title}
@@ -91,66 +105,51 @@ export const CheckResult = ({
                 )}
             </div>
 
-            <div className={s.resultItem}>{intl.getMessage('user_rules_domain', { value: hostname })}</div>
+            <div className={s.checkResultItems}>
+                <div className={s.resultItem}>{intl.getMessage('user_rules_domain', { value: hostname })}</div>
 
-            <div className={s.resultItem}>
-                {hasStandaloneResultMessage
-                    ? meta.reason
-                    : intl.getMessage('user_rules_reason', { reason: meta.reason })}
+                {reasonContent && <div className={s.resultItem}>{reasonContent}</div>}
+
+                {meta.rule && (
+                    <div className={s.resultItem}>{intl.getMessage('user_rules_rule', { rule: meta.rule })}</div>
+                )}
+
+                {service_name && (
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_service', { service: service_name })}
+                    </div>
+                )}
+
+                {cname && <div className={s.resultItem}>{intl.getMessage('user_rules_cname', { cname })}</div>}
+
+                {ip_addrs && ip_addrs.length > 0 && (
+                    <div className={s.resultItem}>{intl.getMessage('user_rules_ip', { ip: ip_addrs.join(', ') })}</div>
+                )}
             </div>
 
-            {checkedQtype && (
-                <div className={s.resultItem}>
-                    {intl.getMessage('user_rules_dns_record_type', { type: checkedQtype })}
-                </div>
-            )}
-
-            {meta.rule && (
-                <div className={s.resultItem}>{intl.getMessage('user_rules_rule', { rule: meta.rule })}</div>
-            )}
-
-            {meta.source && (
-                <div className={s.resultItem}>
-                    {intl.getMessage('user_rules_source', { value: meta.source })}
-                </div>
-            )}
-
-            {service_name && (
-                <div className={s.resultItem}>
-                    {intl.getMessage('user_rules_service', { service: service_name })}
-                </div>
-            )}
-
-            {cname && <div className={s.resultItem}>{intl.getMessage('user_rules_cname', { cname })}</div>}
-
-            {ip_addrs && ip_addrs.length > 0 && (
-                <div className={s.resultItem}>
-                    {intl.getMessage('user_rules_ip', { ip: ip_addrs.join(', ') })}
-                </div>
-            )}
-
             <div className={s.actionButtons}>
-                {meta.action !== 'none' && (
+                {meta.actions.map((action) => (
                     <button
+                        key={action.kind}
                         type="button"
                         disabled={processingRules}
-                        className={cn(s.actionLink, theme.text.t2)}
-                        data-testid="user-rules-result-primary-action"
-                        onClick={() => onAction(meta.action)}
+                        className={s.actionLink}
+                        data-testid={`user-rules-result-action-${action.kind}`}
+                        onClick={() => onAction(action.kind)}
                     >
-                        {actionLabel}
+                        {action.label}
                     </button>
-                )}
+                ))}
 
                 {showRewriteActions && onEditRewrite && (
                     <button
                         type="button"
                         disabled={processingRules}
-                        className={cn(s.actionLink, theme.text.t2)}
-                        data-testid="user-rules-result-edit-rewrite"
+                        className={s.actionLink}
+                        data-testid="user-rules-result-action-edit-rewrite"
                         onClick={onEditRewrite}
                     >
-                        {intl.getMessage('rewrite_edit')}
+                        {intl.getMessage('user_rules_edit_dns_rewrite')}
                     </button>
                 )}
 
@@ -158,11 +157,11 @@ export const CheckResult = ({
                     <button
                         type="button"
                         disabled={processingRules}
-                        className={cn(s.actionLink, theme.text.t2)}
-                        data-testid="user-rules-result-delete-rewrite"
+                        className={s.actionLink}
+                        data-testid="user-rules-result-action-delete-rewrite"
                         onClick={onDeleteRewrite}
                     >
-                        {intl.getMessage('delete_table_action')}
+                        {intl.getMessage('user_rules_remove_dns_rewrite')}
                     </button>
                 )}
             </div>

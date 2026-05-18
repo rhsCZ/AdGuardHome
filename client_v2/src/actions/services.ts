@@ -36,15 +36,20 @@ export const updateBlockedServicesRequest = createAction('UPDATE_BLOCKED_SERVICE
 export const updateBlockedServicesFailure = createAction('UPDATE_BLOCKED_SERVICES_FAILURE');
 export const updateBlockedServicesSuccess = createAction('UPDATE_BLOCKED_SERVICES_SUCCESS');
 
-export const updateBlockedServices = (values: any) => async (dispatch: any) => {
-    dispatch(updateBlockedServicesRequest());
-    try {
-        await apiClient.updateBlockedServices(values);
-        dispatch(updateBlockedServicesSuccess());
-        dispatch(getBlockedServices());
-        dispatch(addSuccessToast('blocked_services_saved'));
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(updateBlockedServicesFailure());
-    }
-};
+export const updateBlockedServices =
+    (values: any, options: { showToast?: boolean } = {}) =>
+    async (dispatch: any) => {
+        dispatch(updateBlockedServicesRequest());
+        try {
+            await apiClient.updateBlockedServices(values);
+            dispatch(updateBlockedServicesSuccess());
+            dispatch(getBlockedServices());
+
+            if (options.showToast !== false) {
+                dispatch(addSuccessToast('blocked_services_saved'));
+            }
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(updateBlockedServicesFailure());
+        }
+    };
