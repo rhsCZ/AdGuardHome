@@ -28,9 +28,12 @@ type Props = {
     onEditRewrite?: () => void;
     onDeleteRewrite?: () => void;
     hasMatchedRewrite?: boolean;
+    hiddenActionKinds?: ResultActionKind[];
 };
 
-const getStatusClassName = (tone: ReturnType<typeof getCheckResultMeta>['tone']) => {
+type CheckResultTone = ReturnType<typeof getCheckResultMeta>['tone'];
+
+const getStatusClassName = (tone: CheckResultTone) => {
     if (tone === 'blocked') {
         return s.checkResultTitleBlocked;
     }
@@ -54,6 +57,7 @@ export const CheckResult = ({
     onEditRewrite,
     onDeleteRewrite,
     hasMatchedRewrite = false,
+    hiddenActionKinds = [],
 }: Props) => {
     const filters = useSelector((state: RootState) => state.filtering.filters);
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
@@ -72,6 +76,7 @@ export const CheckResult = ({
     const hasStandaloneResultMessage = reason ? STANDALONE_RESULT_REASONS.has(reason) : false;
     const redirectedValue = cname || (ip_addrs && ip_addrs.length > 0 ? ip_addrs.join(', ') : null);
     const normalizedServiceName = service_name ? getServiceName(allServices, service_name) || service_name : null;
+    const hiddenActionKindSet = new Set(hiddenActionKinds);
 
     const getReasonContent = () => {
         if (hasStandaloneResultMessage) {
@@ -149,7 +154,7 @@ export const CheckResult = ({
             </div>
 
             <div className={s.actionButtons}>
-                {meta.actions.map((action) => (
+                {meta.actions.filter((action) => !hiddenActionKindSet.has(action.kind)).map((action) => (
                     <button
                         key={action.kind}
                         type="button"

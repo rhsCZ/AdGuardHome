@@ -4,6 +4,8 @@ import { checkFiltered, getFilterName, type Filter } from 'panel/helpers/helpers
 
 import { CheckResultData, ResultAction, ResultActionKind } from './types';
 
+type CheckResultRule = NonNullable<CheckResultData['rules']>[number];
+
 type CheckResultMeta = {
     tone: 'blocked' | 'allowed' | 'rewritten' | 'processed';
     title: string;
@@ -43,7 +45,7 @@ const createAction = (kind: ResultActionKind): ResultAction => ({
     label: getActionLabel(kind),
 });
 
-const getPrimaryRule = (rules: CheckResultData['rules']) => rules?.[0];
+const getPrimaryRule = (rules?: CheckResultData['rules']): CheckResultRule | undefined => rules?.[0];
 
 const getSourceName = (rules: CheckResultData['rules'], filters: Filter[], whitelistFilters: Filter[]) => {
     const primaryRule = getPrimaryRule(rules);

@@ -1,9 +1,26 @@
 import { createAction } from 'redux-actions';
 
 import intl from 'panel/common/intl';
+import type { AppDispatch, AppGetState } from 'panel/store/types';
 import { normalizeFilteringStatus, normalizeRulesTextarea } from '../helpers/helpers';
 import { apiClient } from '../api/Api';
 import { addErrorToast, addSuccessToast } from './toasts';
+
+type RulesMutationOptions = {
+    showToast?: boolean;
+};
+
+type CheckHostRequest = {
+    name: string;
+    client?: string;
+    qtype?: string;
+};
+
+type FilterUrlConfig = {
+    name: string;
+    url: string;
+    enabled: boolean;
+};
 
 export const toggleFilteringModal = createAction('FILTERING_MODAL_TOGGLE');
 export const setFilterModalUrl = createAction('SET_FILTER_MODAL_URL');
@@ -13,7 +30,7 @@ export const getFilteringStatusRequest = createAction('GET_FILTERING_STATUS_REQU
 export const getFilteringStatusFailure = createAction('GET_FILTERING_STATUS_FAILURE');
 export const getFilteringStatusSuccess = createAction('GET_FILTERING_STATUS_SUCCESS');
 
-export const getFilteringStatus = () => async (dispatch: any) => {
+export const getFilteringStatus = () => async (dispatch: AppDispatch) => {
     dispatch(getFilteringStatusRequest());
     try {
         const status = await apiClient.getFilteringStatus();
@@ -29,8 +46,8 @@ export const setRulesFailure = createAction('SET_RULES_FAILURE');
 export const setRulesSuccess = createAction('SET_RULES_SUCCESS');
 
 export const setRules =
-    (rules: any, options: { showToast?: boolean } = {}) =>
-    async (dispatch: any) => {
+    (rules: string, options: RulesMutationOptions = {}) =>
+    async (dispatch: AppDispatch): Promise<boolean> => {
         dispatch(setRulesRequest());
         try {
             const normalizedUserRules = normalizeRulesTextarea(rules) || '';
@@ -48,9 +65,13 @@ export const setRules =
                     userRules: normalizedUserRules,
                 }),
             );
+
+            return true;
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(setRulesFailure());
+
+            return false;
         }
     };
 
@@ -60,7 +81,7 @@ export const addFilterSuccess = createAction('ADD_FILTER_SUCCESS');
 
 export const addFilter =
     (url: any, name: any, whitelist = false) =>
-    async (dispatch: any, getState: any) => {
+    async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(addFilterRequest());
         try {
             await apiClient.addFilter({ url, name, whitelist });
@@ -81,7 +102,7 @@ export const removeFilterSuccess = createAction('REMOVE_FILTER_SUCCESS');
 
 export const removeFilter =
     (url: any, whitelist = false) =>
-    async (dispatch: any, getState: any) => {
+    async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(removeFilterRequest());
         try {
             await apiClient.removeFilter({ url, whitelist });
@@ -102,16 +123,20 @@ export const toggleFilterFailure = createAction('FILTER_TOGGLE_FAILURE');
 export const toggleFilterSuccess = createAction('FILTER_TOGGLE_SUCCESS');
 
 export const toggleFilterStatus =
-    (url: any, data: any, whitelist = false) =>
-    async (dispatch: any) => {
+    (url: string, data: FilterUrlConfig, whitelist = false) =>
+    async (dispatch: AppDispatch): Promise<boolean> => {
         dispatch(toggleFilterRequest());
         try {
             await apiClient.setFilterUrl({ url, data, whitelist });
             dispatch(toggleFilterSuccess(url));
             dispatch(getFilteringStatus());
+
+            return true;
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(toggleFilterFailure());
+
+            return false;
         }
     };
 
@@ -121,7 +146,7 @@ export const editFilterSuccess = createAction('EDIT_FILTER_SUCCESS');
 
 export const editFilter =
     (url: any, data: any, whitelist = false) =>
-    async (dispatch: any, getState: any) => {
+    async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(editFilterRequest());
         try {
             await apiClient.setFilterUrl({ url, data, whitelist });
@@ -141,7 +166,7 @@ export const refreshFiltersRequest = createAction('FILTERING_REFRESH_REQUEST');
 export const refreshFiltersFailure = createAction('FILTERING_REFRESH_FAILURE');
 export const refreshFiltersSuccess = createAction('FILTERING_REFRESH_SUCCESS');
 
-export const refreshFilters = (config: any) => async (dispatch: any) => {
+export const refreshFilters = (config: any) => async (dispatch: AppDispatch) => {
     dispatch(refreshFiltersRequest());
     try {
         const data = await apiClient.refreshFilters(config);
@@ -165,7 +190,7 @@ export const setFiltersConfigRequest = createAction('SET_FILTERS_CONFIG_REQUEST'
 export const setFiltersConfigFailure = createAction('SET_FILTERS_CONFIG_FAILURE');
 export const setFiltersConfigSuccess = createAction('SET_FILTERS_CONFIG_SUCCESS');
 
-export const setFiltersConfig = (config: any) => async (dispatch: any) => {
+export const setFiltersConfig = (config: any) => async (dispatch: AppDispatch) => {
     dispatch(setFiltersConfigRequest());
     try {
         await apiClient.setFiltersConfig(config);
@@ -186,7 +211,7 @@ export const checkHostSuccess = createAction('CHECK_HOST_SUCCESS');
  * @param {string} host.name
  * @returns {undefined}
  */
-export const checkHost = (host: any) => async (dispatch: any) => {
+export const checkHost = (host: CheckHostRequest) => async (dispatch: AppDispatch): Promise<boolean> => {
     dispatch(checkHostRequest());
     try {
         const data = await apiClient.checkHost(host);
@@ -198,8 +223,12 @@ export const checkHost = (host: any) => async (dispatch: any) => {
                 ...data,
             }),
         );
+
+        return true;
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(checkHostFailure());
+
+        return false;
     }
 };

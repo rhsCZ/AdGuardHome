@@ -35,7 +35,7 @@ type ConfigureRewritesModalIdType = 'ADD_REWRITE' | 'EDIT_REWRITE';
 type Props = {
     modalId: ConfigureRewritesModalIdType;
     rewriteToEdit?: FormValues;
-    onSubmit?: (values: FormValues) => void | Promise<void>;
+    onSubmit?: (values: FormValues) => boolean | void | Promise<boolean | void>;
     onClose?: () => void;
 };
 
@@ -84,8 +84,11 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
 
     const handleFormSubmit = async (values: FormValues) => {
         if (onSubmit) {
-            await onSubmit(values);
-            closeDialog();
+            const shouldClose = await onSubmit(values);
+
+            if (shouldClose !== false) {
+                closeDialog();
+            }
 
             return;
         }

@@ -15,7 +15,7 @@ type Props = {
         enabled: boolean;
     };
     setRewriteToDelete: Dispatch<SetStateAction<{ answer: string; domain: string; enabled: boolean }>>;
-    onConfirm?: () => void | Promise<void>;
+    onConfirm?: () => boolean | void | Promise<boolean | void>;
     onClose?: () => void;
 };
 
@@ -37,8 +37,11 @@ export const DeleteRewriteModal = ({ rewriteToDelete, setRewriteToDelete, onConf
 
     const handleDeleteConfirm = async () => {
         if (onConfirm) {
-            await onConfirm();
-            handleDeleteClose();
+            const shouldClose = await onConfirm();
+
+            if (shouldClose !== false) {
+                handleDeleteClose();
+            }
 
             return;
         }

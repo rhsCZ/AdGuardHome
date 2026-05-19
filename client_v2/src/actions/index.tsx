@@ -5,6 +5,7 @@ import React from 'react';
 import { compose } from 'redux';
 import type { Dispatch } from 'redux';
 import intl, { type LocalesType } from 'panel/common/intl';
+import type { AppDispatch, AppGetState } from 'panel/store/types';
 import {
     splitByNewLine,
     sortClients,
@@ -716,16 +717,23 @@ export const updateStaticLease = (config: any) => async (dispatch: any) => {
 
 export const removeToast = createAction('REMOVE_TOAST');
 
+type BlockAction = (typeof BLOCK_ACTIONS)[keyof typeof BLOCK_ACTIONS];
+
 export const toggleBlocking =
-    (type: any, domain: any, baseRule?: string, baseUnblocking?: string, matchedRuleToReplace?: string) =>
-    async (dispatch: any, getState: any) => {
+    (
+        type: BlockAction,
+        domain: string,
+        baseRule?: string,
+        baseUnblocking?: string,
+        matchedRuleToReplace?: string,
+    ) =>
+    async (dispatch: AppDispatch, getState: AppGetState): Promise<boolean> => {
         const baseBlockingRule = baseRule || `||${domain}^$important`;
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
-        const { userRules } = getState().filtering;
-        const previousRules = userRules;
+        const previousRules = getState().filtering?.userRules || '';
         const desiredRule = type === BLOCK_ACTIONS.BLOCK ? baseBlockingRule : baseUnblockingRule;
         const oppositeRule = type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule;
-        const currentRules = splitByNewLine(userRules);
+        const currentRules = splitByNewLine(previousRules);
         const hasDesiredRule = currentRules.includes(desiredRule);
         const rulesToReplace = [oppositeRule, matchedRuleToReplace].filter(
             (rule): rule is string => Boolean(rule) && rule !== desiredRule,
@@ -733,33 +741,44 @@ export const toggleBlocking =
         const hasRuleToReplace = rulesToReplace.some((rule) => currentRules.includes(rule));
         const addedRuleMessageKey =
             type === BLOCK_ACTIONS.BLOCK
-                ? 'user_rules_rule_added_to_custom_filtering_rules'
-                : 'user_rules_rule_added_to_allowlist';
+                ? intl.getMessage('user_rules_rule_added_to_custom_filtering_rules')
+                : intl.getMessage('user_rules_rule_added_to_allowlist');
         const undoToastPayload = {
-            message: intl.getMessage(addedRuleMessageKey),
+            message: addedRuleMessageKey,
             actionLabel: intl.getMessage('notify_undo'),
             onAction: async () => {
-                await dispatch(setRules(previousRules, { showToast: false }));
-                await dispatch(getFilteringStatus());
+                const didUndo = (await dispatch(setRules(previousRules, { showToast: false }))) as boolean;
+
+                if (didUndo) {
+                    await dispatch(getFilteringStatus());
+                }
             },
         };
 
         if (hasDesiredRule && !hasRuleToReplace) {
-            dispatch(addSuccessToast(intl.getMessage(addedRuleMessageKey)));
-            return;
+            dispatch(addSuccessToast(addedRuleMessageKey));
+
+            return true;
         }
 
         const rulesToRemove = new Set([desiredRule, ...rulesToReplace]);
         const updatedRules = currentRules.filter((rule: string) => !rulesToRemove.has(rule));
         updatedRules.push(desiredRule);
 
-        await dispatch(setRules(`${updatedRules.join('\n')}\n`, { showToast: false }));
+        const didSave = (await dispatch(setRules(`${updatedRules.join('\n')}\n`, { showToast: false }))) as boolean;
+
+        if (!didSave) {
+            return false;
+        }
+
         dispatch(addSuccessToast(undoToastPayload));
 
         await dispatch(getFilteringStatus());
+
+        return true;
     };
 
-export const toggleBlockingForClient = (type: any, domain: any, client: any) => {
+export const toggleBlockingForClient = (type: BlockAction, domain: string, client: string) => {
     const escapedClientName = client
         .replace(/'/g, "\\'")
         .replace(/"/g, '\\"')

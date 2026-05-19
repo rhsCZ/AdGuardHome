@@ -1,12 +1,18 @@
 import { createAction } from 'redux-actions';
+import type { AppDispatch } from 'panel/store/types';
 import { apiClient } from '../api/Api';
 import { addErrorToast } from './toasts';
+
+type BlockedServicesUpdate = {
+    ids: string[];
+    schedule?: unknown;
+};
 
 export const getBlockedServicesRequest = createAction('GET_BLOCKED_SERVICES_REQUEST');
 export const getBlockedServicesFailure = createAction('GET_BLOCKED_SERVICES_FAILURE');
 export const getBlockedServicesSuccess = createAction('GET_BLOCKED_SERVICES_SUCCESS');
 
-export const getBlockedServices = () => async (dispatch: any) => {
+export const getBlockedServices = () => async (dispatch: AppDispatch) => {
     dispatch(getBlockedServicesRequest());
     try {
         const data = await apiClient.getBlockedServices();
@@ -21,7 +27,7 @@ export const getAllBlockedServicesRequest = createAction('GET_ALL_BLOCKED_SERVIC
 export const getAllBlockedServicesFailure = createAction('GET_ALL_BLOCKED_SERVICES_FAILURE');
 export const getAllBlockedServicesSuccess = createAction('GET_ALL_BLOCKED_SERVICES_SUCCESS');
 
-export const getAllBlockedServices = () => async (dispatch: any) => {
+export const getAllBlockedServices = () => async (dispatch: AppDispatch) => {
     dispatch(getAllBlockedServicesRequest());
     try {
         const data = await apiClient.getAllBlockedServices();
@@ -37,15 +43,19 @@ export const updateBlockedServicesFailure = createAction('UPDATE_BLOCKED_SERVICE
 export const updateBlockedServicesSuccess = createAction('UPDATE_BLOCKED_SERVICES_SUCCESS');
 
 export const updateBlockedServices =
-    (values: any) =>
-    async (dispatch: any) => {
+    (values: BlockedServicesUpdate) =>
+    async (dispatch: AppDispatch): Promise<boolean> => {
         dispatch(updateBlockedServicesRequest());
         try {
             await apiClient.updateBlockedServices(values);
             dispatch(updateBlockedServicesSuccess());
             dispatch(getBlockedServices());
+
+            return true;
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(updateBlockedServicesFailure());
+
+            return false;
         }
     };

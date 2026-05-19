@@ -1,9 +1,16 @@
 import { createAction } from 'redux-actions';
 import i18next from 'i18next';
+import type { AppDispatch } from 'panel/store/types';
 import { apiClient } from '../api/Api';
+import type { Client } from '../initialState';
 
 import { getClients } from './index';
 import { addErrorToast, addSuccessToast } from './toasts';
+
+type ClientMutationOptions = {
+    showToast?: boolean;
+    toggleModal?: boolean;
+};
 
 export const toggleClientModal = createAction('TOGGLE_CLIENT_MODAL');
 
@@ -11,7 +18,7 @@ export const addClientRequest = createAction('ADD_CLIENT_REQUEST');
 export const addClientFailure = createAction('ADD_CLIENT_FAILURE');
 export const addClientSuccess = createAction('ADD_CLIENT_SUCCESS');
 
-export const addClient = (config: any) => async (dispatch: any) => {
+export const addClient = (config: any) => async (dispatch: AppDispatch) => {
     dispatch(addClientRequest());
     try {
         await apiClient.addClient(config);
@@ -29,7 +36,7 @@ export const deleteClientRequest = createAction('DELETE_CLIENT_REQUEST');
 export const deleteClientFailure = createAction('DELETE_CLIENT_FAILURE');
 export const deleteClientSuccess = createAction('DELETE_CLIENT_SUCCESS');
 
-export const deleteClient = (config: any) => async (dispatch: any) => {
+export const deleteClient = (config: any) => async (dispatch: AppDispatch) => {
     dispatch(deleteClientRequest());
     try {
         await apiClient.deleteClient(config);
@@ -46,18 +53,31 @@ export const updateClientRequest = createAction('UPDATE_CLIENT_REQUEST');
 export const updateClientFailure = createAction('UPDATE_CLIENT_FAILURE');
 export const updateClientSuccess = createAction('UPDATE_CLIENT_SUCCESS');
 
-export const updateClient = (config: any, name: any) => async (dispatch: any) => {
+export const updateClient =
+    (config: Client, name: string, options: ClientMutationOptions = {}) =>
+    async (dispatch: AppDispatch): Promise<boolean> => {
     dispatch(updateClientRequest());
     try {
         const data = { name, data: { ...config } };
 
         await apiClient.updateClient(data);
         dispatch(updateClientSuccess());
-        dispatch(toggleClientModal());
-        dispatch(addSuccessToast(i18next.t('client_updated', { key: name })));
+
+        if (options.toggleModal !== false) {
+            dispatch(toggleClientModal());
+        }
+
+        if (options.showToast !== false) {
+            dispatch(addSuccessToast(i18next.t('client_updated', { key: name })));
+        }
+
         dispatch(getClients());
+
+        return true;
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(updateClientFailure());
+
+        return false;
     }
 };

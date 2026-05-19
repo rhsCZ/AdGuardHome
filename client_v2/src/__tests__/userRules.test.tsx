@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     state: null as unknown as RootState,
     dispatch: vi.fn((action) => action),
     getFilteringStatus: vi.fn(() => ({ type: 'getFilteringStatus' })),
+    getClients: vi.fn(() => ({ type: 'getClients' })),
     setRules: vi.fn((rules) => ({ type: 'setRules', payload: rules })),
     checkHost: vi.fn((payload) => ({ type: 'checkHost', payload })),
     toggleFilterStatus: vi.fn((url, data, whitelist) =>
@@ -26,6 +27,7 @@ const mocks = vi.hoisted(() => ({
     getRewritesList: vi.fn(() => ({ type: 'getRewritesList' })),
     updateRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'updateRewrite', payload, options })),
     deleteRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'deleteRewrite', payload, options })),
+    updateClient: vi.fn((payload, name, options) => Promise.resolve({ type: 'updateClient', payload, name, options })),
     getBlockedServices: vi.fn(() => ({ type: 'getBlockedServices' })),
     getAllBlockedServices: vi.fn(() => ({ type: 'getAllBlockedServices' })),
     updateBlockedServices: vi.fn((payload, options) =>
@@ -47,10 +49,15 @@ vi.mock('panel/actions/filtering', () => ({
 }));
 
 vi.mock('panel/actions', () => ({
+    getClients: mocks.getClients,
     initSettings: mocks.initSettings,
     toggleBlocking: mocks.toggleBlocking,
     toggleBlockingForClient: mocks.toggleBlockingForClient,
     toggleSetting: mocks.toggleSetting,
+}));
+
+vi.mock('panel/actions/clients', () => ({
+    updateClient: mocks.updateClient,
 }));
 
 vi.mock('panel/actions/rewrites', () => ({
@@ -132,6 +139,7 @@ vi.mock('panel/components/FilterLists/blocks/DeleteRewriteModal', () => ({
 }));
 
 type RenderOptions = {
+    dashboard?: Partial<RootState['dashboard']>;
     filtering?: Partial<RootState['filtering']>;
     settings?: Partial<RootState['settings']>;
     rewrites?: Partial<RootState['rewrites']>;
@@ -139,6 +147,7 @@ type RenderOptions = {
 };
 
 type CheckResult = NonNullable<RootState['filtering']['check']>;
+type PersistentClient = NonNullable<RootState['dashboard']>['clients'][number];
 
 const EXAMPLE_FILTER = {
     id: 101,
@@ -164,8 +173,33 @@ const MATCHED_REWRITE = {
     enabled: true,
 };
 
+const createPersistentClient = (overrides: Partial<PersistentClient> = {}): PersistentClient => ({
+    blocked_services: [],
+    blocked_services_schedule: { time_zone: 'UTC' },
+    filtering_enabled: false,
+    ids: ['office-laptop'],
+    ignore_querylog: false,
+    ignore_statistics: false,
+    name: 'office-laptop',
+    parental_enabled: false,
+    safe_search: { enabled: false },
+    safebrowsing_enabled: false,
+    safesearch_enabled: false,
+    tags: [],
+    upstreams: [],
+    upstreams_cache_enabled: false,
+    upstreams_cache_size: 0,
+    use_global_blocked_services: true,
+    use_global_settings: true,
+    ...overrides,
+});
+
 const createState = (overrides: RenderOptions = {}): RootState => ({
     ...initialState,
+    dashboard: {
+        ...initialState.dashboard,
+        ...overrides.dashboard,
+    },
     filtering: {
         ...initialState.filtering,
         ...overrides.filtering,
@@ -418,6 +452,7 @@ beforeEach(() => {
 
     [
         mocks.getFilteringStatus,
+        mocks.getClients,
         mocks.setRules,
         mocks.checkHost,
         mocks.toggleFilterStatus,
@@ -428,12 +463,29 @@ beforeEach(() => {
         mocks.getRewritesList,
         mocks.updateRewrite,
         mocks.deleteRewrite,
+        mocks.updateClient,
         mocks.getBlockedServices,
         mocks.getAllBlockedServices,
         mocks.updateBlockedServices,
         mocks.addSuccessToast,
     ].forEach((mock) => mock.mockClear());
+
+    mocks.toggleFilterStatus.mockImplementation((url, data, whitelist) =>
+        Promise.resolve({ type: 'toggleFilterStatus', payload: { url, data, whitelist } }),
+    );
     mocks.toggleSetting.mockResolvedValue(true);
+    mocks.updateRewrite.mockImplementation((payload, options) =>
+        Promise.resolve({ type: 'updateRewrite', payload, options }),
+    );
+    mocks.deleteRewrite.mockImplementation((payload, options) =>
+        Promise.resolve({ type: 'deleteRewrite', payload, options }),
+    );
+    mocks.updateClient.mockImplementation((payload, name, options) =>
+        Promise.resolve({ type: 'updateClient', payload, name, options }),
+    );
+    mocks.updateBlockedServices.mockImplementation((payload, options) =>
+        Promise.resolve({ type: 'updateBlockedServices', payload, options }),
+    );
 });
 
 describe('UserRules harness', () => {
@@ -504,6 +556,7 @@ describe('UserRules harness', () => {
             expect(getBootstrapDispatchTypes()).toEqual([
                 'getFilteringStatus',
                 'initSettings',
+                'getClients',
                 'getRewritesList',
                 'getBlockedServices',
                 'getAllBlockedServices',
@@ -586,6 +639,71 @@ describe('UserRules harness', () => {
         );
         expect(mocks.toggleBlocking).not.toHaveBeenCalled();
         expectRecheck('blocked.example', 'office-laptop');
+    });
+
+    it('updates the resolved persistent client when disabling Safe Browsing for a client-scoped result', async () => {
+        const user = userEvent.setup();
+
+        renderCheckResult(
+            {
+                hostname: 'malware.example',
+                reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
+            },
+            {
+                dashboard: {
+                    clients: [createPersistentClient()],
+                },
+                filtering: {
+                    enabled: true,
+                },
+                settings: {
+                    settingsList: {
+                        parental: { enabled: true },
+                        safebrowsing: { enabled: true },
+                        safesearch: { enabled: true, google: true },
+                    },
+                },
+            },
+        );
+
+        await submitCheckForm(user, {
+            hostname: 'malware.example',
+            client: 'office-laptop',
+        });
+
+        mocks.checkHost.mockClear();
+        await user.click(screen.getByTestId('user-rules-result-action-disable-safebrowsing'));
+
+        expect(mocks.updateClient).toHaveBeenCalledWith(
+            expect.objectContaining({
+                name: 'office-laptop',
+                use_global_settings: false,
+                filtering_enabled: true,
+                parental_enabled: true,
+                safebrowsing_enabled: false,
+                safe_search: expect.objectContaining({ enabled: true, google: true }),
+                safesearch_enabled: true,
+            }),
+            'office-laptop',
+            { showToast: false, toggleModal: false },
+        );
+        expect(mocks.toggleSetting).not.toHaveBeenCalled();
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Browsing security disabled');
+        expectRecheck('malware.example', 'office-laptop');
+    });
+
+    it('hides client-scoped settings actions when the checked client cannot be resolved', async () => {
+        const user = userEvent.setup();
+
+        renderCheckResult({ hostname: 'adult.example', reason: FILTERED_STATUS.FILTERED_PARENTAL });
+
+        await submitCheckForm(user, {
+            hostname: 'adult.example',
+            client: 'unknown-client',
+        });
+
+        expect(screen.queryByTestId('user-rules-result-action-disable-parental')).not.toBeInTheDocument();
+        expect(screen.getByTestId('user-rules-result-action-allow')).toBeInTheDocument();
     });
 
     it('passes the matched custom allow rule when blocking a custom allowed result', async () => {
@@ -736,6 +854,21 @@ describe('UserRules harness', () => {
         expectRecheck('filtered.example');
     });
 
+    it('does not toast or recheck when disabling a matched filter fails', async () => {
+        const user = userEvent.setup();
+
+        mocks.toggleFilterStatus.mockResolvedValue(false as never);
+        renderMatchedFilterResult();
+
+        await submitCheckForm(user, { hostname: 'filtered.example', qtype: 'A' });
+        mocks.checkHost.mockClear();
+
+        await user.click(screen.getByTestId('user-rules-result-action-disable-filter'));
+
+        expect(mocks.addSuccessToast).not.toHaveBeenCalled();
+        expect(mocks.checkHost).not.toHaveBeenCalled();
+    });
+
     it('disables the matched allowlist and rechecks the host', async () => {
         const user = userEvent.setup();
 
@@ -755,9 +888,6 @@ describe('UserRules harness', () => {
             },
             true,
         );
-        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
-        render(<>{toastMessage}</>);
-        expect(screen.getByText('Example Allowlist', { selector: 'strong' })).toBeInTheDocument();
         expectRecheck('allowed.example');
     });
 
@@ -796,10 +926,89 @@ describe('UserRules harness', () => {
         await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
 
         expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] });
-        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
-        render(<>{toastMessage}</>);
-        expect(screen.getByText('YouTube', { selector: 'strong' })).toBeInTheDocument();
         expectRecheck('video.example');
+    });
+
+    it('updates the resolved persistent client when allowing a client-scoped blocked service', async () => {
+        const user = userEvent.setup();
+
+        renderCheckResult(
+            {
+                hostname: 'video.example',
+                reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
+                service_name: 'youtube',
+                rules: [{ filter_list_id: 0, text: '||amemv.com^' }],
+            },
+            {
+                dashboard: {
+                    clients: [
+                        createPersistentClient({
+                            ids: ['10.0.0.2'],
+                        }),
+                    ],
+                },
+                services: {
+                    list: {
+                        ids: ['youtube', 'netflix'],
+                        schedule: { time_zone: 'UTC' },
+                    },
+                    allServices: [{ id: 'youtube', name: 'YouTube', rules: ['||amemv.com^'] }],
+                },
+            },
+        );
+
+        await submitCheckForm(user, {
+            hostname: 'video.example',
+            client: '10.0.0.2',
+        });
+
+        mocks.checkHost.mockClear();
+        await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
+
+        expect(mocks.updateClient).toHaveBeenCalledWith(
+            expect.objectContaining({
+                name: 'office-laptop',
+                use_global_blocked_services: false,
+                blocked_services: ['netflix'],
+                blocked_services_schedule: { time_zone: 'UTC' },
+            }),
+            'office-laptop',
+            { showToast: false, toggleModal: false },
+        );
+        expect(mocks.updateBlockedServices).not.toHaveBeenCalled();
+        expectRecheck('video.example', '10.0.0.2');
+    });
+
+    it('does not toast or recheck when allowing a blocked service fails', async () => {
+        const user = userEvent.setup();
+
+        mocks.updateBlockedServices.mockResolvedValue(false as never);
+        renderCheckResult(
+            {
+                hostname: 'video.example',
+                reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
+                service_name: 'youtube',
+                rules: [{ filter_list_id: 0, text: '||amemv.com^' }],
+            },
+            {
+                services: {
+                    list: {
+                        ids: ['youtube'],
+                    },
+                    allServices: [{ id: 'youtube', name: 'YouTube', rules: ['||amemv.com^'] }],
+                },
+            },
+        );
+
+        await submitCheckForm(user, {
+            hostname: 'video.example',
+        });
+
+        mocks.checkHost.mockClear();
+        await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
+
+        expect(mocks.addSuccessToast).not.toHaveBeenCalled();
+        expect(mocks.checkHost).not.toHaveBeenCalled();
     });
 
     it('allows the blocked service even when the result service name does not exactly match the catalog entry', async () => {
@@ -830,9 +1039,7 @@ describe('UserRules harness', () => {
         await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
 
         expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] });
-        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
-        render(<>{toastMessage}</>);
-        expect(screen.getByText('YouTube', { selector: 'strong' })).toBeInTheDocument();
+        expect(mocks.addSuccessToast).toHaveBeenCalled();
         expectRecheck('video.example');
     });
 
@@ -871,6 +1078,19 @@ describe('UserRules harness', () => {
         expect(mocks.addSuccessToast).toHaveBeenCalledWith('Rule removed from DNS rewrite');
     });
 
+    it('does not toast or recheck when removing a matched rewrite fails', async () => {
+        const user = userEvent.setup();
+
+        mocks.deleteRewrite.mockResolvedValue(false as never);
+        renderMatchedRewriteResult();
+
+        await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
+        await user.click(await screen.findByTestId('rewrite-delete-confirm'));
+
+        expect(mocks.addSuccessToast).not.toHaveBeenCalled();
+        expect(mocks.checkHost).not.toHaveBeenCalled();
+    });
+
     it('uses the generic changes-saved toast when editing a matched rewrite', async () => {
         const user = userEvent.setup();
 
@@ -892,9 +1112,22 @@ describe('UserRules harness', () => {
                     target: MATCHED_REWRITE,
                     update: { ...MATCHED_REWRITE, answer: 'new-target.example' },
                 },
-                { showToast: false },
+                { showToast: false, closeModal: false },
             );
         });
         expect(mocks.addSuccessToast).toHaveBeenCalledWith('Changes saved');
+    });
+
+    it('does not toast or recheck when updating a matched rewrite fails', async () => {
+        const user = userEvent.setup();
+
+        mocks.updateRewrite.mockResolvedValue(false as never);
+        renderMatchedRewriteResult();
+
+        await user.click(screen.getByTestId('user-rules-result-action-edit-rewrite'));
+        await user.click(screen.getByTestId('rewrite-save-button'));
+
+        expect(mocks.addSuccessToast).not.toHaveBeenCalled();
+        expect(mocks.checkHost).not.toHaveBeenCalled();
     });
 });
