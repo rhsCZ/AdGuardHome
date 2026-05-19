@@ -4,6 +4,7 @@ import cn from 'clsx';
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import { Select } from 'panel/common/controls/Select';
+import { DhcpInterfaces } from 'panel/initialState';
 
 import s from '../Dhcp.module.pcss';
 
@@ -13,7 +14,7 @@ type InterfaceOption = {
 };
 
 type Props = {
-    interfaces?: Record<string, any>;
+    interfaces?: DhcpInterfaces;
     selectedInterface: string;
     enabled: boolean;
     onChange: (name: string) => void;

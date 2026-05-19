@@ -5,6 +5,7 @@ import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import { Input } from 'panel/common/controls/Input';
 import { Button } from 'panel/common/ui/Button';
+import { DhcpInterfaces } from 'panel/initialState';
 
 import s from '../Dhcp.module.pcss';
 
@@ -18,7 +19,7 @@ type V4Config = {
 
 type Props = {
     v4?: V4Config;
-    interfaces?: Record<string, any>;
+    interfaces?: DhcpInterfaces;
     selectedInterface: string;
     processingConfig: boolean;
     onSave: (values: V4Config) => void;

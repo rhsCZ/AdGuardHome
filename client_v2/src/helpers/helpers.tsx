@@ -27,7 +27,7 @@ import {
     SHORT_DATE_FORMAT_OPTIONS,
 } from './constants';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from './localStorageHelper';
-import { DhcpInterface, InstallInterface } from '../initialState';
+import { DhcpInterfaces, InstallInterface } from '../initialState';
 
 /**
  * @param time {string} The time to format
@@ -1027,10 +1027,10 @@ export const calculateDhcpPlaceholdersIpv6 = () => {
  * @returns interfaces Interfaces enriched with ip_addresses property
  */
 
-export const enrichWithConcatenatedIpAddresses = (interfaces: DhcpInterface[]) =>
+export const enrichWithConcatenatedIpAddresses = (interfaces: DhcpInterfaces) =>
     Object.entries(interfaces)
 
-        .reduce((acc: any, [k, v]) => {
+        .reduce((acc: DhcpInterfaces, [k, v]) => {
             const ipv4_addresses = v.ipv4_addresses ?? [];
             const ipv6_addresses = v.ipv6_addresses ?? [];
 
