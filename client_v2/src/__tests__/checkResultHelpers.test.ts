@@ -50,12 +50,12 @@ describe('getCheckResultMeta', () => {
         );
         expect(allowedMeta.actions).toEqual([
             {
-                kind: 'disable-filter',
-                label: intl.getMessage('user_rules_disable_filter'),
-            },
-            {
                 kind: 'block',
                 label: intl.getMessage('block'),
+            },
+            {
+                kind: 'disable-filter',
+                label: intl.getMessage('user_rules_disable_filter'),
             },
         ]);
     });

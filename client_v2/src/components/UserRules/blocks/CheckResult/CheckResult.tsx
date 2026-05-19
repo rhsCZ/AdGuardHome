@@ -78,10 +78,12 @@ export const CheckResult = ({
             return meta.reason;
         }
 
+        if (meta.tone === 'rewritten') {
+            return intl.getMessage('user_rules_status', { reason: intl.getMessage('rewritten') });
+        }
+
         if (meta.reason) {
-            return intl.getMessage(meta.tone === 'rewritten' ? 'user_rules_status' : 'user_rules_reason', {
-                reason: meta.reason,
-            });
+            return intl.getMessage('user_rules_reason', { reason: meta.reason });
         }
 
         return null;

@@ -353,8 +353,8 @@ const resultActionScenarios = [
         renderScenario: () => renderMatchedAllowlistResult(),
         title: 'Domain is allowed',
         actions: [
-            ['disable-filter', 'Disable filter'],
             ['block', 'Block'],
+            ['disable-filter', 'Disable filter'],
         ],
     },
 ];
@@ -623,7 +623,7 @@ describe('UserRules harness', () => {
 
         expect(within(resultCard).getByText('Rewrite rule is applied')).toBeInTheDocument();
         expect(within(resultCard).getByText('Status:', { selector: 'strong' })).toBeInTheDocument();
-        expect(within(resultCard).getByText('Safe search')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Rewritten')).toBeInTheDocument();
         expect(within(resultCard).getByText('Redirected to:', { selector: 'strong' })).toBeInTheDocument();
         expect(within(resultCard).getByText('forcesafesearch.google.com')).toBeInTheDocument();
         expect(within(resultCard).queryByText('CNAME:', { selector: 'strong' })).not.toBeInTheDocument();
@@ -689,7 +689,7 @@ describe('UserRules harness', () => {
             screen.getByTestId('user-rules-result-card').querySelectorAll('[data-testid^="user-rules-result-action-"]'),
         ).map((element) => element.getAttribute('data-testid'));
 
-        expect(actionOrder).toEqual(['user-rules-result-action-disable-filter', 'user-rules-result-action-block']);
+        expect(actionOrder).toEqual(['user-rules-result-action-block', 'user-rules-result-action-disable-filter']);
     });
 
     settingToggleScenarios.forEach(
