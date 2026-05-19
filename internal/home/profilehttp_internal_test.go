@@ -43,8 +43,7 @@ func TestWeb_HandleGetProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	tempDir := t.TempDir()
-	glFilePrefix = tempDir + "/gl_token_"
-	glTokenFile := glFilePrefix + glTokenFileSuffix
+	glTokenFile := filepath.Join(tempDir, glFilePrefix+glTokenFileSuffix)
 
 	glFileData := make([]byte, 4)
 	binary.NativeEndian.PutUint32(glFileData, uint32(time.Now().Unix()+testTTL))
