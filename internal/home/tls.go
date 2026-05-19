@@ -57,7 +57,7 @@ type tlsManager struct {
 	// extTLSConf contains extended TLS configuration settings.  It must not be
 	// nil.
 	// TODO(m.kazantsev):  Add a field of a type of [*tls.Config] which will
-	// represent the TLS settings. This is why these the settings are called
+	// represent the TLS settings. This is why these settings are called
 	// 'extended'.
 	extTLSConf *tlsConfigSettings
 
@@ -170,7 +170,7 @@ func (m *tlsManager) setWebAPI(webAPI *webAPI) {
 	m.web = webAPI
 }
 
-// config returns a deep copy of the stored TLS configuration.
+// extendedTLSConfig returns a deep copy of the stored TLS configuration.
 func (m *tlsManager) extendedTLSConfig() (extTLSConf *tlsConfigSettings) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

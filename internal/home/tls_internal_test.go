@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io"
 	"math/big"
 	"net"
 	"net/http"
@@ -68,8 +67,8 @@ func TestValidateCertificates(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		status := &tlsConfigStatus{}
 
-		testCertChainData := readFile(t, testCertificatePath)
-		testPrivateKeyData := readFile(t, testPrivateKeyPath)
+		testCertChainData := requireReadFile(t, testCertificatePath)
+		testPrivateKeyData := requireReadFile(t, testPrivateKeyPath)
 
 		err = m.validateCertificates(ctx, status, testCertChainData, testPrivateKeyData, "")
 		assert.Error(t, err)
@@ -313,8 +312,8 @@ func TestTLSManager_HandleTLSStatus(t *testing.T) {
 		err error
 	)
 
-	testCertChain := readFile(t, testCertificatePath)
-	testPrivateKeyData := readFile(t, testPrivateKeyPath)
+	testCertChain := requireReadFile(t, testCertificatePath)
+	testPrivateKeyData := requireReadFile(t, testPrivateKeyPath)
 
 	m, err := newTLSManager(ctx, &tlsManagerConfig{
 		logger:       testLogger,
@@ -482,8 +481,8 @@ func TestTLSManager_HandleTLSValidate(t *testing.T) {
 	err = json.NewDecoder(w.Body).Decode(res)
 	require.NoError(t, err)
 
-	testCertChainData := readFile(t, testCertificatePath)
-	testPrivateKeyData := readFile(t, testPrivateKeyPath)
+	testCertChainData := requireReadFile(t, testCertificatePath)
+	testPrivateKeyData := requireReadFile(t, testPrivateKeyPath)
 
 	cert, err := tls.X509KeyPair(testCertChainData, testPrivateKeyData)
 	require.NoError(t, err)
@@ -591,8 +590,8 @@ func TestTLSManager_HandleTLSConfigure(t *testing.T) {
 	err = json.NewDecoder(w.Body).Decode(res)
 	require.NoError(t, err)
 
-	testCertChainData := readFile(t, testCertificatePath)
-	testPrivateKeyData := readFile(t, testPrivateKeyPath)
+	testCertChainData := requireReadFile(t, testCertificatePath)
+	testPrivateKeyData := requireReadFile(t, testPrivateKeyPath)
 
 	cert, err := tls.X509KeyPair(testCertChainData, testPrivateKeyData)
 	require.NoError(t, err)
@@ -618,18 +617,14 @@ func TestTLSManager_HandleTLSConfigure(t *testing.T) {
 	}, testTimeout, testTimeout/10)
 }
 
-// readFile reads the file at the specified path and returns its content.
+// requireReadFile reads the file at the specified path and returns its content.
 //
 // TODO(m.kazantsev):  Move to golibs/testutil.
-func readFile(tb testing.TB, path string) (data []byte) {
+func requireReadFile(tb testing.TB, path string) (data []byte) {
 	tb.Helper()
 
-	file, err := os.Open(path)
+	data, err := os.ReadFile(path)
 	require.NoError(tb, err)
-
-	data, err = io.ReadAll(file)
-	require.NoError(tb, err)
-	require.NoError(tb, file.Close())
 
 	return data
 }

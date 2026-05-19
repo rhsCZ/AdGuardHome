@@ -429,7 +429,7 @@ type dnsEncryption struct {
 func getDNSEncryption(tlsMgr *tlsManager) (de dnsEncryption) {
 	extTLSConf := tlsMgr.extendedTLSConfig()
 
-	if !extTLSConf.Enabled || len(extTLSConf.ServerName) == 0 {
+	if !extTLSConf.Enabled || extTLSConf.ServerName == "" {
 		return dnsEncryption{}
 	}
 
