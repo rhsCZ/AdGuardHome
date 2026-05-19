@@ -1273,18 +1273,18 @@ func printWebAddrs(ctx context.Context, l *slog.Logger, proto, addr string, port
 //
 // TODO(s.chzhen):  Implement separate functions for HTTP and HTTPS.
 func printHTTPAddresses(ctx context.Context, l *slog.Logger, proto string, tlsMgr *tlsManager) {
-	var tlsConf *tlsConfigSettings
+	var extTLSConf *tlsConfigSettings
 	if tlsMgr != nil {
-		tlsConf = tlsMgr.config()
+		extTLSConf = tlsMgr.extendedTLSConfig()
 	}
 
 	port := config.HTTPConfig.Address.Port()
 	if proto == urlutil.SchemeHTTPS {
-		port = tlsConf.PortHTTPS
+		port = extTLSConf.PortHTTPS
 	}
 
-	if proto == urlutil.SchemeHTTPS && tlsConf.ServerName != "" {
-		printWebAddrs(ctx, l, proto, tlsConf.ServerName, tlsConf.PortHTTPS)
+	if proto == urlutil.SchemeHTTPS && extTLSConf.ServerName != "" {
+		printWebAddrs(ctx, l, proto, extTLSConf.ServerName, extTLSConf.PortHTTPS)
 
 		return
 	}
