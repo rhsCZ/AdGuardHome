@@ -41,7 +41,7 @@ export const addRewriteRequest = createAction('ADD_REWRITE_REQUEST');
 export const addRewriteFailure = createAction('ADD_REWRITE_FAILURE');
 export const addRewriteSuccess = createAction('ADD_REWRITE_SUCCESS');
 
-export const addRewrite = (config: any) => async (dispatch: AppDispatch) => {
+export const addRewrite = (config: RewriteConfig) => async (dispatch: AppDispatch) => {
     dispatch(addRewriteRequest());
     try {
         await apiClient.addRewrite(config);

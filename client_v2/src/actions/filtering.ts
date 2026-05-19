@@ -2,6 +2,7 @@ import { createAction } from 'redux-actions';
 
 import intl from 'panel/common/intl';
 import type { AppDispatch, AppGetState } from 'panel/store/types';
+import type { Filter } from 'panel/helpers/helpers';
 import { normalizeFilteringStatus, normalizeRulesTextarea } from '../helpers/helpers';
 import { apiClient } from '../api/Api';
 import { addErrorToast, addSuccessToast } from './toasts';
@@ -20,6 +21,18 @@ type FilterUrlConfig = {
     name: string;
     url: string;
     enabled: boolean;
+};
+
+type FilterIdentity = Pick<Filter, 'name' | 'url'>;
+
+type FilterEditConfig = FilterIdentity & {
+    enabled?: boolean;
+};
+
+type FilterRemovalConfig = Pick<Filter, 'url'>;
+
+type RefreshFiltersConfig = {
+    whitelist: boolean;
 };
 
 export const toggleFilteringModal = createAction('FILTERING_MODAL_TOGGLE');
@@ -80,7 +93,7 @@ export const addFilterFailure = createAction('ADD_FILTER_FAILURE');
 export const addFilterSuccess = createAction('ADD_FILTER_SUCCESS');
 
 export const addFilter =
-    (url: any, name: any, whitelist = false) =>
+    (url: FilterIdentity['url'], name: FilterIdentity['name'], whitelist = false) =>
     async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(addFilterRequest());
         try {
@@ -101,7 +114,7 @@ export const removeFilterFailure = createAction('REMOVE_FILTER_FAILURE');
 export const removeFilterSuccess = createAction('REMOVE_FILTER_SUCCESS');
 
 export const removeFilter =
-    (url: any, whitelist = false) =>
+    (url: FilterRemovalConfig['url'], whitelist = false) =>
     async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(removeFilterRequest());
         try {
@@ -145,7 +158,7 @@ export const editFilterFailure = createAction('EDIT_FILTER_FAILURE');
 export const editFilterSuccess = createAction('EDIT_FILTER_SUCCESS');
 
 export const editFilter =
-    (url: any, data: any, whitelist = false) =>
+    (url: FilterIdentity['url'], data: FilterEditConfig, whitelist = false) =>
     async (dispatch: AppDispatch, getState: AppGetState) => {
         dispatch(editFilterRequest());
         try {
@@ -166,7 +179,7 @@ export const refreshFiltersRequest = createAction('FILTERING_REFRESH_REQUEST');
 export const refreshFiltersFailure = createAction('FILTERING_REFRESH_FAILURE');
 export const refreshFiltersSuccess = createAction('FILTERING_REFRESH_SUCCESS');
 
-export const refreshFilters = (config: any) => async (dispatch: AppDispatch) => {
+export const refreshFilters = (config: RefreshFiltersConfig) => async (dispatch: AppDispatch) => {
     dispatch(refreshFiltersRequest());
     try {
         const data = await apiClient.refreshFilters(config);

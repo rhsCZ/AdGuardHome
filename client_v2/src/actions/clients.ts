@@ -12,13 +12,15 @@ type ClientMutationOptions = {
     toggleModal?: boolean;
 };
 
+type ClientDeleteConfig = Pick<Client, 'name'>;
+
 export const toggleClientModal = createAction('TOGGLE_CLIENT_MODAL');
 
 export const addClientRequest = createAction('ADD_CLIENT_REQUEST');
 export const addClientFailure = createAction('ADD_CLIENT_FAILURE');
 export const addClientSuccess = createAction('ADD_CLIENT_SUCCESS');
 
-export const addClient = (config: any) => async (dispatch: AppDispatch) => {
+export const addClient = (config: Client) => async (dispatch: AppDispatch) => {
     dispatch(addClientRequest());
     try {
         await apiClient.addClient(config);
@@ -36,7 +38,7 @@ export const deleteClientRequest = createAction('DELETE_CLIENT_REQUEST');
 export const deleteClientFailure = createAction('DELETE_CLIENT_FAILURE');
 export const deleteClientSuccess = createAction('DELETE_CLIENT_SUCCESS');
 
-export const deleteClient = (config: any) => async (dispatch: AppDispatch) => {
+export const deleteClient = (config: ClientDeleteConfig) => async (dispatch: AppDispatch) => {
     dispatch(deleteClientRequest());
     try {
         await apiClient.deleteClient(config);
