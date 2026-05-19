@@ -240,7 +240,7 @@ export const Dhcp = () => {
     const enteredSomeValue =
         (v4 && Object.values(v4).some(Boolean)) || (v6 && Object.values(v6).some(Boolean)) || interfaceName;
 
-    const selectedIface = interfaces && interfaces.find((iface) => iface.name === selectedInterface);
+    const selectedIface = interfaces && selectedInterface ? interfaces[selectedInterface] : null;
     const allIps: string[] = selectedIface?.ip_addresses || [];
     const visibleIps = showAllIps ? allIps : allIps.slice(0, MAX_VISIBLE_IPS);
     const hiddenIpsCount = allIps.length - MAX_VISIBLE_IPS;
@@ -409,11 +409,12 @@ export const Dhcp = () => {
                     </div>
                 </div>
 
-                {enabled && (
-                    <div>
-                        <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
-                            {intl.getMessage('dhcp_leases')}
-                        </h2>
+                <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
+                    {intl.getMessage('dhcp_leases')}
+                </h2>
+
+                <div className={theme.form.group}>
+                    {leases && leases.length > 0 ? (
                         <DynamicLeasesTable
                             leases={leases || []}
                             onEdit={handleEditDynamicLease}
@@ -421,8 +422,12 @@ export const Dhcp = () => {
                             onMakeStatic={handleMakeStatic}
                             onRefresh={handleRefreshLeases}
                         />
-                    </div>
-                )}
+                    ) : (
+                        <div className={cn(theme.text.t1, s.emptyTable)}>
+                            {intl.getMessage('dynamic_dhcp_leases_not_found')}
+                        </div>
+                    )}
+                </div>
 
                 {isModalOpen && (
                     <StaticLeaseModal

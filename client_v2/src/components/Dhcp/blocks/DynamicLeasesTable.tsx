@@ -24,7 +24,7 @@ type Props = {
     onRefresh: () => void;
 };
 
-const pageSize = 10;
+const pageSize = 7;
 
 export const DynamicLeasesTable = ({ leases, onEdit, onDelete, onMakeStatic, onRefresh }: Props) => {
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);

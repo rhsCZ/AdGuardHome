@@ -50,7 +50,7 @@ export const Ipv6Settings = ({ v6, interfaces, selectedInterface, processingConf
                     <span className={cn(theme.text.t3, s.formFieldLabel)}>
                         {intl.getMessage('dhcp_form_range_title')}
                     </span>
-                    <div className={s.rangeRow}>
+                    <div className={s.formField}>
                         <Input
                             id="v6_range_start"
                             placeholder={intl.getMessage('dhcp_form_range_start')}

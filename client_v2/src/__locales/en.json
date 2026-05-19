@@ -1064,7 +1064,7 @@
   "dhcp_new_static_lease": "New static lease",
   "dhcp_edit_static_lease": "Edit static lease",
   "dhcp_add_static_lease": "Add static lease",
-  "dhcp_reset_leases": "Reset all leases?",
+  "dhcp_reset_leases": "Reset all leases",
   "dhcp_reset_leases_confirm": "This will reset all leases",
   "dhcp_reset_leases_success": "DHCP leases successfully reset",
   "dhcp_reset": "This will reset the DHCP configuration. All changes will be lost",
@@ -1143,5 +1143,7 @@
   "cancel_btn": "Cancel",
   "delete_btn": "Delete",
   "inactivity_schedule_updated": "Schedule updated",
-  "inactivity_schedule_deleted": "Schedule deleted"
+  "inactivity_schedule_deleted": "Schedule deleted",
+  "static_dhcp_leases_not_found": "Static DHCP leases not found",
+  "dynamic_dhcp_leases_not_found": "Dynamic DHCP leases not found"
 }

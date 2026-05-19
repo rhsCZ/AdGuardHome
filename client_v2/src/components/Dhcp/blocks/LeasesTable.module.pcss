@@ -1,8 +1,18 @@
 .headerCell {
+    background-color: var(--page-background-additional);
+
     @media (min-width: 768px) {
         width: 100%;
         min-height: 42px;
         padding: 0 12px;
+    }
+
+    &:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+
+    &:last-child {
+        border-radius: 0 8px 8px 0;
     }
 }
 
