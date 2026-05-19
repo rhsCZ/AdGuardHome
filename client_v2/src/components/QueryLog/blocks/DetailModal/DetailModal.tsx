@@ -21,7 +21,6 @@ import {
 } from '../../helpers';
 import { LogEntry, ResponseEntry, Service } from '../../types';
 
-import { DetailRow } from './DetailRow';
 import s from './DetailModal.module.pcss';
 
 type Props = {
@@ -35,36 +34,24 @@ type Props = {
     onAllowService: (serviceId: string) => void;
 };
 
-const formatResponses = (responses: ResponseEntry[] = []) => responses
-    .map(({ type, value, ttl }) => {
-        if (!value) {
-            return '';
-        }
+const formatResponses = (responses: ResponseEntry[] = []) =>
+    responses
+        .map(({ type, value, ttl }) => {
+            if (!value) {
+                return '';
+            }
 
-        const entry = [type, value].filter(Boolean).join(': ');
+            const entry = [type, value].filter(Boolean).join(': ');
 
-        if (ttl || ttl === 0) {
-            return `${entry} (ttl=${ttl})`;
-        }
+            if (ttl || ttl === 0) {
+                return `${entry} (ttl=${ttl})`;
+            }
 
-        return entry;
-    })
-    .filter(Boolean);
+            return entry;
+        })
+        .filter(Boolean);
 
-const getSourceNode = (trackerSource?: { url?: string; name?: string }) => {
-    const sourceValue = trackerSource?.url ? trackerSource.url : trackerSource?.name;
-    if (trackerSource?.url) {
-        return (
-            <a href={trackerSource.url} target="_blank" rel="noopener noreferrer" className={cn(s.link, s.value)}>
-                {trackerSource.name}
-            </a>
-        );
-    }
-    if (sourceValue) {
-        return <span className={s.value}>{trackerSource?.name}</span>;
-    }
-    return null;
-};
+const hasValue = (value: React.ReactNode) => value !== undefined && value !== null && value !== '' && value !== false;
 
 export const DetailModal = ({
     entry,
@@ -99,7 +86,16 @@ export const DetailModal = ({
     const network = entry.client_info?.whois?.orgname;
     const serviceId = entry.serviceName || entry.service_name;
     const serviceName = serviceId ? getServiceName(services, serviceId) || serviceId : '';
-    const sourceNode = getSourceNode(trackerSource);
+    const reasonValue = reasonDetails
+        ? `${getQueryReasonLabel(reasonKey)} / ${reasonDetails}`
+        : getQueryReasonLabel(reasonKey);
+    const rowClassName = cn(s.row, theme.text.t3);
+    const labelClassName = cn(s.label, theme.text.semibold);
+    const renderValue = (content: React.ReactNode) => <span className={s.value}>{content}</span>;
+    const renderListValue = (content: React.ReactNode) => <div className={cn(s.value, s.responseList)}>{content}</div>;
+    const renderStatusValue = (content: React.ReactNode) => (
+        <span className={cn(s.value, s.statusValue, theme.text.semibold, statusClassName)}>{content}</span>
+    );
 
     const handleBlock = () => {
         onBlock(entry.domain);
@@ -136,117 +132,259 @@ export const DetailModal = ({
                                 {intl.getMessage('validated_with_dnssec')}
                             </div>
                         )}
-                        <DetailRow testId="query-log-detail-time" dataField="time" label={intl.getMessage('query_log_detail_time')} value={formatLogTimeDetailed(entry.time)} />
-                        <DetailRow testId="query-log-detail-date" dataField="date" label={intl.getMessage('query_log_detail_date')} value={formatLogDate(entry.time)} />
-                        <DetailRow testId="query-log-detail-domain" dataField="domain" label={intl.getMessage('query_log_detail_domain')} value={entry.unicodeName || entry.domain} />
-                        <DetailRow testId="query-log-detail-ecs" dataField="ecs" label={intl.getMessage('query_log_detail_ecs')} value={entry.ecs} />
-                        <DetailRow testId="query-log-detail-type" dataField="type" label={intl.getMessage('query_log_detail_type')} value={entry.type} />
-                        <DetailRow testId="query-log-detail-protocol" dataField="protocol" label={intl.getMessage('query_log_detail_protocol')} value={protocol} />
+                        <div className={rowClassName} data-testid="query-log-detail-time" data-field="time">
+                            {intl.getMessage('query_log_detail_time', {
+                                value: formatLogTimeDetailed(entry.time),
+                                span: renderValue,
+                            })}
+                        </div>
+                        <div className={rowClassName} data-testid="query-log-detail-date" data-field="date">
+                            {intl.getMessage('query_log_detail_date', {
+                                value: formatLogDate(entry.time),
+                                span: renderValue,
+                            })}
+                        </div>
+                        <div className={rowClassName} data-testid="query-log-detail-domain" data-field="domain">
+                            {intl.getMessage('query_log_detail_domain', {
+                                value: entry.unicodeName || entry.domain,
+                                span: renderValue,
+                            })}
+                        </div>
+                        {hasValue(entry.ecs) && (
+                            <div className={rowClassName} data-testid="query-log-detail-ecs" data-field="ecs">
+                                {intl.getMessage('query_log_detail_ecs', {
+                                    value: entry.ecs,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        <div className={rowClassName} data-testid="query-log-detail-type" data-field="type">
+                            {intl.getMessage('query_log_detail_type', {
+                                value: entry.type,
+                                span: renderValue,
+                            })}
+                        </div>
+                        <div className={rowClassName} data-testid="query-log-detail-protocol" data-field="protocol">
+                            {intl.getMessage('query_log_detail_protocol', {
+                                value: protocol,
+                                span: renderValue,
+                            })}
+                        </div>
                     </div>
 
                     {entry.tracker && (
                         <div className={s.section}>
                             <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('known_tracker')}</h3>
-                            <DetailRow testId="query-log-detail-tracker-name" dataField="tracker-name" label={intl.getMessage('query_log_detail_name')} value={entry.tracker.name} />
-                            <DetailRow testId="query-log-detail-tracker-category" dataField="tracker-category" label={intl.getMessage('query_log_detail_category')} value={entry.tracker.category} />
-                            <DetailRow testId="query-log-detail-tracker-source" dataField="tracker-source" label={intl.getMessage('query_log_detail_source')} value={sourceNode} />
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-tracker-name"
+                                data-field="tracker-name"
+                            >
+                                {intl.getMessage('query_log_detail_name', {
+                                    value: entry.tracker.name,
+                                    span: renderValue,
+                                })}
+                            </div>
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-tracker-category"
+                                data-field="tracker-category"
+                            >
+                                {intl.getMessage('query_log_detail_category', {
+                                    value: entry.tracker.category,
+                                    span: renderValue,
+                                })}
+                            </div>
+                            {trackerSource?.name && (
+                                <div
+                                    className={rowClassName}
+                                    data-testid="query-log-detail-tracker-source"
+                                    data-field="tracker-source"
+                                >
+                                    {intl.getMessage('query_log_detail_source', {
+                                        value: trackerSource.name,
+                                        span: (content: React.ReactNode) =>
+                                            trackerSource.url ? (
+                                                <a
+                                                    href={trackerSource.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={cn(s.link, s.value)}
+                                                >
+                                                    {content}
+                                                </a>
+                                            ) : (
+                                                renderValue(content)
+                                            ),
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
                     <div className={s.section}>
                         <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('response_details')}</h3>
-                        <DetailRow
-                            testId="query-log-detail-status"
-                            dataField="status"
-                            label={intl.getMessage('query_log_detail_status')}
-                            value={(
-                                <span
-                                    className={cn(s.value, s.statusValue, theme.text.semibold, statusClassName)}
-                                >
-                                    {getQueryStatusLabel(statusKey)}
-                                </span>
-                            )}
-                        />
+                        <div className={rowClassName} data-testid="query-log-detail-status" data-field="status">
+                            {intl.getMessage('query_log_detail_status', {
+                                value: getQueryStatusLabel(statusKey),
+                                span: renderStatusValue,
+                            })}
+                        </div>
                         {reasonKey !== 'none' && (
-                            <DetailRow
-                                testId="query-log-detail-reason"
-                                dataField="reason"
-                                label={intl.getMessage('query_log_detail_reason')}
-                                value={
-                                    <div className={cn(s.value, s.detailStack)}>
-                                        <span>
-                                            {getQueryReasonLabel(reasonKey)}&nbsp;{reasonDetails && (
-                                                <span className={s.detailHint}>{reasonDetails}</span>
-                                            )}
-                                        </span>
-                                    </div>
-                                }
-                            />
+                            <div className={rowClassName} data-testid="query-log-detail-reason" data-field="reason">
+                                <span className={labelClassName}>{intl.getMessage('query_log_detail_reason')}</span>{' '}
+                                {renderValue(reasonValue)}
+                            </div>
                         )}
-                        <DetailRow testId="query-log-detail-cached" dataField="cached" label={intl.getMessage('query_log_detail_served_from_cache')} value={entry.cached ? intl.getMessage('yes') : intl.getMessage('no')} />
-                        <DetailRow testId="query-log-detail-dns-server" dataField="dns-server" label={intl.getMessage('query_log_detail_dns_server')} value={entry.upstream} />
-                        <DetailRow testId="query-log-detail-elapsed" dataField="elapsed" label={intl.getMessage('query_log_detail_elapsed')} value={entry.elapsedMs ? formatElapsedMs(entry.elapsedMs, (key) => intl.getMessage(key)) : null} />
-                        <DetailRow testId="query-log-detail-response-code" dataField="response-code" label={intl.getMessage('query_log_detail_response_code')} value={entry.status} />
-                        <DetailRow
-                            testId="query-log-detail-response"
-                            dataField="response"
-                            label={intl.getMessage('query_log_detail_response')}
-                            value={responseList.length > 0 ? (
-                                <div className={cn(s.value, s.responseList)}>
-                                    {responseList.map((response, index) => (
-                                        <div
-                                            key={index}
-                                            className={theme.text.t3}
-                                        >
+                        <div className={rowClassName} data-testid="query-log-detail-cached" data-field="cached">
+                            {intl.getMessage('query_log_detail_served_from_cache', {
+                                value: entry.cached ? intl.getMessage('yes') : intl.getMessage('no'),
+                                span: renderValue,
+                            })}
+                        </div>
+                        {hasValue(entry.upstream) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-dns-server"
+                                data-field="dns-server"
+                            >
+                                {intl.getMessage('query_log_detail_dns_server', {
+                                    value: entry.upstream,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {hasValue(entry.elapsedMs) && (
+                            <div className={rowClassName} data-testid="query-log-detail-elapsed" data-field="elapsed">
+                                {intl.getMessage('query_log_detail_elapsed', {
+                                    value: formatElapsedMs(
+                                        entry.elapsedMs,
+                                        intl.getMessage('milliseconds_abbreviation'),
+                                    ),
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {hasValue(entry.status) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-response-code"
+                                data-field="response-code"
+                            >
+                                {intl.getMessage('query_log_detail_response_code', {
+                                    value: entry.status,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {responseList.length > 0 && (
+                            <div className={rowClassName} data-testid="query-log-detail-response" data-field="response">
+                                <span className={labelClassName}>{intl.getMessage('query_log_detail_response')}</span>{' '}
+                                {renderListValue(
+                                    responseList.map((response, index) => (
+                                        <div key={index} className={theme.text.t3}>
                                             {response}
                                         </div>
-                                    ))}
-                                </div>
-                            ) : null}
-                        />
-                        <DetailRow testId="query-log-detail-service-name" dataField="service-name" label={intl.getMessage('query_log_detail_service_name')} value={serviceName} />
-                        <DetailRow
-                            testId="query-log-detail-rules"
-                            dataField="rules"
-                            label={intl.getMessage('query_log_detail_rules')}
-                            value={entry.rules?.length ? (
-                                <div className={cn(s.value, s.responseList)}>
-                                    {entry.rules.map((rule, index) => (
-                                        <div
-                                            key={`${rule.text}-${index}`}
-                                            className={theme.text.t3}
-                                        >
-                                            {rule.text}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : entry.rule}
-                        />
-                        <DetailRow
-                            testId="query-log-detail-original-response"
-                            dataField="original-response"
-                            label={intl.getMessage('query_log_detail_original_response')}
-                            value={originalResponseList.length > 0 ? (
-                                <div className={cn(s.value, s.responseList)}>
-                                    {originalResponseList.map((response, index) => (
-                                        <div
-                                            key={index}
-                                            className={theme.text.t3}
-                                        >
+                                    )),
+                                )}
+                            </div>
+                        )}
+                        {hasValue(serviceName) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-service-name"
+                                data-field="service-name"
+                            >
+                                {intl.getMessage('query_log_detail_service_name', {
+                                    value: serviceName,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {(entry.rules?.length || hasValue(entry.rule)) && (
+                            <div className={rowClassName} data-testid="query-log-detail-rules" data-field="rules">
+                                <span className={labelClassName}>{intl.getMessage('query_log_detail_rules')}</span>{' '}
+                                {entry.rules?.length
+                                    ? renderListValue(
+                                          entry.rules.map((rule, index) => (
+                                              <div key={`${rule.text}-${index}`} className={theme.text.t3}>
+                                                  {rule.text}
+                                              </div>
+                                          )),
+                                      )
+                                    : renderValue(entry.rule)}
+                            </div>
+                        )}
+                        {originalResponseList.length > 0 && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-original-response"
+                                data-field="original-response"
+                            >
+                                <span className={labelClassName}>
+                                    {intl.getMessage('query_log_detail_original_response')}
+                                </span>{' '}
+                                {renderListValue(
+                                    originalResponseList.map((response, index) => (
+                                        <div key={index} className={theme.text.t3}>
                                             {response}
                                         </div>
-                                    ))}
-                                </div>
-                            ) : null}
-                        />
+                                    )),
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className={s.section}>
                         <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('client_details')}</h3>
-                        <DetailRow testId="query-log-detail-client-address" dataField="client-address" label={intl.getMessage('query_log_detail_address')} value={entry.client} />
-                        <DetailRow testId="query-log-detail-client-name" dataField="client-name" label={intl.getMessage('query_log_detail_name')} value={clientName || entry.client_id} />
-                        <DetailRow testId="query-log-detail-client-country" dataField="client-country" label={intl.getMessage('query_log_detail_country')} value={country} />
-                        <DetailRow testId="query-log-detail-client-network" dataField="client-network" label={intl.getMessage('query_log_detail_network')} value={network} />
+                        {hasValue(entry.client) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-client-address"
+                                data-field="client-address"
+                            >
+                                {intl.getMessage('query_log_detail_address', {
+                                    value: entry.client,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {hasValue(clientName || entry.client_id) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-client-name"
+                                data-field="client-name"
+                            >
+                                {intl.getMessage('query_log_detail_name', {
+                                    value: clientName || entry.client_id,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {hasValue(country) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-client-country"
+                                data-field="client-country"
+                            >
+                                {intl.getMessage('query_log_detail_country', {
+                                    value: country,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
+                        {hasValue(network) && (
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-client-network"
+                                data-field="client-network"
+                            >
+                                {intl.getMessage('query_log_detail_network', {
+                                    value: network,
+                                    span: renderValue,
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
 

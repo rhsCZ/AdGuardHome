@@ -1,7 +1,5 @@
 import { createAction } from 'redux-actions';
 
-import endsWith from 'lodash/endsWith';
-import escapeRegExp from 'lodash/escapeRegExp';
 import React from 'react';
 import { compose } from 'redux';
 import type { Dispatch } from 'redux';
@@ -710,50 +708,40 @@ export const toggleBlocking =
         domain: string,
         baseRule?: string,
         baseUnblocking?: string,
+        alternateUnblocking?: string,
     ) => async (dispatch: any, getState: any) => {
         const baseBlockingRule = baseRule || `||${domain}^$important`;
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
         const { userRules } = getState().filtering;
 
-        const lineEnding = !endsWith(userRules, '\n') ? '\n' : '';
+        const desiredRule = type === BLOCK_ACTIONS.BLOCK ? baseBlockingRule : baseUnblockingRule;
+        const rulesToRemove = new Set([
+            type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule,
+            alternateUnblocking,
+        ].filter(Boolean));
+        const existingRules = splitByNewLine(userRules);
+        const updatedRules = existingRules.filter((rule: string) => !rulesToRemove.has(rule));
 
-        const blockingRule = type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule;
-        const unblockingRule = type === BLOCK_ACTIONS.BLOCK ? baseBlockingRule : baseUnblockingRule;
-        const preparedBlockingRule = new RegExp(`(^|\n)${escapeRegExp(blockingRule)}($|\n)`);
-        const preparedUnblockingRule = new RegExp(`(^|\n)${escapeRegExp(unblockingRule)}($|\n)`);
+        if (!updatedRules.includes(desiredRule)) {
+            updatedRules.push(desiredRule);
+        }
 
-        const matchPreparedBlockingRule = userRules.match(preparedBlockingRule);
-        const matchPreparedUnblockingRule = userRules.match(preparedUnblockingRule);
+        const nextRules = updatedRules.length > 0 ? `${updatedRules.join('\n')}\n` : '';
 
-        if (matchPreparedBlockingRule) {
-            await dispatch(setRules(userRules.replace(`${blockingRule}`, '')));
-            dispatch(addSuccessToast({
-                message: intl.getMessage('notify_user_rule_added'),
-                code: 'notify_user_rule_added',
-            }));
-        } else if (!matchPreparedUnblockingRule) {
-            await dispatch(setRules(`${userRules}${lineEnding}${unblockingRule}\n`));
-            dispatch(addSuccessToast({
-                message: intl.getMessage('notify_user_rule_added'),
-                code: 'notify_user_rule_added',
-            }));
-        } else if (matchPreparedUnblockingRule) {
-            dispatch(addSuccessToast({
-                message: intl.getMessage('notify_user_rule_added'),
-                code: 'notify_user_rule_added',
-            }));
+        if (nextRules !== userRules) {
+            await dispatch(setRules(nextRules, { showToast: false }));
+        }
 
-            return;
-        } else if (!matchPreparedBlockingRule) {
-            dispatch(addSuccessToast({
-                message: intl.getMessage('notify_user_rule_added'),
-                code: 'notify_user_rule_added',
-            }));
+        dispatch(addSuccessToast({
+            message: intl.getMessage('notify_user_rule_added'),
+            code: 'notify_user_rule_added',
+        }));
 
+        if (nextRules === userRules) {
             return;
         }
 
-        dispatch(getFilteringStatus());
+        await dispatch(getFilteringStatus());
     };
 
 export const blockDomain = (domain: string, baseRule?: string, baseUnblocking?: string) =>

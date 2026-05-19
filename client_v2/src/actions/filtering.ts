@@ -28,14 +28,27 @@ export const setRulesRequest = createAction('SET_RULES_REQUEST');
 export const setRulesFailure = createAction('SET_RULES_FAILURE');
 export const setRulesSuccess = createAction('SET_RULES_SUCCESS');
 
-export const setRules = (rules: any) => async (dispatch: any) => {
+type SetRulesOptions = {
+    showToast?: boolean;
+};
+
+export const setRules = (rules: any, options: SetRulesOptions = {}) => async (dispatch: any) => {
+    const { showToast = true } = options;
+
     dispatch(setRulesRequest());
     try {
         const normalizedRules = {
             rules: normalizeRulesTextarea(rules)?.split('\n'),
         };
         await apiClient.setRules(normalizedRules);
-        dispatch(addSuccessToast(intl.getMessage('updated_custom_filtering_toast')));
+
+        if (showToast) {
+            dispatch(addSuccessToast({
+                message: intl.getMessage('updated_custom_filtering_toast'),
+                code: 'updated_custom_filtering_toast',
+            }));
+        }
+
         dispatch(setRulesSuccess());
     } catch (error) {
         dispatch(addErrorToast({ error }));

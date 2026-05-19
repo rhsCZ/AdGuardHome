@@ -4,11 +4,7 @@ import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { captitalizeWords } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
-import {
-    formatLogDate,
-    formatLogTimeDetailed,
-    getProtocolName,
-} from 'panel/components/QueryLog/helpers';
+import { formatLogDate, formatLogTimeDetailed, getProtocolName } from 'panel/components/QueryLog/helpers';
 import { LogEntry } from 'panel/components/QueryLog/types';
 
 import s from '../LogTable.module.pcss';
@@ -17,16 +13,8 @@ type Props = {
     row: LogEntry;
 };
 
-type TooltipRowProps = {
-    label: string;
-    value: React.ReactNode;
-};
-
-const TooltipRow = ({ label, value }: TooltipRowProps) => (
-    <div className={s.queryDetailsTooltipItem}>
-        <span className={cn(s.queryDetailsTooltipLabel, theme.text.t3, theme.text.semibold)}>{label}</span>&nbsp;
-        <span className={cn(s.queryDetailsTooltipValue, theme.text.t3)}>{value}</span>
-    </div>
+const renderValue = (value: React.ReactNode) => (
+    <span className={cn(s.queryDetailsTooltipValue, theme.text.t3)}>{value}</span>
 );
 
 export const QueryDetailsTooltipContent = ({ row }: Props) => {
@@ -40,11 +28,36 @@ export const QueryDetailsTooltipContent = ({ row }: Props) => {
             </div>
 
             <div className={s.queryDetailsTooltipSection}>
-                <TooltipRow label={intl.getMessage('query_log_detail_time')} value={formatLogTimeDetailed(row.time)} />
-                <TooltipRow label={intl.getMessage('query_log_detail_date')} value={formatLogDate(row.time)} />
-                <TooltipRow label={intl.getMessage('query_log_detail_domain')} value={displayDomain} />
-                <TooltipRow label={intl.getMessage('query_log_detail_type')} value={row.type} />
-                <TooltipRow label={intl.getMessage('query_log_detail_protocol')} value={getProtocolName(row.client_proto)} />
+                <div className={s.queryDetailsTooltipItem}>
+                    {intl.getMessage('query_log_detail_time', {
+                        value: formatLogTimeDetailed(row.time),
+                        span: renderValue,
+                    })}
+                </div>
+                <div className={s.queryDetailsTooltipItem}>
+                    {intl.getMessage('query_log_detail_date', {
+                        value: formatLogDate(row.time),
+                        span: renderValue,
+                    })}
+                </div>
+                <div className={s.queryDetailsTooltipItem}>
+                    {intl.getMessage('query_log_detail_domain', {
+                        value: displayDomain,
+                        span: renderValue,
+                    })}
+                </div>
+                <div className={s.queryDetailsTooltipItem}>
+                    {intl.getMessage('query_log_detail_type', {
+                        value: row.type,
+                        span: renderValue,
+                    })}
+                </div>
+                <div className={s.queryDetailsTooltipItem}>
+                    {intl.getMessage('query_log_detail_protocol', {
+                        value: getProtocolName(row.client_proto),
+                        span: renderValue,
+                    })}
+                </div>
             </div>
 
             {row.tracker && (
@@ -61,24 +74,39 @@ export const QueryDetailsTooltipContent = ({ row }: Props) => {
                     </div>
 
                     <div className={s.queryDetailsTooltipSection}>
-                        <TooltipRow label={intl.getMessage('query_log_detail_name')} value={row.tracker.name} />
-                        <TooltipRow label={intl.getMessage('query_log_detail_category')} value={captitalizeWords(row.tracker.category)} />
+                        <div className={s.queryDetailsTooltipItem}>
+                            {intl.getMessage('query_log_detail_name', {
+                                value: row.tracker.name,
+                                span: renderValue,
+                            })}
+                        </div>
+                        <div className={s.queryDetailsTooltipItem}>
+                            {intl.getMessage('query_log_detail_category', {
+                                value: captitalizeWords(row.tracker.category),
+                                span: renderValue,
+                            })}
+                        </div>
                         {trackerSource?.name && (
-                            <TooltipRow
-                                label={intl.getMessage('query_log_detail_source')}
-                                value={trackerSource.url ? (
-                                    <a
-                                        href={trackerSource.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={cn(s.queryDetailsTooltipLink, theme.status.statusGreen)}
-                                    >
-                                        {trackerSource.name}
-                                    </a>
-                                ) : (
-                                    <span className={theme.status.statusGreen}>{trackerSource.name}</span>
-                                )}
-                            />
+                            <div className={s.queryDetailsTooltipItem}>
+                                {intl.getMessage('query_log_detail_source', {
+                                    value: trackerSource.name,
+                                    span: (content: React.ReactNode) =>
+                                        trackerSource.url ? (
+                                            <a
+                                                href={trackerSource.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={cn(s.queryDetailsTooltipLink, theme.status.statusGreen)}
+                                            >
+                                                {content}
+                                            </a>
+                                        ) : (
+                                            <span className={cn(s.queryDetailsTooltipValue, theme.text.t3)}>
+                                                {content}
+                                            </span>
+                                        ),
+                                })}
+                            </div>
                         )}
                     </div>
                 </>

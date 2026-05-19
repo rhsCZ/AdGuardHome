@@ -710,10 +710,10 @@ export const countClientsStatistics = (ids: any, autoClients: any) => {
 
 /**
  * @param {string} elapsedMs
- * @param {function} t translate
+ * @param {string} millisecondsLabel
  * @returns {string}
  */
-export const formatElapsedMs = (elapsedMs: string, t: (key: string) => string) => {
+export const formatElapsedMs = (elapsedMs: string, millisecondsLabel: string) => {
     const parsedElapsedMs = parseFloat(elapsedMs);
 
     if (Number.isNaN(parsedElapsedMs)) {
@@ -722,7 +722,7 @@ export const formatElapsedMs = (elapsedMs: string, t: (key: string) => string) =
 
     const formattedValue = parsedElapsedMs < 1 ? parsedElapsedMs.toFixed(2) : Math.floor(parsedElapsedMs).toString();
 
-    return `${formattedValue} ${t('milliseconds_abbreviation')}`;
+    return `${formattedValue} ${millisecondsLabel}`;
 };
 
 /**

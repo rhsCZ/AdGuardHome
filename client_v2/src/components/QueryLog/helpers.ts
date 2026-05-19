@@ -124,7 +124,15 @@ const STATUS_COLOR_TO_CLASS: Record<string, string> = {
     [QUERY_STATUS_COLORS.RED]: theme.status.statusRed,
     [QUERY_STATUS_COLORS.GREEN]: theme.status.statusGreen,
     [QUERY_STATUS_COLORS.YELLOW]: theme.status.statusYellow,
+    [QUERY_STATUS_COLORS.BLUE]: theme.status.statusBlue,
 };
+
+const PROTOCOL_LABEL_GETTERS = {
+    dns_over_https: () => intl.getMessage('dns_over_https'),
+    dns_over_quic: () => intl.getMessage('dns_over_quic'),
+    dns_over_tls: () => intl.getMessage('dns_over_tls'),
+    plain_dns: () => intl.getMessage('plain_dns'),
+} as const;
 
 export const getStatusClassName = (reason: string): string =>
     STATUS_COLOR_TO_CLASS[FILTERED_STATUS_TO_COLOR_MAP[reason as keyof typeof FILTERED_STATUS_TO_COLOR_MAP]] || '';
@@ -135,9 +143,10 @@ export const isBlockedReason = (reason: string): boolean =>
 export const getProtocolName = (clientProto: string): string => {
     const key = SCHEME_TO_PROTOCOL_MAP[clientProto as keyof typeof SCHEME_TO_PROTOCOL_MAP];
     if (key) {
-        return intl.getMessage(key);
+        return PROTOCOL_LABEL_GETTERS[key as keyof typeof PROTOCOL_LABEL_GETTERS]();
     }
-    return intl.getMessage('plain_dns');
+
+    return PROTOCOL_LABEL_GETTERS.plain_dns();
 };
 
 export const formatLogTime = (time: string): string => {
@@ -165,9 +174,7 @@ export const formatLogTimeDetailed = (time: string): string => {
 };
 
 export const getClientLocation = (whois?: WhoisInfo | null): string =>
-    [whois?.city, whois?.country]
-        .filter(Boolean)
-        .join(', ');
+    [whois?.city, whois?.country].filter(Boolean).join(', ');
 
 type ResponseDetailsParams = {
     elapsedMs: string;
@@ -240,7 +247,7 @@ export const getQueryReasonKey = (reason: string, rules: Rule[] = []): Exclude<Q
 };
 
 export const getQueryStatusDetails = (elapsedMs: string): string =>
-    formatElapsedMs(elapsedMs, (key) => intl.getMessage(key));
+    formatElapsedMs(elapsedMs, intl.getMessage('milliseconds_abbreviation'));
 
 export const getQueryReasonDetails = ({
     filters,
@@ -290,14 +297,12 @@ export const getResponseDetails = ({
     services,
     whitelistFilters,
 }: ResponseDetailsParams): string => {
-    const formattedElapsedMs = formatElapsedMs(elapsedMs, (key) => intl.getMessage(key));
+    const formattedElapsedMs = formatElapsedMs(elapsedMs, intl.getMessage('milliseconds_abbreviation'));
 
     switch (reason) {
         case FILTERED_STATUS.FILTERED_BLOCKED_SERVICE:
             return (
-                (services && serviceName && getServiceName(services, serviceName))
-                || serviceName
-                || formattedElapsedMs
+                (services && serviceName && getServiceName(services, serviceName)) || serviceName || formattedElapsedMs
             );
         case FILTERED_STATUS.FILTERED_BLACK_LIST:
         case FILTERED_STATUS.NOT_FILTERED_WHITE_LIST: {

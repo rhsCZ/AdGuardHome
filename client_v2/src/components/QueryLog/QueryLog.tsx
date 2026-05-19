@@ -5,7 +5,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
-import { PageLoader } from 'panel/common/ui/Loader';
+import { Loader } from 'panel/common/ui/Loader';
 import { initialState, RootState } from 'panel/initialState';
 import theme from 'panel/lib/theme';
 import {
@@ -218,6 +218,8 @@ export const QueryLog = () => {
 
     const isRequestInFlight = processingGetLogs || processingAdditionalLogs;
     const isLoadingMore = isIncrementalLoad && isRequestInFlight;
+    const isInitialLoading = processingGetLogs && logs.length === 0;
+    let mobileContent = null;
 
     const handleLoadMore = useCallback(() => {
         if (isRequestInFlight || isEntireLog) {
@@ -243,8 +245,51 @@ export const QueryLog = () => {
     };
     const allowedClients = getAllowedClients();
 
-    if (processingGetLogs && logs.length === 0) {
-        return <PageLoader />;
+    if (isInitialLoading) {
+        mobileContent = (
+            <div className={s.mobileInitialLoader} data-testid="query-log-initial-loader">
+                <Loader />
+            </div>
+        );
+    } else if (visibleLogs.length === 0) {
+        mobileContent = (
+            <EmptyState
+                className={s.emptyState}
+                mode={emptyStateMode}
+            />
+        );
+    } else {
+        mobileContent = (
+            <>
+                <div className={s.mobileList}>
+                    {visibleLogs.map((entry: LogEntry) => (
+                        <LogCard
+                            key={`${entry.time}-${entry.domain}-${entry.client}`}
+                            entry={entry}
+                            onRowClick={handleRowClick}
+                            onBlock={handleBlockDomain}
+                            onUnblock={handleUnblockDomain}
+                            onBlockClient={handleBlockClient}
+                            onDisallowClient={handleDisallowClient}
+                            onAddPersistentClient={handleAddPersistentClient}
+                            filters={filters}
+                            services={services}
+                            whitelistFilters={whitelistFilters}
+                            persistentClientIds={persistentClientIds}
+                            persistentClientsLoaded={!processingClients}
+                        />
+                    ))}
+                </div>
+
+                <InfiniteScrollTrigger
+                    hasMore={hasMore}
+                    loading={isLoadingMore}
+                    disabled={isRequestInFlight}
+                    onLoadMore={handleLoadMore}
+                    className={s.mobileLoader}
+                />
+            </>
+        );
     }
 
     return (
@@ -268,6 +313,7 @@ export const QueryLog = () => {
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
+                        isInitialLoading={isInitialLoading}
                         onLoadMore={handleLoadMore}
                         onRowClick={handleRowClick}
                         onBlock={handleBlockDomain}
@@ -285,42 +331,7 @@ export const QueryLog = () => {
                 </div>
 
                 <div className={s.mobileView}>
-                    {visibleLogs.length === 0 ? (
-                        <EmptyState
-                            className={s.emptyState}
-                            mode={emptyStateMode}
-                        />
-                    ) : (
-                        <>
-                            <div className={s.mobileList}>
-                                {visibleLogs.map((entry: LogEntry) => (
-                                    <LogCard
-                                        key={`${entry.time}-${entry.domain}-${entry.client}`}
-                                        entry={entry}
-                                        onRowClick={handleRowClick}
-                                        onBlock={handleBlockDomain}
-                                        onUnblock={handleUnblockDomain}
-                                        onBlockClient={handleBlockClient}
-                                        onDisallowClient={handleDisallowClient}
-                                        onAddPersistentClient={handleAddPersistentClient}
-                                        filters={filters}
-                                        services={services}
-                                        whitelistFilters={whitelistFilters}
-                                        persistentClientIds={persistentClientIds}
-                                        persistentClientsLoaded={!processingClients}
-                                    />
-                                ))}
-                            </div>
-
-                            <InfiniteScrollTrigger
-                                hasMore={hasMore}
-                                loading={isLoadingMore}
-                                disabled={isRequestInFlight}
-                                onLoadMore={handleLoadMore}
-                                className={s.mobileLoader}
-                            />
-                        </>
-                    )}
+                    {mobileContent}
                 </div>
 
                 {selectedEntry && (

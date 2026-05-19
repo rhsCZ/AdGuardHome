@@ -17,14 +17,16 @@ import { EmptyState } from 'panel/components/QueryLog/blocks/EmptyState/EmptySta
 import type { LogEntry, Service } from 'panel/components/QueryLog/types';
 import type { Filter } from 'panel/helpers/helpers';
 
-const FILTERS: Filter[] = [{
-    enabled: true,
-    id: 1,
-    lastUpdated: '',
-    name: 'Primary blocklist',
-    rulesCount: 1234,
-    url: 'https://filters.example/blocklist.txt',
-}];
+const FILTERS: Filter[] = [
+    {
+        enabled: true,
+        id: 1,
+        lastUpdated: '',
+        name: 'Primary blocklist',
+        rulesCount: 1234,
+        url: 'https://filters.example/blocklist.txt',
+    },
+];
 
 const makeLogEntry = (overrides: Partial<LogEntry> = {}): LogEntry => ({
     answer_dnssec: true,
@@ -60,11 +62,20 @@ const makeLogEntry = (overrides: Partial<LogEntry> = {}): LogEntry => ({
 
 beforeEach(() => {
     const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    const originalGetMessage = intl.getMessage.bind(intl);
 
     vi.spyOn(window, 'getComputedStyle').mockImplementation((element) => originalGetComputedStyle(element));
     vi.spyOn(intl, 'getMessage').mockImplementation((key, params) => {
         if (key === 'type_value') {
             return `type_value:${String(params?.value ?? '')}`;
+        }
+
+        if (key.startsWith('query_log_detail_')) {
+            return originalGetMessage(key, params);
+        }
+
+        if (key === 'query_log_blocked_services') {
+            return 'Blocked services';
         }
 
         if (key === 'query_log_nothing_available_rotation' && typeof params?.a === 'function') {
@@ -88,21 +99,14 @@ describe('Query log cells', () => {
         const row = makeLogEntry();
         const ipHandler = vi.fn();
         const nameHandler = vi.fn();
-        const onSearchSelect = vi.fn((value: string) => (
-            value === row.client ? ipHandler : nameHandler
-        ));
+        const onSearchSelect = vi.fn((value: string) => (value === row.client ? ipHandler : nameHandler));
 
         render(
             <div>
                 <RequestCell row={row} />
                 <ClientCell row={row} onSearchSelect={onSearchSelect} />
                 <StatusCell row={row} />
-                <ReasonCell
-                    row={row}
-                    filters={FILTERS}
-                    services={[]}
-                    whitelistFilters={[]}
-                />
+                <ReasonCell row={row} filters={FILTERS} services={[]} whitelistFilters={[]} />
             </div>,
         );
 
@@ -249,5 +253,95 @@ describe('Query log composition components', () => {
         expect(onAddToAllowlist).toHaveBeenCalledWith('streaming.example');
         expect(onAllowService).toHaveBeenCalledWith('amazon');
         expect(onClose).toHaveBeenCalledTimes(2);
+    });
+
+    test('renders detail rows through tagged translations and composes blocked-service reason details', () => {
+        const row = makeLogEntry({
+            domain: 'streaming.example',
+            reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
+            service_name: 'amazon',
+            serviceName: '',
+            unicodeName: 'streaming.example',
+        });
+
+        render(
+            <MemoryRouter>
+                <QueryDetailsTooltipContent row={row} />
+                <DetailModal
+                    entry={row}
+                    filters={[]}
+                    services={[{ id: 'amazon', name: 'Amazon.com' }]}
+                    whitelistFilters={[]}
+                    onClose={vi.fn()}
+                    onBlock={vi.fn()}
+                    onAddToAllowlist={vi.fn()}
+                    onAllowService={vi.fn()}
+                />
+            </MemoryRouter>,
+        );
+
+        expect(
+            screen.getAllByText((_content, node) => node?.textContent === 'Domain: streaming.example').length,
+        ).toBeGreaterThan(0);
+        expect(screen.getByTestId('query-log-detail-reason')).toHaveTextContent(
+            'Reason: Blocked services / Amazon.com',
+        );
+        expect(screen.getByTestId('query-log-detail-response')).toHaveTextContent(
+            'Response: A: 93.184.216.34 (ttl=300)',
+        );
+        expect(screen.queryByText('[object Object]')).not.toBeInTheDocument();
+    });
+
+    test('renders the detail modal with direct rich intl detail rows', () => {
+        const originalGetMessage = intl.getMessage.bind(intl);
+        const getMessageSpy = vi.spyOn(intl, 'getMessage').mockImplementation((key, params) => {
+            if (key.startsWith('query_log_detail_')) {
+                return originalGetMessage(key, params);
+            }
+
+            if (key === 'type_value') {
+                return `type_value:${String(params?.value ?? '')}`;
+            }
+
+            if (key === 'query_log_blocked_services') {
+                return 'Blocked services';
+            }
+
+            return String(key);
+        });
+
+        render(
+            <MemoryRouter>
+                <DetailModal
+                    entry={makeLogEntry({
+                        client_info: null,
+                        ecs: '',
+                        reason: FILTERED_STATUS.REWRITE,
+                        rules: [],
+                        service_name: '',
+                        serviceName: '',
+                        tracker: null,
+                        upstream: '',
+                    })}
+                    filters={[]}
+                    services={[]}
+                    whitelistFilters={[]}
+                    onClose={vi.fn()}
+                    onBlock={vi.fn()}
+                    onAddToAllowlist={vi.fn()}
+                    onAllowService={vi.fn()}
+                />
+            </MemoryRouter>,
+        );
+
+        expect(screen.getByTestId('query-log-detail-modal')).toBeVisible();
+        expect(screen.getByTestId('query-log-detail-domain')).toHaveTextContent('Domain: example.org');
+        expect(getMessageSpy).toHaveBeenCalledWith(
+            'query_log_detail_domain',
+            expect.objectContaining({
+                value: 'example.org',
+                span: expect.any(Function),
+            }),
+        );
     });
 });

@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import type { MouseEvent } from 'react';
 
 import intl from 'panel/common/intl';
+import { Loader } from 'panel/common/ui/Loader';
 import { Table, TableColumn } from 'panel/common/ui/Table/Table';
 
 import { LogEntry, Service } from 'panel/components/QueryLog/types';
@@ -21,6 +22,7 @@ type Props = {
     hasMore: boolean;
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
+    isInitialLoading: boolean;
     onLoadMore: () => void;
     onRowClick: (entry: LogEntry) => void;
     onBlock: (domain: string) => void;
@@ -42,6 +44,7 @@ export const LogTable = ({
     hasMore,
     isLoadingMore,
     isRequestInFlight,
+    isInitialLoading,
     onLoadMore,
     onRowClick,
     onBlock,
@@ -113,7 +116,7 @@ export const LogTable = ({
             },
             {
                 key: 'actions',
-                header: { text: intl.getMessage('actions_table_header') },
+                header: { text: '', render: () => null },
                 render: (_value: unknown, row: LogEntry) => (
                     <div
                         className={s.actionsCell}
@@ -138,7 +141,7 @@ export const LogTable = ({
                         />
                     </div>
                 ),
-                width: 87,
+                width: 40,
                 sortable: false,
             },
         ],
@@ -162,7 +165,11 @@ export const LogTable = ({
             <Table
                 data={logs}
                 columns={columns}
-                emptyTable={(
+                emptyTable={isInitialLoading ? (
+                    <div className={s.initialLoader} data-testid="query-log-initial-loader">
+                        <Loader />
+                    </div>
+                ) : (
                     <EmptyState
                         className={s.emptyTableWrapper}
                         mode={emptyStateMode}

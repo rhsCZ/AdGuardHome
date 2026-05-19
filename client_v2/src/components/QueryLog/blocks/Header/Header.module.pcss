@@ -39,6 +39,7 @@
     flex-direction: column;
     gap: 12px;
     width: 100%;
+    min-width: 0;
 
     @media (min-width: 768px) {
         flex-direction: row;
@@ -114,17 +115,46 @@
 
 .filterField {
     width: 100%;
+    min-width: 0;
 
     @media (min-width: 768px) {
-        flex: 0 1 180px;
-        min-width: 144px;
-        max-width: 180px;
+        flex: 0 1 auto;
+        width: auto;
+        max-width: 100%;
     }
 }
 
 .filterSelect {
     width: 100%;
     min-width: 0;
+
+    @media (min-width: 768px) {
+        width: auto;
+        max-width: 100%;
+
+        &:global(.react-select.react-select-responsive) {
+            width: fit-content;
+            max-width: 100%;
+            min-width: 0;
+        }
+    }
+
+    & :global(.select__control) {
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    & :global(.select__value-container) {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    & :global(.select__single-value) {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 
 .refreshMobileButton,
