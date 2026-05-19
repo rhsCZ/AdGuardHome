@@ -22,7 +22,8 @@ const toasts = handleActions(
             return newState;
         },
         [addSuccessToast.toString()]: (state: any, { payload }: any) => {
-            const normalizedPayload = typeof payload === 'string' ? { message: payload } : payload;
+            const normalizedPayload =
+                payload && typeof payload === 'object' && 'message' in payload ? payload : { message: payload };
             const successToast = {
                 id: nanoid(),
                 message: normalizedPayload.message,

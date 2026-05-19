@@ -6,6 +6,7 @@ import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import { Icon } from 'panel/common/ui/Icon';
 import { FILTERED_STATUS } from 'panel/helpers/constants';
+import { getServiceName } from 'panel/helpers/helpers';
 import { RootState } from 'panel/initialState';
 
 import { getCheckResultMeta } from '../../checkResultHelpers';
@@ -56,6 +57,7 @@ export const CheckResult = ({
 }: Props) => {
     const filters = useSelector((state: RootState) => state.filtering.filters);
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
+    const allServices = useSelector((state: RootState) => state.services.allServices);
 
     const { hostname, reason, rules, service_name, cname, ip_addrs } = checkResult;
 
@@ -65,20 +67,25 @@ export const CheckResult = ({
 
     const meta = getCheckResultMeta({ reason, rules, filters, whitelistFilters });
     const statusClassName = getStatusClassName(meta.tone);
-    const showRewriteActions = reason === FILTERED_STATUS.REWRITE_RULE && hasMatchedRewrite;
+    const showRewriteActions = reason === FILTERED_STATUS.REWRITE && hasMatchedRewrite;
+    const showSource = reason === FILTERED_STATUS.FILTERED_SAFE_BROWSING && Boolean(meta.source);
     const hasStandaloneResultMessage = reason ? STANDALONE_RESULT_REASONS.has(reason) : false;
+    const redirectedValue = cname || (ip_addrs && ip_addrs.length > 0 ? ip_addrs.join(', ') : null);
+    const normalizedServiceName = service_name ? getServiceName(allServices, service_name) || service_name : null;
 
     const getReasonContent = () => {
         if (hasStandaloneResultMessage) {
-           return meta.reason;
+            return meta.reason;
         }
 
         if (meta.reason) {
-            return intl.getMessage('user_rules_reason', { reason: meta.reason });
+            return intl.getMessage(meta.tone === 'rewritten' ? 'user_rules_status' : 'user_rules_reason', {
+                reason: meta.reason,
+            });
         }
 
-        return null
-    }
+        return null;
+    };
 
     const reasonContent = getReasonContent();
 
@@ -110,19 +117,31 @@ export const CheckResult = ({
 
                 {reasonContent && <div className={s.resultItem}>{reasonContent}</div>}
 
+                {showSource && meta.source && (
+                    <div className={s.resultItem}>{intl.getMessage('user_rules_source', { value: meta.source })}</div>
+                )}
+
+                {normalizedServiceName && (
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_service', { service: normalizedServiceName })}
+                    </div>
+                )}
+
                 {meta.rule && (
                     <div className={s.resultItem}>{intl.getMessage('user_rules_rule', { rule: meta.rule })}</div>
                 )}
 
-                {service_name && (
+                {meta.tone === 'rewritten' && redirectedValue && (
                     <div className={s.resultItem}>
-                        {intl.getMessage('user_rules_service', { service: service_name })}
+                        {intl.getMessage('user_rules_redirected_to', { value: redirectedValue })}
                     </div>
                 )}
 
-                {cname && <div className={s.resultItem}>{intl.getMessage('user_rules_cname', { cname })}</div>}
+                {meta.tone !== 'rewritten' && cname && (
+                    <div className={s.resultItem}>{intl.getMessage('user_rules_cname', { cname })}</div>
+                )}
 
-                {ip_addrs && ip_addrs.length > 0 && (
+                {meta.tone !== 'rewritten' && ip_addrs && ip_addrs.length > 0 && (
                     <div className={s.resultItem}>{intl.getMessage('user_rules_ip', { ip: ip_addrs.join(', ') })}</div>
                 )}
             </div>

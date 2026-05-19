@@ -33,8 +33,9 @@ export const setRules =
     async (dispatch: any) => {
         dispatch(setRulesRequest());
         try {
+            const normalizedUserRules = normalizeRulesTextarea(rules) || '';
             const normalizedRules = {
-                rules: normalizeRulesTextarea(rules)?.split('\n'),
+                rules: normalizedUserRules ? normalizedUserRules.split('\n') : [],
             };
             await apiClient.setRules(normalizedRules);
 
@@ -42,7 +43,11 @@ export const setRules =
                 dispatch(addSuccessToast(intl.getMessage('updated_custom_filtering_toast')));
             }
 
-            dispatch(setRulesSuccess());
+            dispatch(
+                setRulesSuccess({
+                    userRules: normalizedUserRules,
+                }),
+            );
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(setRulesFailure());
@@ -55,20 +60,20 @@ export const addFilterSuccess = createAction('ADD_FILTER_SUCCESS');
 
 export const addFilter =
     (url: any, name: any, whitelist = false) =>
-        async (dispatch: any, getState: any) => {
-            dispatch(addFilterRequest());
-            try {
-                await apiClient.addFilter({ url, name, whitelist });
-                dispatch(addFilterSuccess(url));
-                if (getState().filtering.isModalOpen) {
-                    dispatch(toggleFilteringModal());
-                }
-                dispatch(getFilteringStatus());
-            } catch (error) {
-                dispatch(addErrorToast({ error }));
-                dispatch(addFilterFailure());
+    async (dispatch: any, getState: any) => {
+        dispatch(addFilterRequest());
+        try {
+            await apiClient.addFilter({ url, name, whitelist });
+            dispatch(addFilterSuccess(url));
+            if (getState().filtering.isModalOpen) {
+                dispatch(toggleFilteringModal());
             }
-        };
+            dispatch(getFilteringStatus());
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(addFilterFailure());
+        }
+    };
 
 export const removeFilterRequest = createAction('REMOVE_FILTER_REQUEST');
 export const removeFilterFailure = createAction('REMOVE_FILTER_FAILURE');
@@ -76,21 +81,21 @@ export const removeFilterSuccess = createAction('REMOVE_FILTER_SUCCESS');
 
 export const removeFilter =
     (url: any, whitelist = false) =>
-        async (dispatch: any, getState: any) => {
-            dispatch(removeFilterRequest());
-            try {
-                await apiClient.removeFilter({ url, whitelist });
-                dispatch(removeFilterSuccess(url));
-                if (getState().filtering.isModalOpen) {
-                    dispatch(toggleFilteringModal());
-                }
-                dispatch(addSuccessToast(intl.getMessage('filter_removed_successfully')));
-                dispatch(getFilteringStatus());
-            } catch (error) {
-                dispatch(addErrorToast({ error }));
-                dispatch(removeFilterFailure());
+    async (dispatch: any, getState: any) => {
+        dispatch(removeFilterRequest());
+        try {
+            await apiClient.removeFilter({ url, whitelist });
+            dispatch(removeFilterSuccess(url));
+            if (getState().filtering.isModalOpen) {
+                dispatch(toggleFilteringModal());
             }
-        };
+            dispatch(addSuccessToast(intl.getMessage('filter_removed_successfully')));
+            dispatch(getFilteringStatus());
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(removeFilterFailure());
+        }
+    };
 
 export const toggleFilterRequest = createAction('FILTER_TOGGLE_REQUEST');
 export const toggleFilterFailure = createAction('FILTER_TOGGLE_FAILURE');
@@ -98,17 +103,17 @@ export const toggleFilterSuccess = createAction('FILTER_TOGGLE_SUCCESS');
 
 export const toggleFilterStatus =
     (url: any, data: any, whitelist = false) =>
-        async (dispatch: any) => {
-            dispatch(toggleFilterRequest());
-            try {
-                await apiClient.setFilterUrl({ url, data, whitelist });
-                dispatch(toggleFilterSuccess(url));
-                dispatch(getFilteringStatus());
-            } catch (error) {
-                dispatch(addErrorToast({ error }));
-                dispatch(toggleFilterFailure());
-            }
-        };
+    async (dispatch: any) => {
+        dispatch(toggleFilterRequest());
+        try {
+            await apiClient.setFilterUrl({ url, data, whitelist });
+            dispatch(toggleFilterSuccess(url));
+            dispatch(getFilteringStatus());
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(toggleFilterFailure());
+        }
+    };
 
 export const editFilterRequest = createAction('EDIT_FILTER_REQUEST');
 export const editFilterFailure = createAction('EDIT_FILTER_FAILURE');
@@ -116,21 +121,21 @@ export const editFilterSuccess = createAction('EDIT_FILTER_SUCCESS');
 
 export const editFilter =
     (url: any, data: any, whitelist = false) =>
-        async (dispatch: any, getState: any) => {
-            dispatch(editFilterRequest());
-            try {
-                await apiClient.setFilterUrl({ url, data, whitelist });
-                dispatch(editFilterSuccess(url));
-                if (getState().filtering.isModalOpen) {
-                    dispatch(toggleFilteringModal());
-                }
-                dispatch(addSuccessToast(intl.getMessage('changes_saved_success')));
-                dispatch(getFilteringStatus());
-            } catch (error) {
-                dispatch(addErrorToast({ error }));
-                dispatch(editFilterFailure());
+    async (dispatch: any, getState: any) => {
+        dispatch(editFilterRequest());
+        try {
+            await apiClient.setFilterUrl({ url, data, whitelist });
+            dispatch(editFilterSuccess(url));
+            if (getState().filtering.isModalOpen) {
+                dispatch(toggleFilteringModal());
             }
-        };
+            dispatch(addSuccessToast(intl.getMessage('changes_saved_success')));
+            dispatch(getFilteringStatus());
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(editFilterFailure());
+        }
+    };
 
 export const refreshFiltersRequest = createAction('FILTERING_REFRESH_REQUEST');
 export const refreshFiltersFailure = createAction('FILTERING_REFRESH_FAILURE');

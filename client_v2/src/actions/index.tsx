@@ -717,7 +717,8 @@ export const updateStaticLease = (config: any) => async (dispatch: any) => {
 export const removeToast = createAction('REMOVE_TOAST');
 
 export const toggleBlocking =
-    (type: any, domain: any, baseRule?: string, baseUnblocking?: string) => async (dispatch: any, getState: any) => {
+    (type: any, domain: any, baseRule?: string, baseUnblocking?: string, matchedRuleToReplace?: string) =>
+    async (dispatch: any, getState: any) => {
         const baseBlockingRule = baseRule || `||${domain}^$important`;
         const baseUnblockingRule = baseUnblocking || `@@${baseBlockingRule}`;
         const { userRules } = getState().filtering;
@@ -726,6 +727,10 @@ export const toggleBlocking =
         const oppositeRule = type === BLOCK_ACTIONS.BLOCK ? baseUnblockingRule : baseBlockingRule;
         const currentRules = splitByNewLine(userRules);
         const hasDesiredRule = currentRules.includes(desiredRule);
+        const rulesToReplace = [oppositeRule, matchedRuleToReplace].filter(
+            (rule): rule is string => Boolean(rule) && rule !== desiredRule,
+        );
+        const hasRuleToReplace = rulesToReplace.some((rule) => currentRules.includes(rule));
         const addedRuleMessageKey =
             type === BLOCK_ACTIONS.BLOCK
                 ? 'user_rules_rule_added_to_custom_filtering_rules'
@@ -735,22 +740,23 @@ export const toggleBlocking =
             actionLabel: intl.getMessage('notify_undo'),
             onAction: async () => {
                 await dispatch(setRules(previousRules, { showToast: false }));
-                dispatch(getFilteringStatus());
+                await dispatch(getFilteringStatus());
             },
         };
 
-        if (hasDesiredRule) {
+        if (hasDesiredRule && !hasRuleToReplace) {
             dispatch(addSuccessToast(intl.getMessage(addedRuleMessageKey)));
             return;
         }
 
-        const updatedRules = currentRules.filter((rule) => rule !== desiredRule && rule !== oppositeRule);
+        const rulesToRemove = new Set([desiredRule, ...rulesToReplace]);
+        const updatedRules = currentRules.filter((rule: string) => !rulesToRemove.has(rule));
         updatedRules.push(desiredRule);
 
         await dispatch(setRules(`${updatedRules.join('\n')}\n`, { showToast: false }));
         dispatch(addSuccessToast(undoToastPayload));
 
-        dispatch(getFilteringStatus());
+        await dispatch(getFilteringStatus());
     };
 
 export const toggleBlockingForClient = (type: any, domain: any, client: any) => {

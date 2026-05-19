@@ -3,42 +3,27 @@ import { useForm } from 'react-hook-form';
 import cn from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import intl from 'panel/common/intl';
-import { PageLoader } from 'panel/common/ui/Loader';
 import { initSettings, toggleBlocking, toggleBlockingForClient, toggleSetting } from 'panel/actions';
 import { getFilteringStatus, setRules, checkHost, toggleFilterStatus } from 'panel/actions/filtering';
 import { getRewritesList, updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
 import { getBlockedServices, getAllBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
-import { BLOCK_ACTIONS } from 'panel/helpers/constants';
+import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
 import { RootState } from 'panel/initialState';
 import theme from 'panel/lib/theme';
+import { Loader } from 'panel/common/ui/Loader';
+import { openModal } from 'panel/reducers/modals';
+import { ConfigureRewritesModal } from 'panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal';
+import { DeleteRewriteModal } from 'panel/components/FilterLists/blocks/DeleteRewriteModal';
 
 import { CheckForm } from './blocks/CheckForm';
 import { CheckResult } from './blocks/CheckResult';
 import { Examples } from './blocks/Examples';
-import { RewriteDialog } from './blocks/RewriteDialog';
 import { RulesEditor } from './blocks/RulesEditor';
-import { CheckFormValues, DNS_RECORD_TYPE_OPTIONS, ResultActionKind, RewriteDialogState, RewriteEntry, UserRulesFormValues } from './types';
+import { CheckFormValues, DNS_RECORD_TYPE_OPTIONS, ResultActionKind, RewriteEntry, UserRulesFormValues } from './types';
 
 import s from './UserRules.module.pcss';
-
-const getPlainText = (value: React.ReactNode): string => {
-    if (typeof value === 'string' || typeof value === 'number') {
-        return String(value);
-    }
-
-    if (Array.isArray(value)) {
-        return value.map(getPlainText).join('');
-    }
-
-    if (React.isValidElement(value)) {
-        return getPlainText(value.props.children);
-    }
-
-    return '';
-};
 
 export const UserRules = () => {
     const dispatch = useDispatch();
@@ -48,7 +33,6 @@ export const UserRules = () => {
     const whitelistFilters = useSelector((state: RootState) => state.filtering.whitelistFilters);
     const processingRules = useSelector((state: RootState) => state.filtering.processingRules);
     const processingCheck = useSelector((state: RootState) => state.filtering.processingCheck);
-    const processingFilters = useSelector((state: RootState) => state.filtering.processingFilters);
     const checkResult = useSelector((state: RootState) => state.filtering.check);
     const settingsList = useSelector((state: RootState) => state.settings.settingsList);
     const rewrites = useSelector((state: RootState) => state.rewrites);
@@ -56,10 +40,13 @@ export const UserRules = () => {
 
     const [lastSubmittedCheck, setLastSubmittedCheck] = useState<CheckFormValues | null>(null);
     const [isResultVisible, setIsResultVisible] = useState(Boolean(checkResult?.hostname));
-    const [rewriteDialogState, setRewriteDialogState] = useState<RewriteDialogState | null>(null);
-    const [rewriteToDelete, setRewriteToDelete] = useState<RewriteEntry | null>(null);
+    const [currentRewrite, setCurrentRewrite] = useState<RewriteEntry>({
+        domain: '',
+        answer: '',
+        enabled: false,
+    });
+    const [isResultRefreshing, setIsResultRefreshing] = useState(false);
 
-    const isDataLoading = processingFilters;
     const isActionProcessing =
         processingRules ||
         processingCheck ||
@@ -125,6 +112,23 @@ export const UserRules = () => {
         return matches.length === 1 ? matches[0] : null;
     }, [checkResult?.cname, checkResult?.hostname, checkResult?.ip_addrs, rewrites.list]);
 
+    const runWithResultRefresh = async (callback: () => Promise<void>) => {
+        setIsResultVisible(true);
+        setIsResultRefreshing(true);
+
+        try {
+            await callback();
+        } finally {
+            setIsResultRefreshing(false);
+        }
+    };
+
+    const runWithClosedResult = async (callback: () => Promise<void>) => {
+        setIsResultVisible(false);
+
+        await callback();
+    };
+
     const recheckCurrentTarget = async () => {
         if (!lastSubmittedCheck) {
             return;
@@ -137,6 +141,7 @@ export const UserRules = () => {
                 qtype: lastSubmittedCheck.qtype || undefined,
             }),
         );
+
         setIsResultVisible(true);
     };
 
@@ -144,7 +149,7 @@ export const UserRules = () => {
         dispatch(setRules(data.userRules));
     };
 
-    const onCheckSubmit = (data: CheckFormValues) => {
+    const onCheckSubmit = async (data: CheckFormValues) => {
         const payload = {
             name: data.hostname.trim(),
             client: data.client.trim() || undefined,
@@ -156,8 +161,10 @@ export const UserRules = () => {
             client: payload.client || '',
             qtype: payload.qtype || '',
         });
-        setIsResultVisible(true);
-        dispatch(checkHost(payload));
+
+        await runWithResultRefresh(async () => {
+            await dispatch(checkHost(payload));
+        });
     };
 
     const handleRuleToggle = async (type: (typeof BLOCK_ACTIONS)[keyof typeof BLOCK_ACTIONS]) => {
@@ -165,32 +172,50 @@ export const UserRules = () => {
             return;
         }
 
-        const action = lastSubmittedCheck.client
-            ? toggleBlockingForClient(type, checkResult.hostname, lastSubmittedCheck.client)
-            : toggleBlocking(type, checkResult.hostname);
+        const matchedCustomRule =
+            !lastSubmittedCheck.client &&
+            checkResult?.rules?.[0]?.filter_list_id === SPECIAL_FILTER_ID.CUSTOM_FILTERING_RULES
+                ? checkResult.rules?.[0]?.text
+                : undefined;
 
-        await dispatch(action);
-        await recheckCurrentTarget();
+        let action;
+
+        if (lastSubmittedCheck.client) {
+            action = toggleBlockingForClient(type, checkResult.hostname, lastSubmittedCheck.client);
+        } else if (matchedCustomRule) {
+            action = toggleBlocking(type, checkResult.hostname, undefined, undefined, matchedCustomRule);
+        } else {
+            action = toggleBlocking(type, checkResult.hostname);
+        }
+
+        await runWithClosedResult(async () => {
+            await dispatch(action);
+            await recheckCurrentTarget();
+        });
     };
 
     const handleDisableSafeBrowsing = async () => {
-        const ok = await dispatch(toggleSetting('safebrowsing', true));
-        if (!ok) {
-            return;
-        }
+        await runWithClosedResult(async () => {
+            const ok = await dispatch(toggleSetting('safebrowsing', true));
+            if (!ok) {
+                return;
+            }
 
-        dispatch(addSuccessToast(intl.getMessage('user_rules_browsing_security_disabled')));
-        await recheckCurrentTarget();
+            dispatch(addSuccessToast(intl.getMessage('user_rules_browsing_security_disabled')));
+            await recheckCurrentTarget();
+        });
     };
 
     const handleDisableParental = async () => {
-        const ok = await dispatch(toggleSetting('parental', true));
-        if (!ok) {
-            return;
-        }
+        await runWithClosedResult(async () => {
+            const ok = await dispatch(toggleSetting('parental', true));
+            if (!ok) {
+                return;
+            }
 
-        dispatch(addSuccessToast(intl.getMessage('user_rules_parental_control_disabled')));
-        await recheckCurrentTarget();
+            dispatch(addSuccessToast(intl.getMessage('user_rules_parental_control_disabled')));
+            await recheckCurrentTarget();
+        });
     };
 
     const handleDisableSafeSearch = async () => {
@@ -199,13 +224,15 @@ export const UserRules = () => {
             return;
         }
 
-        const ok = await dispatch(toggleSetting('safesearch', { ...currentSafeSearch, enabled: false }));
-        if (!ok) {
-            return;
-        }
+        await runWithClosedResult(async () => {
+            const ok = await dispatch(toggleSetting('safesearch', { ...currentSafeSearch, enabled: false }));
+            if (!ok) {
+                return;
+            }
 
-        dispatch(addSuccessToast(intl.getMessage('user_rules_safe_search_disabled')));
-        await recheckCurrentTarget();
+            dispatch(addSuccessToast(intl.getMessage('user_rules_safe_search_disabled')));
+            await recheckCurrentTarget();
+        });
     };
 
     const handleDisableFilter = async () => {
@@ -223,68 +250,103 @@ export const UserRules = () => {
 
         const isWhitelist = whitelistFilters.some((filter) => filter.id === filterId);
 
-        await dispatch(
-            toggleFilterStatus(
-                matchedFilter.url,
-                {
-                    name: matchedFilter.name,
-                    url: matchedFilter.url,
-                    enabled: false,
-                },
-                isWhitelist,
-            ),
-        );
-        dispatch(
-            addSuccessToast(
-                getPlainText(intl.getMessage('user_rules_filter_was_disabled', { value: matchedFilter.name })),
-            ),
-        );
-        await recheckCurrentTarget();
+        await runWithClosedResult(async () => {
+            await dispatch(
+                toggleFilterStatus(
+                    matchedFilter.url,
+                    {
+                        name: matchedFilter.name,
+                        url: matchedFilter.url,
+                        enabled: false,
+                    },
+                    isWhitelist,
+                ),
+            );
+            dispatch(addSuccessToast(intl.getMessage('user_rules_filter_was_disabled', { value: matchedFilter.name })));
+            await recheckCurrentTarget();
+        });
     };
 
     const handleAllowBlockedService = async () => {
-        const matchedService = services.allServices.find((service) => service.name === checkResult?.service_name);
+        const currentRule = checkResult?.rules?.[0]?.text;
+        const normalizedServiceName = checkResult?.service_name?.trim().toLowerCase();
+        const matchedService = services.allServices.find((service) => {
+            if (normalizedServiceName) {
+                const matchesName = service.name?.toLowerCase() === normalizedServiceName;
+                const matchesId = service.id?.toLowerCase() === normalizedServiceName;
+
+                if (matchesName || matchesId) {
+                    return true;
+                }
+            }
+
+            return Boolean(currentRule) && service.rules?.includes(currentRule);
+        });
+
         if (!matchedService) {
             return;
         }
 
-        await dispatch(
-            updateBlockedServices(
-                {
+        await runWithClosedResult(async () => {
+            await dispatch(
+                updateBlockedServices({
                     ...services.list,
-                    ids: (services.list.ids || []).filter((id) => id !== matchedService.id),
-                },
-                { showToast: false },
-            ),
-        );
-        dispatch(
-            addSuccessToast(
-                getPlainText(intl.getMessage('user_rules_service_allowed', { value: matchedService.name })),
-            ),
-        );
-        await recheckCurrentTarget();
+                    ids: (services.list.ids || []).filter((id: string) => id !== matchedService.id),
+                }),
+            );
+            dispatch(addSuccessToast(intl.getMessage('user_rules_service_allowed', { value: matchedService.name })));
+            await recheckCurrentTarget();
+        });
     };
 
     const handleRewriteUpdate = async (update: RewriteEntry) => {
+        if (!currentRewrite.domain) {
+            return;
+        }
+
+        await runWithClosedResult(async () => {
+            await dispatch(updateRewrite({ target: currentRewrite, update }, { showToast: false }));
+            dispatch(addSuccessToast(intl.getMessage('settings_notify_changes_saved')));
+            await recheckCurrentTarget();
+        });
+    };
+
+    const handleRewriteDelete = async () => {
+        if (!currentRewrite.domain) {
+            return;
+        }
+
+        await runWithClosedResult(async () => {
+            await dispatch(deleteRewrite(currentRewrite, { showToast: false }));
+            dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
+            await recheckCurrentTarget();
+        });
+    };
+
+    const resetCurrentRewrite = () => {
+        setCurrentRewrite({
+            domain: '',
+            answer: '',
+            enabled: false,
+        });
+    };
+
+    const openEditRewriteModal = () => {
         if (!matchedRewrite) {
             return;
         }
 
-        await dispatch(updateRewrite({ target: matchedRewrite, update }, { showToast: false }));
-        dispatch(addSuccessToast(intl.getMessage('settings_notify_changes_saved')));
-        setRewriteDialogState(null);
-        await recheckCurrentTarget();
+        setCurrentRewrite(matchedRewrite);
+        dispatch(openModal(MODAL_TYPE.EDIT_REWRITE));
     };
 
-    const handleRewriteDelete = async () => {
-        if (!rewriteToDelete) {
+    const openDeleteRewriteModal = () => {
+        if (!matchedRewrite) {
             return;
         }
 
-        await dispatch(deleteRewrite(rewriteToDelete, { showToast: false }));
-        dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
-        setRewriteToDelete(null);
-        await recheckCurrentTarget();
+        setCurrentRewrite(matchedRewrite);
+        dispatch(openModal(MODAL_TYPE.DELETE_REWRITE));
     };
 
     const handleAction = async (action: ResultActionKind) => {
@@ -317,15 +379,8 @@ export const UserRules = () => {
         }
     };
 
-    if (isDataLoading) {
-        return (
-            <div className={theme.layout.container}>
-                <div className={cn(theme.layout.containerIn, theme.layout.containerIn_one_col)}>
-                    <PageLoader />
-                </div>
-            </div>
-        );
-    }
+    const showResultLoader = isResultVisible && isResultRefreshing;
+    const showResultCard = isResultVisible && !isResultRefreshing && Boolean(checkResult?.hostname);
 
     return (
         <>
@@ -361,16 +416,24 @@ export const UserRules = () => {
                             />
                         </div>
 
-                        {isResultVisible && (
+                        {showResultLoader && (
+                            <div
+                                className={cn(s.card, s.resultLoadingCard)}
+                                data-testid="user-rules-result-loader"
+                                aria-busy="true"
+                            >
+                                <Loader className={s.resultLoaderIcon} />
+                            </div>
+                        )}
+
+                        {showResultCard && (
                             <CheckResult
                                 checkResult={checkResult}
                                 processingRules={isActionProcessing}
                                 onDismiss={() => setIsResultVisible(false)}
                                 onAction={handleAction}
-                                onEditRewrite={() =>
-                                    matchedRewrite && setRewriteDialogState({ visible: true, target: matchedRewrite })
-                                }
-                                onDeleteRewrite={() => matchedRewrite && setRewriteToDelete(matchedRewrite)}
+                                onEditRewrite={openEditRewriteModal}
+                                onDeleteRewrite={openDeleteRewriteModal}
                                 hasMatchedRewrite={Boolean(matchedRewrite)}
                             />
                         )}
@@ -378,25 +441,18 @@ export const UserRules = () => {
                 </div>
             </div>
 
-            <RewriteDialog
-                visible={Boolean(rewriteDialogState?.visible)}
-                initialValue={rewriteDialogState?.target || null}
-                processing={Boolean(rewrites.processingUpdate)}
-                onClose={() => setRewriteDialogState(null)}
+            <ConfigureRewritesModal
+                modalId={MODAL_TYPE.EDIT_REWRITE}
+                rewriteToEdit={currentRewrite}
                 onSubmit={handleRewriteUpdate}
+                onClose={resetCurrentRewrite}
             />
 
-            {rewriteToDelete && (
-                <ConfirmDialog
-                    title={intl.getMessage('delete_table_action')}
-                    text={intl.getMessage('rewrite_confirm_delete', { key: rewriteToDelete.domain })}
-                    buttonText={intl.getMessage('delete_table_action')}
-                    cancelText={intl.getMessage('cancel')}
-                    submitDisabled={Boolean(rewrites.processingDelete)}
-                    onConfirm={handleRewriteDelete}
-                    onClose={() => setRewriteToDelete(null)}
-                />
-            )}
+            <DeleteRewriteModal
+                rewriteToDelete={currentRewrite}
+                setRewriteToDelete={setCurrentRewrite}
+                onConfirm={handleRewriteDelete}
+            />
         </>
     );
 };

@@ -50,6 +50,25 @@ describe('toggleBlocking', () => {
         expect(mocks.getFilteringStatus).toHaveBeenCalled();
     });
 
+    it('replaces the matched custom allow rule even when a blocking rule already exists', async () => {
+        const getState = () => ({
+            filtering: {
+                userRules: '@@allowed.example^$important\n||allowed.example^$important\n',
+            },
+        });
+
+        await toggleBlocking(
+            BLOCK_ACTIONS.BLOCK,
+            'allowed.example',
+            undefined,
+            undefined,
+            '@@allowed.example^$important',
+        )(dispatch, getState as never);
+
+        expect(mocks.setRules).toHaveBeenCalledWith('||allowed.example^$important\n', { showToast: false });
+        expect(mocks.getFilteringStatus).toHaveBeenCalled();
+    });
+
     it('replaces a blocking rule with an allowlist rule and shows the add toast', async () => {
         const getState = () => ({
             filtering: {
@@ -67,5 +86,42 @@ describe('toggleBlocking', () => {
             }),
         );
         expect(mocks.getFilteringStatus).toHaveBeenCalled();
+    });
+
+    it('waits for the filtering status refresh before resolving', async () => {
+        let resolveStatusRefresh: (() => void) | undefined;
+        const pendingStatusRefresh = new Promise<void>((resolve) => {
+            resolveStatusRefresh = resolve;
+        });
+        const statusAwareDispatch = vi.fn((action) => {
+            if (action?.type === 'getFilteringStatus') {
+                return pendingStatusRefresh;
+            }
+
+            return action;
+        });
+        const getState = () => ({
+            filtering: {
+                userRules: '',
+            },
+        });
+
+        let settled = false;
+        const togglePromise = toggleBlocking(BLOCK_ACTIONS.BLOCK, 'fresh.example')(
+            statusAwareDispatch,
+            getState as never,
+        ).then(() => {
+            settled = true;
+        });
+
+        await Promise.resolve();
+
+        expect(mocks.getFilteringStatus).toHaveBeenCalled();
+        expect(settled).toBe(false);
+
+        resolveStatusRefresh?.();
+        await togglePromise;
+
+        expect(settled).toBe(true);
     });
 });

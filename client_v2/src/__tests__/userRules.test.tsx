@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRules } from 'panel/components/UserRules/UserRules';
-import { BLOCK_ACTIONS, FILTERED_STATUS, SETTINGS_NAMES } from 'panel/helpers/constants';
+import { BLOCK_ACTIONS, FILTERED_STATUS, MODAL_TYPE, SETTINGS_NAMES } from 'panel/helpers/constants';
 import { initialState, RootState } from 'panel/initialState';
 
 const mocks = vi.hoisted(() => ({
@@ -69,6 +69,68 @@ vi.mock('panel/actions/toasts', () => ({
     addSuccessToast: mocks.addSuccessToast,
 }));
 
+vi.mock('panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal', async () => {
+    const React = await import('react');
+
+    return {
+        ConfigureRewritesModal: ({ modalId, rewriteToEdit, onSubmit }: any) => {
+            const [domain, setDomain] = React.useState(rewriteToEdit?.domain ?? '');
+            const [answer, setAnswer] = React.useState(rewriteToEdit?.answer ?? '');
+
+            React.useEffect(() => {
+                setDomain(rewriteToEdit?.domain ?? '');
+                setAnswer(rewriteToEdit?.answer ?? '');
+            }, [rewriteToEdit]);
+
+            if (mocks.state.modals.modalId !== modalId) {
+                return null;
+            }
+
+            return (
+                <div role="dialog">
+                    <input
+                        data-testid="rewrite-domain-input"
+                        value={domain}
+                        onChange={(event) => setDomain(event.currentTarget.value)}
+                    />
+                    <input
+                        data-testid="rewrite-answer-input"
+                        value={answer}
+                        onChange={(event) => setAnswer(event.currentTarget.value)}
+                    />
+                    <button
+                        type="button"
+                        data-testid="rewrite-save-button"
+                        onClick={() =>
+                            onSubmit?.({
+                                domain,
+                                answer,
+                                enabled: rewriteToEdit?.enabled ?? false,
+                            })
+                        }
+                    >
+                        Save
+                    </button>
+                </div>
+            );
+        },
+    };
+});
+
+vi.mock('panel/components/FilterLists/blocks/DeleteRewriteModal', () => ({
+    DeleteRewriteModal: ({ rewriteToDelete, onConfirm }: any) => {
+        if (mocks.state.modals.modalId !== MODAL_TYPE.DELETE_REWRITE || !rewriteToDelete?.domain) {
+            return null;
+        }
+
+        return (
+            <button type="button" data-testid="rewrite-delete-confirm" onClick={() => onConfirm?.()}>
+                Remove
+            </button>
+        );
+    },
+}));
+
 type RenderOptions = {
     filtering?: Partial<RootState['filtering']>;
     settings?: Partial<RootState['settings']>;
@@ -87,9 +149,19 @@ const EXAMPLE_FILTER = {
     rulesCount: 12,
 };
 
+const EXAMPLE_ALLOWLIST = {
+    id: 201,
+    name: 'Example Allowlist',
+    url: 'https://filters.example/allowlist.txt',
+    enabled: true,
+    lastUpdated: '',
+    rulesCount: 7,
+};
+
 const MATCHED_REWRITE = {
     domain: 'rewrite.example',
     answer: 'target.example',
+    enabled: true,
 };
 
 const createState = (overrides: RenderOptions = {}): RootState => ({
@@ -159,11 +231,25 @@ const renderMatchedFilterResult = (hostname = 'filtered.example') =>
         },
     );
 
+const renderMatchedAllowlistResult = (hostname = 'allowed.example') =>
+    renderCheckResult(
+        {
+            hostname,
+            reason: FILTERED_STATUS.NOT_FILTERED_WHITE_LIST,
+            rules: [{ filter_list_id: EXAMPLE_ALLOWLIST.id, text: `@@||${hostname}^$important` }],
+        },
+        {
+            filtering: {
+                whitelistFilters: [EXAMPLE_ALLOWLIST],
+            },
+        },
+    );
+
 const renderMatchedRewriteResult = () =>
     renderCheckResult(
         {
             hostname: MATCHED_REWRITE.domain,
-            reason: FILTERED_STATUS.REWRITE_RULE,
+            reason: FILTERED_STATUS.REWRITE,
             cname: MATCHED_REWRITE.answer,
         },
         {
@@ -252,7 +338,7 @@ const resultActionScenarios = [
         ],
     },
     {
-        name: 'allowed results',
+        name: 'custom allowed results',
         renderScenario: () =>
             renderCheckResult({
                 hostname: 'allowed.example',
@@ -261,6 +347,15 @@ const resultActionScenarios = [
             }),
         title: 'Domain is allowed',
         actions: [['block', 'Block']],
+    },
+    {
+        name: 'allowlist filter allowed results',
+        renderScenario: () => renderMatchedAllowlistResult(),
+        title: 'Domain is allowed',
+        actions: [
+            ['disable-filter', 'Disable filter'],
+            ['block', 'Block'],
+        ],
     },
 ];
 
@@ -297,7 +392,29 @@ const settingToggleScenarios = [
 beforeEach(() => {
     mocks.state = createState();
     mocks.dispatch.mockReset();
-    mocks.dispatch.mockImplementation((action) => action);
+    mocks.dispatch.mockImplementation((action) => {
+        if (action?.type === 'OPEN_MODAL') {
+            mocks.state = {
+                ...mocks.state,
+                modals: {
+                    ...mocks.state.modals,
+                    modalId: action.payload.modalId,
+                },
+            };
+        }
+
+        if (action?.type === 'CLOSE_MODAL') {
+            mocks.state = {
+                ...mocks.state,
+                modals: {
+                    ...mocks.state.modals,
+                    modalId: null,
+                },
+            };
+        }
+
+        return action;
+    });
 
     [
         mocks.getFilteringStatus,
@@ -351,6 +468,31 @@ describe('UserRules harness', () => {
             client: undefined,
             qtype: 'A',
         });
+    });
+
+    it('shows a result loader instead of stale result content while a new check is pending', async () => {
+        const user = userEvent.setup();
+        let resolveCheck: (() => void) | undefined;
+        const pendingCheck = new Promise<void>((resolve) => {
+            resolveCheck = resolve;
+        });
+
+        mocks.dispatch.mockImplementation((action) => {
+            if (action?.type === 'checkHost') {
+                return pendingCheck;
+            }
+
+            return action;
+        });
+
+        renderCheckResult({ hostname: 'old.example' });
+
+        await submitCheckForm(user, { hostname: 'new.example' });
+
+        expect(screen.getByTestId('user-rules-result-loader')).toBeInTheDocument();
+        expect(screen.queryByTestId('user-rules-result-card')).not.toBeInTheDocument();
+
+        resolveCheck?.();
     });
 
     it('bootstraps supporting state and hides the result card after dismiss', async () => {
@@ -446,6 +588,110 @@ describe('UserRules harness', () => {
         expectRecheck('blocked.example', 'office-laptop');
     });
 
+    it('passes the matched custom allow rule when blocking a custom allowed result', async () => {
+        const user = userEvent.setup();
+
+        renderCheckResult({
+            hostname: 'allowed.example',
+            reason: FILTERED_STATUS.NOT_FILTERED_WHITE_LIST,
+            rules: [{ filter_list_id: 0, text: '@@allowed.example^$important' }],
+        });
+
+        await submitCheckForm(user, { hostname: 'allowed.example' });
+
+        mocks.checkHost.mockClear();
+        await user.click(screen.getByTestId('user-rules-result-action-block'));
+
+        expect(mocks.toggleBlocking).toHaveBeenCalledWith(
+            BLOCK_ACTIONS.BLOCK,
+            'allowed.example',
+            undefined,
+            undefined,
+            '@@allowed.example^$important',
+        );
+        expectRecheck('allowed.example');
+    });
+
+    it('renders Safe Search as a rewritten result with redirected target details', () => {
+        renderCheckResult({
+            hostname: 'google.com',
+            reason: FILTERED_STATUS.FILTERED_SAFE_SEARCH,
+            cname: 'forcesafesearch.google.com',
+        });
+
+        const resultCard = screen.getByTestId('user-rules-result-card');
+
+        expect(within(resultCard).getByText('Rewrite rule is applied')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Status:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('Safe search')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Redirected to:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('forcesafesearch.google.com')).toBeInTheDocument();
+        expect(within(resultCard).queryByText('CNAME:', { selector: 'strong' })).not.toBeInTheDocument();
+        expect(screen.getByTestId('user-rules-result-action-allow')).toHaveTextContent('Add to allowlist');
+        expect(screen.getByTestId('user-rules-result-action-disable-safesearch')).toHaveTextContent(
+            'Disable Safe Search',
+        );
+    });
+
+    it('renders Safe Browsing with blocked threats reason, source, and rule details', () => {
+        renderCheckResult({
+            hostname: 'malware.example',
+            reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
+            rules: [{ filter_list_id: -4, text: 'adguard-malware-shavar' }],
+        });
+
+        const resultCard = screen.getByTestId('user-rules-result-card');
+
+        expect(within(resultCard).getByText('Domain:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('malware.example')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Reason:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('Blocked Threats')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Source:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('Safe Browsing')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Rule:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('adguard-malware-shavar')).toBeInTheDocument();
+    });
+
+    it('closes the result while a result action is pending', async () => {
+        const user = userEvent.setup();
+        let resolveToggle: (() => void) | undefined;
+        const pendingToggle = new Promise<void>((resolve) => {
+            resolveToggle = resolve;
+        });
+
+        renderCheckResult({
+            hostname: 'plain.example',
+            reason: FILTERED_STATUS.NOT_FILTERED_NOT_FOUND,
+        });
+
+        await submitCheckForm(user, { hostname: 'plain.example' });
+
+        mocks.dispatch.mockImplementation((action) => {
+            if (action?.type === 'toggleBlocking') {
+                return pendingToggle;
+            }
+
+            return action;
+        });
+
+        await user.click(screen.getByTestId('user-rules-result-action-block'));
+
+        expect(screen.queryByTestId('user-rules-result-loader')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('user-rules-result-card')).not.toBeInTheDocument();
+
+        resolveToggle?.();
+    });
+
+    it('shows Disable filter before Block for allowlist filter results', () => {
+        renderMatchedAllowlistResult();
+
+        const actionOrder = Array.from(
+            screen.getByTestId('user-rules-result-card').querySelectorAll('[data-testid^="user-rules-result-action-"]'),
+        ).map((element) => element.getAttribute('data-testid'));
+
+        expect(actionOrder).toEqual(['user-rules-result-action-disable-filter', 'user-rules-result-action-block']);
+    });
+
     settingToggleScenarios.forEach(
         ({ name, actionKind, hostname, reason, settingKey, expectedSettingValue, toast }) => {
             it(`disables ${name} from result actions and rechecks the target`, async () => {
@@ -484,8 +730,35 @@ describe('UserRules harness', () => {
             },
             false,
         );
-        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Example Blocklist was disabled');
+        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
+        render(<>{toastMessage}</>);
+        expect(screen.getByText('Example Blocklist', { selector: 'strong' })).toBeInTheDocument();
         expectRecheck('filtered.example');
+    });
+
+    it('disables the matched allowlist and rechecks the host', async () => {
+        const user = userEvent.setup();
+
+        renderMatchedAllowlistResult();
+
+        await submitCheckForm(user, { hostname: 'allowed.example', qtype: 'A' });
+        mocks.checkHost.mockClear();
+
+        await user.click(screen.getByTestId('user-rules-result-action-disable-filter'));
+
+        expect(mocks.toggleFilterStatus).toHaveBeenCalledWith(
+            'https://filters.example/allowlist.txt',
+            {
+                name: EXAMPLE_ALLOWLIST.name,
+                url: EXAMPLE_ALLOWLIST.url,
+                enabled: false,
+            },
+            true,
+        );
+        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
+        render(<>{toastMessage}</>);
+        expect(screen.getByText('Example Allowlist', { selector: 'strong' })).toBeInTheDocument();
+        expectRecheck('allowed.example');
     });
 
     it('allows the blocked service with the user-rules toast copy', async () => {
@@ -495,14 +768,56 @@ describe('UserRules harness', () => {
             {
                 hostname: 'video.example',
                 reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
-                service_name: 'YouTube',
+                service_name: 'youtube',
+                rules: [{ filter_list_id: 0, text: '||amemv.com^' }],
             },
             {
                 services: {
                     list: {
                         ids: ['youtube'],
                     },
-                    allServices: [{ id: 'youtube', name: 'YouTube' }],
+                    allServices: [{ id: 'youtube', name: 'YouTube', rules: ['||amemv.com^'] }],
+                },
+            },
+        );
+
+        await submitCheckForm(user, {
+            hostname: 'video.example',
+        });
+
+        expect(screen.getByText('Reason:', { selector: 'strong' })).toBeInTheDocument();
+        expect(screen.getByText('Blocked services')).toBeInTheDocument();
+        expect(screen.getByText('Service:', { selector: 'strong' })).toBeInTheDocument();
+        expect(screen.getByText('YouTube')).toBeInTheDocument();
+        expect(screen.getByText('Rule:', { selector: 'strong' })).toBeInTheDocument();
+        expect(screen.getByText('||amemv.com^')).toBeInTheDocument();
+
+        mocks.checkHost.mockClear();
+        await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
+
+        expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] });
+        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
+        render(<>{toastMessage}</>);
+        expect(screen.getByText('YouTube', { selector: 'strong' })).toBeInTheDocument();
+        expectRecheck('video.example');
+    });
+
+    it('allows the blocked service even when the result service name does not exactly match the catalog entry', async () => {
+        const user = userEvent.setup();
+
+        renderCheckResult(
+            {
+                hostname: 'video.example',
+                reason: FILTERED_STATUS.FILTERED_BLOCKED_SERVICE,
+                service_name: 'YouTube (restricted)',
+                rules: [{ filter_list_id: 0, text: '||amemv.com^' }],
+            },
+            {
+                services: {
+                    list: {
+                        ids: ['youtube'],
+                    },
+                    allServices: [{ id: 'youtube', name: 'YouTube', rules: ['||amemv.com^'] }],
                 },
             },
         );
@@ -514,8 +829,10 @@ describe('UserRules harness', () => {
         mocks.checkHost.mockClear();
         await user.click(screen.getByTestId('user-rules-result-action-disable-blocked-service'));
 
-        expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] }, { showToast: false });
-        expect(mocks.addSuccessToast).toHaveBeenCalledWith('The YouTube service was allowed');
+        expect(mocks.updateBlockedServices).toHaveBeenCalledWith({ ids: [] });
+        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
+        render(<>{toastMessage}</>);
+        expect(screen.getByText('YouTube', { selector: 'strong' })).toBeInTheDocument();
         expectRecheck('video.example');
     });
 
@@ -524,6 +841,16 @@ describe('UserRules harness', () => {
             hostname: 'hosts.example',
             reason: FILTERED_STATUS.REWRITE_HOSTS,
             ip_addrs: ['127.0.0.1'],
+        });
+
+        expect(screen.queryByTestId('user-rules-result-action-edit-rewrite')).not.toBeInTheDocument();
+    });
+
+    it('does not show rewrite edit actions for dnsrewrite filter rules', () => {
+        renderCheckResult({
+            hostname: 'rule.example',
+            reason: FILTERED_STATUS.REWRITE_RULE,
+            cname: 'target.example',
         });
 
         expect(screen.queryByTestId('user-rules-result-action-edit-rewrite')).not.toBeInTheDocument();
@@ -538,7 +865,7 @@ describe('UserRules harness', () => {
         expect(screen.getByTestId('user-rules-result-action-delete-rewrite')).toHaveTextContent('Remove DNS rewrite');
 
         await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
-        await user.click(screen.getByRole('button', { name: 'Delete' }));
+        await user.click(await screen.findByTestId('rewrite-delete-confirm'));
 
         expect(mocks.deleteRewrite).toHaveBeenCalledWith(MATCHED_REWRITE, { showToast: false });
         expect(mocks.addSuccessToast).toHaveBeenCalledWith('Rule removed from DNS rewrite');
@@ -550,19 +877,24 @@ describe('UserRules harness', () => {
         renderMatchedRewriteResult();
 
         await user.click(screen.getByTestId('user-rules-result-action-edit-rewrite'));
-        await user.clear(screen.getByLabelText('Answer'));
-        await user.type(screen.getByLabelText('Answer'), 'new-target.example');
+        const domainInput = await screen.findByTestId('rewrite-domain-input');
+        const answerInput = await screen.findByTestId('rewrite-answer-input');
 
-        const dialog = screen.getByRole('dialog');
-        await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+        await user.clear(domainInput);
+        await user.type(domainInput, MATCHED_REWRITE.domain);
+        await user.clear(answerInput);
+        await user.type(answerInput, 'new-target.example');
+        await user.click(screen.getByTestId('rewrite-save-button'));
 
-        expect(mocks.updateRewrite).toHaveBeenCalledWith(
-            {
-                target: MATCHED_REWRITE,
-                update: { ...MATCHED_REWRITE, answer: 'new-target.example' },
-            },
-            { showToast: false },
-        );
+        await waitFor(() => {
+            expect(mocks.updateRewrite).toHaveBeenCalledWith(
+                {
+                    target: MATCHED_REWRITE,
+                    update: { ...MATCHED_REWRITE, answer: 'new-target.example' },
+                },
+                { showToast: false },
+            );
+        });
         expect(mocks.addSuccessToast).toHaveBeenCalledWith('Changes saved');
     });
 });

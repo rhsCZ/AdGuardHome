@@ -43,12 +43,7 @@ export type ResultAction = {
 export type RewriteEntry = {
     domain: string;
     answer: string;
-    enabled?: boolean;
-};
-
-export type RewriteDialogState = {
-    visible: boolean;
-    target: RewriteEntry;
+    enabled: boolean;
 };
 
 export type DnsRecordTypeOption = {

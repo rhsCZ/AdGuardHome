@@ -117,7 +117,9 @@ export const getCheckResultMeta = ({
                 tone: 'allowed',
                 title: intl.getMessage('user_rules_domain_is_allowed'),
                 reason: getMatchedAllowlistReason(sourceName),
-                actions: [createAction('block')],
+                actions: isCustomRule
+                    ? [createAction('block')]
+                    : [createAction('block'), createAction('disable-filter')],
                 rule: primaryRule?.text,
                 source: sourceName,
             };
@@ -134,8 +136,10 @@ export const getCheckResultMeta = ({
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: intl.getMessage('user_rules_reason_blocked_by', { source: intl.getMessage('safe_browsing') }),
+                reason: intl.getMessage('blocked_threats'),
                 actions: [createAction('allow'), createAction('disable-safebrowsing')],
+                rule: primaryRule?.text,
+                source: intl.getMessage('safe_browsing'),
             };
         case FILTERED_STATUS.FILTERED_PARENTAL:
             return {
@@ -148,19 +152,18 @@ export const getCheckResultMeta = ({
             };
         case FILTERED_STATUS.FILTERED_SAFE_SEARCH:
             return {
-                tone: 'blocked',
-                title: intl.getMessage('user_rules_domain_blocked'),
-                reason: intl.getMessage('user_rules_reason_blocked_by', { source: intl.getMessage('safe_search') }),
+                tone: 'rewritten',
+                title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
+                reason: intl.getMessage('settings_safe_search'),
                 actions: [createAction('allow'), createAction('disable-safesearch')],
             };
         case FILTERED_STATUS.FILTERED_BLOCKED_SERVICE:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: intl.getMessage('user_rules_reason_blocked_by', {
-                    source: intl.getMessage('blocked_services'),
-                }),
+                reason: intl.getMessage('blocked_services'),
                 actions: [createAction('allow'), createAction('disable-blocked-service')],
+                rule: primaryRule?.text,
             };
         case FILTERED_STATUS.REWRITE:
         case FILTERED_STATUS.REWRITE_RULE:

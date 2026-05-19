@@ -9,7 +9,7 @@ import s from './styles.module.pcss';
 
 interface ToastProps {
     id: string;
-    message: string;
+    message: React.ReactNode;
     type: string;
     actionLabel?: string;
     onAction?: () => void | Promise<void>;
@@ -57,12 +57,7 @@ const Toast = ({ id, message, type, actionLabel, onAction }: ToastProps) => {
             </div>
 
             {actionLabel && (
-                <button
-                    type="button"
-                    className={s.actionButton}
-                    data-testid="toast-action"
-                    onClick={handleAction}
-                >
+                <button type="button" className={s.actionButton} data-testid="toast-action" onClick={handleAction}>
                     {actionLabel}
                 </button>
             )}

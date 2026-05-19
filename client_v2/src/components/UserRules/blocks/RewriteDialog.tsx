@@ -22,6 +22,7 @@ export const RewriteDialog = ({ visible, initialValue, processing, onClose, onSu
         defaultValues: initialValue || {
             domain: '',
             answer: '',
+            enabled: false,
         },
         mode: 'onBlur',
     });
@@ -31,6 +32,7 @@ export const RewriteDialog = ({ visible, initialValue, processing, onClose, onSu
             initialValue || {
                 domain: '',
                 answer: '',
+                enabled: false,
             },
         );
     }, [initialValue, reset]);
