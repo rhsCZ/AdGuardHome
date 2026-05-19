@@ -7,6 +7,7 @@ import theme from 'panel/lib/theme';
 import { RootState } from 'panel/initialState';
 import { Switch } from 'panel/common/controls/Switch';
 import { Dropdown } from 'panel/common/ui/Dropdown';
+import { Select } from 'panel/common/controls/Select';
 import { Icon } from 'panel/common/ui/Icon';
 import { Loader } from 'panel/common/ui/Loader';
 import { toggleProtection, getClients } from 'panel/actions';
@@ -85,29 +86,41 @@ export const Dashboard = () => {
     const [remainingTime, setRemainingTime] = useState<number | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState(DAY);
     const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
+    const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
     const protectionDisabledDuration = dashboard?.protectionDisabledDuration;
 
-    useEffect(() => {
-        if (protectionDisabledDuration && protectionDisabledDuration > 0) {
-            setRemainingTime(protectionDisabledDuration);
-
-            const timer = setInterval(() => {
-                setRemainingTime((prev) => {
-                    if (prev && prev > ONE_SECOND_IN_MS) {
-                        return prev - ONE_SECOND_IN_MS;
-                    }
-                    clearInterval(timer);
-                    dispatch(toggleProtection(false));
-                    return null;
-                });
-            }, ONE_SECOND_IN_MS);
-
-            return () => clearInterval(timer);
+    const startCountdown = React.useCallback((duration: number) => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
         }
-        setRemainingTime(null);
-        return undefined;
-    }, [protectionDisabledDuration, dispatch]);
+        setRemainingTime(duration);
+        timerRef.current = setInterval(() => {
+            setRemainingTime((prev) => {
+                if (prev !== null && prev > ONE_SECOND_IN_MS) {
+                    return prev - ONE_SECOND_IN_MS;
+                }
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                    timerRef.current = null;
+                }
+                dispatch(toggleProtection(false));
+                return null;
+            });
+        }, ONE_SECOND_IN_MS);
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (protectionDisabledDuration && protectionDisabledDuration > 0 && timerRef.current === null) {
+            startCountdown(protectionDisabledDuration);
+        }
+    }, [protectionDisabledDuration, startCountdown]);
+
+    useEffect(() => () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+    }, []);
 
     const maxStatsInterval = stats?.interval || DAY;
     const effectiveMaxStatsInterval = maxStatsInterval >= HOUR ? maxStatsInterval : DAY;
@@ -190,11 +203,18 @@ export const Dashboard = () => {
     };
 
     const handleToggleProtection = () => {
+        if (!protectionEnabled && timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+            setRemainingTime(null);
+        }
         dispatch(toggleProtection(protectionEnabled));
     };
 
     const handleDisableProtection = (time: number) => {
-        dispatch(toggleProtection(protectionEnabled, time - ONE_SECOND_IN_MS));
+        const duration = time - ONE_SECOND_IN_MS;
+        startCountdown(duration);
+        dispatch(toggleProtection(protectionEnabled, duration));
         setProtectionMenuOpen(false);
     };
 
@@ -239,7 +259,7 @@ export const Dashboard = () => {
                 <div
                     key={item.key}
                     className={s.protectionMenuItem}
-                    onClick={() => handleDisableProtection(item.time)}
+                    onMouseDown={() => handleDisableProtection(item.time)}
                 >
                     {getDisableText(item.key, item.time)}
                 </div>
@@ -252,31 +272,39 @@ export const Dashboard = () => {
             <div className={theme.layout.containerIn}>
                 <div className={s.header}>
                     <div className={s.headerLeft}>
-                        <h1 className={cn(theme.title.h4, theme.title.h3_tablet)}>
+                        <h1 className={cn(theme.title.h5, s.onlyMobile)}>
+                            {intl.getMessage('dashboard')}
+                        </h1>
+
+                        <h1 className={cn(theme.title.h3_tablet, s.onlyDesktop)}>
                             {intl.getMessage('protection')}
                         </h1>
 
-                        <Switch
-                            id="protection_toggle"
-                            data-testid="protection-toggle"
-                            checked={!!protectionEnabled}
-                            onChange={handleToggleProtection}
-                            disabled={processingProtection}
-                        />
+                        <div className={s.protectionToggle}>
+                            <Switch
+                                id="protection_toggle"
+                                data-testid="protection-toggle"
+                                checked={!!protectionEnabled}
+                                onChange={handleToggleProtection}
+                                disabled={processingProtection}
+                            />
 
-                        {protectionEnabled && (
-                            <Dropdown
-                                menu={protectionMenu}
-                                trigger="click"
-                                position="bottomLeft"
-                                open={protectionMenuOpen}
-                                onOpenChange={setProtectionMenuOpen}
-                                wrapClassName={s.protectionMenuWrapper}
-                                noIcon
-                            >
-                                <Icon icon="bullets" />
-                            </Dropdown>
-                        )}
+                            <div className={cn(theme.text.t2, s.onlyMobile)}>
+                                {intl.getMessage('protection')}
+                            </div>
+                        </div>
+
+                        <Dropdown
+                            menu={protectionMenu}
+                            trigger="click"
+                            position="bottomLeft"
+                            open={protectionMenuOpen}
+                            onOpenChange={setProtectionMenuOpen}
+                            wrapClassName={cn(s.protectionMenuWrapper, s.onlyDesktop)}
+                            noIcon
+                        >
+                            <Icon icon="bullets" />
+                        </Dropdown>
 
                         {remainingTime && remainingTime > 0 && (
                             <span className={s.cardSubtitle}>
@@ -294,12 +322,29 @@ export const Dashboard = () => {
                             onClick={handleRefreshStats}
                             disabled={isLoading}
                         >
-                            {intl.getMessage('refresh_statics')}
+                            <div className={s.onlyDesktop}>
+                                {intl.getMessage('refresh_statics')}
+                            </div>
 
                             <Icon icon="refresh" color="green" />
                         </button>
 
+                        {protectionEnabled && (
+                            <Dropdown
+                                menu={protectionMenu}
+                                trigger="click"
+                                position="bottomLeft"
+                                open={protectionMenuOpen}
+                                onOpenChange={setProtectionMenuOpen}
+                                wrapClassName={cn(s.protectionMenuWrapper, s.onlyMobile)}
+                                noIcon
+                            >
+                                <Icon icon="bullets" />
+                            </Dropdown>
+                        )}
+
                         <Dropdown
+                            wrapClassName={s.onlyDesktop}
                             menu={
                                 <div className={s.periodMenu}>
                                     {periodOptions.map((option) => (
@@ -356,6 +401,40 @@ export const Dashboard = () => {
                                 <Icon icon="arrow_bottom" className={cn(s.periodButtonIcon, periodMenuOpen && s.periodButtonIconOpen)} />
                             </button>
                         </Dropdown>
+                    </div>
+
+                    <div className={cn(s.periodSelect, s.onlyMobile)}>
+                        <Select<number>
+                            options={periodOptions}
+                            value={periodOptions.find((o) => o.value === selectedPeriod)}
+                            onChange={(option) => handlePeriodChange(option.value)}
+                            size="responsive"
+                            height="big"
+                            isSearchable={false}
+                            components={{
+                                MenuList: ({ children }: { children: React.ReactNode }) => (
+                                    <div>
+                                        {children}
+                                        <div className={cn(s.periodMenuItem, s.periodMenuItemLink)}>
+                                            <Icon icon="settings" className={s.periodMenuIcon} />
+                                            <div className={cn(theme.text.t2, theme.text.condenced)}>
+                                                {intl.getMessage('period_notify', {
+                                                    a: (text: string) => (
+                                                        <Link
+                                                            key="a"
+                                                            to={{ pathname: Paths.SettingsPage, hash: '#stats_config' }}
+                                                            className={cn(theme.link.link, theme.link.noDecoration)}
+                                                        >
+                                                            {text}
+                                                        </Link>
+                                                    ),
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ),
+                            }}
+                        />
                     </div>
                 </div>
 

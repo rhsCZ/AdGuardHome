@@ -94,14 +94,16 @@ export const GeneralStatistics = ({
 
                     <div className={s.rowDivider}></div>
 
-                    <StatRow
-                        label={intl.getMessage('average_time_processing')}
-                        value={intl.getMessage('processing_time_ms', { value: avgProcessingTime.toFixed(0) })}
-                        isQueriesValue={false}
-                        icon="time"
-                        rowTheme="averageProcessingTime"
-                        tooltip={intl.getMessage('average_time_processing_tooltip')}
-                    />
+                    <div className={s.processingTimeRow}>
+                        <StatRow
+                            label={intl.getMessage('average_time_processing')}
+                            value={intl.getMessage('processing_time_ms', { value: avgProcessingTime.toFixed(0) })}
+                            isQueriesValue={false}
+                            icon="time"
+                            rowTheme="averageProcessingTime"
+                            tooltip={intl.getMessage('average_time_processing_tooltip')}
+                        />
+                    </div>
                 </div>
             ) : (
                 <EmptyState />

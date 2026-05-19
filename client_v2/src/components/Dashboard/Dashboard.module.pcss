@@ -2,10 +2,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    margin-bottom: 24px;
     flex-wrap: wrap;
-    gap: 16px;
+    padding: 0 16px;
+    margin: 0 0 32px;
+    gap: 32px 16px;
 
     @media (min-width: 1024px) {
         padding: 0;
@@ -14,14 +14,28 @@
 
 .headerLeft {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 24px;
+
+    @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .headerRight {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 16px;
+
+    @media (min-width: 768px) {
+        align-items: center;
+        flex-direction: row;
+    }
+}
+
+.periodSelect {
+    width: 100%;
 }
 
 .protectionMenu {
@@ -132,8 +146,8 @@
 .refreshButton {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
-    padding: 8px 12px;
     background: none;
     border: 1px solid var(--border-default);
     border-radius: 8px;
@@ -141,6 +155,11 @@
     color: var(--default-main-text);
     font-size: 14px;
     transition: background-color 0.2s;
+
+    @media (min-width: 768px) {
+        justify-content: flex-start;
+        padding: 8px 12px;
+    }
 
     &:hover {
         background-color: var(--hovered-secondary-button);
@@ -166,4 +185,29 @@
     &:hover {
         background-color: var(--pressed-page-background);
     }
+}
+
+.onlyMobile {
+    @media (min-width: 768px) {
+        display: none;
+    }
+}
+
+.onlyDesktop {
+    display: none;
+
+    @media (min-width: 768px) {
+        display: flex;
+    }
+}
+
+.protectionToggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cardSubtitle {
+    font-size: 14px;
+    color: var(--default-secondary-text);
 }

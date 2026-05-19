@@ -68,15 +68,17 @@ export const StatCard = ({ value, label, data, color, percentValue, cardTheme }:
         })}>
             <div className={s.statCardInner}>
                 <div className={s.statCardHeader}>
-                    <div>
+                    <div className={s.statCardHeaderLeft}>
                         <div className={s.statCardValue}>{formatNumber(value)}</div>
                     </div>
 
                     {cardTheme !== CARDS_THEME.QUERIES && (
-                        <div className={cn(theme.text.t1, s.statCardPercent)}>
+                        <div className={cn(theme.text.t3, theme.text.t2_tablet, s.statCardPercent)}>
                             {percent.toFixed(0)}%
                         </div>
                     )}
+
+                    <div className={cn(theme.text.t4, s.statCardLabel)}>{label}</div>
                 </div>
                 <div className={s.statCardChart}>
                     <ResponsiveContainer width="100%" height="100%" minHeight={16}>

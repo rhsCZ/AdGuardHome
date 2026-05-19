@@ -134,7 +134,7 @@ const getDisabledMessage = (time: any) => {
         case DISABLE_PROTECTION_TIMINGS.TOMORROW:
             return intl.getMessage('disable_notify_until_tomorrow');
         default:
-            return 'disabled_protection';
+            return intl.getMessage('disabled_protection');
     }
 };
 

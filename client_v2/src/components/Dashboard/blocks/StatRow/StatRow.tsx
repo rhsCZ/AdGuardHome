@@ -86,5 +86,14 @@ export const StatRow = ({
                 </div>
             )}
         </div>
+
+        {isQueriesValue && (
+            <div className={cn(s.queryBar, s.queryBarMobile)}>
+                <div
+                    className={s.queryBarFill}
+                    style={{ width: `${isTotal ? 100 : (percent || 0)}%` }}
+                />
+            </div>
+        )}
     </div>
 );

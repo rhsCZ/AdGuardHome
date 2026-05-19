@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useIsDesktop } from 'panel/helpers/useMediaQuery';
+import { MOBILE_TABLE_MAX_ROWS } from 'panel/helpers/constants';
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
@@ -20,7 +22,9 @@ type Props = {
 };
 
 export const UpstreamAvgTime = ({ topUpstreamsAvgTime, avgProcessingTime }: Props) => {
+    const isDesktop = useIsDesktop();
     const { sortedData: sortedUpstreams, sortField, sortDirection, handleSort } = useSortedData(topUpstreamsAvgTime);
+    const visibleUpstreams = isDesktop ? sortedUpstreams : sortedUpstreams.slice(0, MOBILE_TABLE_MAX_ROWS);
 
     const hasStats = topUpstreamsAvgTime.length > 0;
 
@@ -48,7 +52,7 @@ export const UpstreamAvgTime = ({ topUpstreamsAvgTime, avgProcessingTime }: Prop
 
             <div className={s.tableRows}>
                 {hasStats ? (
-                    sortedUpstreams.map((upstream) => (
+                    visibleUpstreams.map((upstream) => (
                         <div key={upstream.name} className={cn(s.tableRow)}>
                             <div className={cn(theme.text.t3, theme.text.condenced, s.tableRowLeft)}>
                                 <span className={s.domainName}>{upstream.name}</span>

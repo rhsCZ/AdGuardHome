@@ -1,11 +1,14 @@
 .card {
     display: flex;
     flex-direction: column;
-    height: 374px;
     border-radius: 16px;
     padding: 8px 8px 0;
     border: 1px solid var(--default-item-divider);
     overflow: hidden;
+
+    @media (min-width: 768px) {
+        height: 374px;
+    }
 }
 
 .cardHeader {
@@ -21,7 +24,12 @@
 }
 
 .rowDivider {
+    display: none;
     padding: 16px;
+
+    @media (min-width: 768px) {
+        display: block;
+    }
 
     &:before {
         content: "";

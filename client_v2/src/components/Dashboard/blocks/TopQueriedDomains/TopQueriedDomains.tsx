@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useIsDesktop } from 'panel/helpers/useMediaQuery';
+import { MOBILE_TABLE_MAX_ROWS } from 'panel/helpers/constants';
 import intl from 'panel/common/intl';
 import { Icon } from 'panel/common/ui/Icon';
 import { Dropdown } from 'panel/common/ui/Dropdown';
@@ -25,7 +27,9 @@ type Props = {
 };
 
 export const TopQueriedDomains = ({ topQueriedDomains, numDnsQueries }: Props) => {
+    const isDesktop = useIsDesktop();
     const { sortedData: sortedDomains, sortField, sortDirection, handleSort } = useSortedData(topQueriedDomains);
+    const visibleDomains = isDesktop ? sortedDomains : sortedDomains.slice(0, MOBILE_TABLE_MAX_ROWS);
 
     const hasStats = topQueriedDomains.length > 0;
 
@@ -47,7 +51,7 @@ export const TopQueriedDomains = ({ topQueriedDomains, numDnsQueries }: Props) =
 
             <div className={s.tableRows}>
                 {hasStats ? (
-                    sortedDomains.map((domain) => {
+                    visibleDomains.map((domain) => {
                         const percent = numDnsQueries > 0 ? (domain.count / numDnsQueries) * 100 : 0;
                         const trackerData = getTrackerData(domain.name);
 
@@ -97,6 +101,13 @@ export const TopQueriedDomains = ({ topQueriedDomains, numDnsQueries }: Props) =
                                             style={{ width: `${percent}%` }}
                                         />
                                     </div>
+                                </div>
+
+                                <div className={s.queryBar}>
+                                    <div
+                                        className={s.queryBarFill}
+                                        style={{ width: `${percent}%` }}
+                                    />
                                 </div>
                             </div>
                         );

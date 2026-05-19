@@ -546,6 +546,8 @@ export const LOCAL_TIMEZONE_VALUE = 'Local';
 
 export const TABLES_MIN_ROWS = 5;
 
+export const MOBILE_TABLE_MAX_ROWS = 5;
+
 export const DASHBOARD_TABLES_DEFAULT_PAGE_SIZE = 100;
 
 export const TIME_UNITS = {

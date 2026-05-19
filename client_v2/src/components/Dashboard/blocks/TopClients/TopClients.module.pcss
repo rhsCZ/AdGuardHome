@@ -1,18 +1,26 @@
 .card {
     display: flex;
     flex-direction: column;
-    height: 374px;
     border-radius: 16px;
-    padding: 8px 8px 0;
+    padding: 8px 0 0;
     border: 1px solid var(--default-item-divider);
     overflow: hidden;
+
+    @media (min-width: 768px) {
+        max-height: 374px;
+        padding: 8px 8px 0;
+    }
 }
 
 .cardHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 16px 24px;
+    padding: 16px 24px 24px;
+
+    @media (min-width: 768px) {
+        padding: 16px 16px 24px;
+    }
 }
 
 .cardSubtitle {
@@ -28,6 +36,14 @@
     display: flex;
     align-items: center;
     gap: 16px;
+
+    & .clientBlocked {
+        display: block;
+
+        @media (min-width: 768px) {
+            display: none;
+        }
+    }
 }
 
 .tableRowIcon {
@@ -41,7 +57,12 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding-left: 32px;
+    margin: 8px 0 0;
+
+    @media (min-width: 768px) {
+        margin: 0;
+        padding-left: 32px;
+    }
 }
 
 .tableRowDot {
@@ -73,11 +94,16 @@
 }
 
 .queryBar {
+    display: none;
     width: 100%;
     min-width: 102px;
     height: 3px;
     background: var(--default-item-divider);
     border-radius: 2px;
+
+    @media (min-width: 768px) {
+        display: block;
+    }
 }
 
 .queryBarFill {
@@ -115,11 +141,21 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 0 24px;
-    padding: 8px 16px;
+    padding: 16px 24px 24px;
     transition: background-color var(--t2);
+    border-bottom: 1px solid var(--default-item-divider);
+
+    @media (min-width: 768px) {
+        padding: 8px 16px;
+        border: none;
+    }
 
     &:hover {
         background-color: var(--hovered-page-background);
+    }
+
+    &:last-child {
+        border: none;
     }
 }
 
@@ -147,7 +183,12 @@
 }
 
 .clientBlocked {
+    display: none;
     color: var(--default-error-link);
+
+    @media (min-width: 768px) {
+        display: block;
+    }
 }
 
 .clientActions {
@@ -167,6 +208,72 @@
 
     &:hover {
         background-color: var(--hovered-secondary-button);
+    }
+}
+
+.clientActionsDropdown {
+    display: none;
+
+    @media (min-width: 768px) {
+        display: block;
+    }
+}
+
+.tableRowQueriesInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0 0;
+
+    @media (min-width: 768px) {
+        display: none;
+    }
+
+    & .queryBar {
+        display: block;
+        flex: 3;
+    }
+
+    & .queryPercent {
+        font-size: 14px;
+    }
+
+    & .queryCount {
+        flex: 1;
+    }
+}
+
+.tableRowActions {
+    margin: 16px 0 0;
+
+    @media (min-width: 768px) {
+        display: none;
+    }
+
+    & .protectionMenu {
+        padding: 0;
+
+        & .protectionMenuItem {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 24px;
+            border: 1px solid var(--default-link);
+            border-radius: 8px;
+
+            &.protectionMenuItemRed {
+                border-color: var(--default-error-link);
+            }
+        }
+    }
+}
+
+.queryTooltipWrap {
+    display: none;
+
+    @media (min-width: 768px) {
+        display: block;
     }
 }
 

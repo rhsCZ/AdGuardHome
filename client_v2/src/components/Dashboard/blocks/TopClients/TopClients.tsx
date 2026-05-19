@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'panel/initialState';
+import { useIsDesktop } from 'panel/helpers/useMediaQuery';
+import { MOBILE_TABLE_MAX_ROWS } from 'panel/helpers/constants';
 
 import intl from 'panel/common/intl';
 import { Icon } from 'panel/common/ui/Icon';
@@ -49,7 +51,9 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
     }>({ open: false, client: '', action: 'block' });
     const [openMenuClient, setOpenMenuClient] = useState<string | null>(null);
 
+    const isDesktop = useIsDesktop();
     const { sortedData: sortedClients, sortField, sortDirection, handleSort } = useSortedData(topClients);
+    const visibleClients = isDesktop ? sortedClients : sortedClients.slice(0, MOBILE_TABLE_MAX_ROWS);
 
     const isClientBlocked = (clientName: string) => disallowedClientsList.includes(clientName);
 
@@ -163,7 +167,7 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
 
             <div className={s.tableRows}>
                 {hasStats ? (
-                    sortedClients.map((client) => {
+                    visibleClients.map((client) => {
                         const percent = numDnsQueries > 0 ? (client.count / numDnsQueries) * 100 : 0;
                         const isBlocked = isClientBlocked(client.name);
 
@@ -186,6 +190,7 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
                                         noIcon
                                         disableAnimation
                                         overlayClassName={s.queryTooltipOverlay}
+                                        wrapClassName={s.queryTooltipWrap}
                                         menu={
                                             <div className={s.queryTooltip}>
                                                 {formatNumber(client.count)} {intl.getMessage('queries').toLowerCase()}
@@ -213,6 +218,7 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
                                         />
                                     </div>
                                     <Dropdown
+                                        wrapClassName={s.clientActionsDropdown}
                                         menu={getClientMenu(client)}
                                         trigger="click"
                                         position="bottomRight"
@@ -224,6 +230,12 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
                                             <Icon icon="bullets" />
                                         </button>
                                     </Dropdown>
+
+                                    {isBlocked && (
+                                        <div className={cn(theme.text.t4, theme.text.condenced, s.clientBlocked)}>
+                                            {intl.getMessage('blocked')}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className={s.tableRowInfo}>
@@ -241,6 +253,31 @@ export const TopClients = ({ topClients, numDnsQueries }: Props) => {
                                             {intl.getMessage('blocked')}
                                         </div>
                                     )}
+                                    <div className={s.tableRowQueriesInfo}>
+                                        <div className={cn(
+                                            theme.text.t3,
+                                            theme.text.condenced,
+                                            s.queryCount,
+                                            s.queryCountHover
+                                        )}>
+                                            {formatCompactNumber(client.count)}
+
+                                            <div className={cn(theme.text.t3, theme.text.condenced, s.queryPercent)}>
+                                                ({percent.toFixed(1)}%)
+                                            </div>
+                                        </div>
+
+                                        <div className={s.queryBar}>
+                                            <div
+                                                className={s.queryBarFill}
+                                                style={{ width: `${percent}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className={s.tableRowActions}>
+                                        {getClientMenu(client)}
+                                    </div>
                                 </div>
                             </div>
                         );

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useIsDesktop } from 'panel/helpers/useMediaQuery';
+import { MOBILE_TABLE_MAX_ROWS } from 'panel/helpers/constants';
 import intl from 'panel/common/intl';
 import { formatNumber, formatCompactNumber } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
@@ -22,7 +24,9 @@ type Props = {
 };
 
 export const TopUpstreams = ({ topUpstreamsResponses, numDnsQueries }: Props) => {
+    const isDesktop = useIsDesktop();
     const { sortedData: sortedUpstreams, sortField, sortDirection, handleSort } = useSortedData(topUpstreamsResponses);
+    const visibleUpstreams = isDesktop ? sortedUpstreams : sortedUpstreams.slice(0, MOBILE_TABLE_MAX_ROWS);
 
     const hasStats = topUpstreamsResponses.length > 0;
 
@@ -44,7 +48,7 @@ export const TopUpstreams = ({ topUpstreamsResponses, numDnsQueries }: Props) =>
 
             <div className={s.tableRows}>
                 {hasStats ? (
-                    sortedUpstreams.map((upstream) => {
+                    visibleUpstreams.map((upstream) => {
                         const percent = numDnsQueries > 0
                             ? (upstream.count / numDnsQueries) * 100
                             : 0;
@@ -83,6 +87,13 @@ export const TopUpstreams = ({ topUpstreamsResponses, numDnsQueries }: Props) =>
                                             style={{ width: `${percent}%` }}
                                         />
                                     </div>
+                                </div>
+
+                                <div className={s.queryBar}>
+                                    <div
+                                        className={s.queryBarFill}
+                                        style={{ width: `${percent}%` }}
+                                    />
                                 </div>
                             </div>
                         );

@@ -2,9 +2,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0 24px;
-    padding: 8px 16px;
+    padding: 16px;
     transition: background-color var(--t2);
+
+    @media (min-width: 768px) {
+        padding: 8px 16px;
+        flex-wrap: nowrap;
+    }
 
     &:hover {
         background-color: var(--hovered-page-background);
@@ -126,11 +132,25 @@
 }
 
 .queryBar {
+    display: none;
     width: 100%;
     min-width: 102px;
     height: 3px;
     background: var(--default-item-divider);
     border-radius: 2px;
+
+    @media (min-width: 768px) {
+        display: block;
+    }
+}
+
+.queryBarMobile {
+    display: block;
+    margin: 16px 0 0;
+
+    @media (min-width: 768px) {
+        display: none;
+    }
 }
 
 .queryBarFill {
