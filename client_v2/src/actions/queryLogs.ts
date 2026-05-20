@@ -54,7 +54,7 @@ const STATUS_TO_REASON: Record<string, string | string[]> = {
     rewritten: ['Rewrite', 'RewriteEtcHosts', 'RewriteRule', 'FilteredSafeSearch'],
 };
 
-const getEffectiveReason = (filter?: SearchFormValues): string | string[] => {
+const getEffectiveReason = (filter?: SearchFormValues): string | string[] | '' => {
     const reason = filter?.reason ?? DEFAULT_LOGS_FILTER.reason;
     const status = filter?.status ?? DEFAULT_LOGS_FILTER.status;
 
@@ -63,8 +63,9 @@ const getEffectiveReason = (filter?: SearchFormValues): string | string[] => {
         return reason;
     }
 
-    // Otherwise, map the broad status category to a backend value if supported
-    return STATUS_TO_REASON[status] ?? reason;
+    // Map the broad status category to backend reason value(s).
+    // If no mapping exists (e.g. status is also 'all'), return '' to omit the param entirely.
+    return STATUS_TO_REASON[status] ?? '';
 };
 
 const getLogsWithParams = async (config: GetLogsParams): Promise<LogsResponse> => {
