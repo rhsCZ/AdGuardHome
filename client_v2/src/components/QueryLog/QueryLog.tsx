@@ -223,7 +223,8 @@ export const QueryLog = () => {
 
     const isRequestInFlight = processingGetLogs || processingAdditionalLogs;
     const isLoadingMore = isIncrementalLoad && isRequestInFlight;
-    const isInitialLoading = processingGetLogs && logs.length === 0;
+    const isInitialLoading = processingGetLogs && logs.length === 0 && !isIncrementalLoad;
+    const isFilterReloading = processingGetLogs && !isInitialLoading && !isIncrementalLoad;
 
     const handleLoadMore = useCallback(() => {
         if (isRequestInFlight || isEntireLog) {
@@ -250,10 +251,10 @@ export const QueryLog = () => {
     const allowedClients = getAllowedClients();
 
     const renderMobileContent = () => {
-        if (isInitialLoading) {
+        if (isInitialLoading || (isFilterReloading && visibleLogs.length === 0)) {
             return (
                 <div className={s.mobileInitialLoader} data-testid="query-log-initial-loader">
-                    <Loader />
+                    <Loader color="green" className={s.loader} />
                 </div>
             );
         }
@@ -323,6 +324,7 @@ export const QueryLog = () => {
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
                         isInitialLoading={isInitialLoading}
+                        isFilterReloading={isFilterReloading}
                         infiniteScrollResetToken={infiniteScrollResetToken}
                         onLoadMore={handleLoadMore}
                         onRowClick={handleRowClick}

@@ -23,6 +23,7 @@ type Props = {
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
     isInitialLoading: boolean;
+    isFilterReloading: boolean;
     infiniteScrollResetToken: string;
     onLoadMore: () => void;
     onRowClick: (entry: LogEntry) => void;
@@ -46,6 +47,7 @@ export const LogTable = ({
     isLoadingMore,
     isRequestInFlight,
     isInitialLoading,
+    isFilterReloading,
     infiniteScrollResetToken,
     onLoadMore,
     onRowClick,
@@ -167,9 +169,9 @@ export const LogTable = ({
             <Table
                 data={logs}
                 columns={columns}
-                emptyTable={isInitialLoading ? (
+                emptyTable={(isInitialLoading || isFilterReloading) ? (
                     <div className={s.initialLoader} data-testid="query-log-initial-loader">
-                        <Loader />
+                        <Loader color="green" className={s.loader} />
                     </div>
                 ) : (
                     <EmptyState
