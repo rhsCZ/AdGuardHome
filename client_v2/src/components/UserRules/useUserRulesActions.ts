@@ -3,11 +3,11 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useDispatch } from 'react-redux';
 
 import intl from 'panel/common/intl';
-import { toggleBlocking, toggleBlockingForClient, toggleSetting } from 'panel/actions';
+import { getClients, initSettings, toggleBlocking, toggleBlockingForClient, toggleSetting } from 'panel/actions';
 import { updateClient } from 'panel/actions/clients';
 import { checkHost, toggleFilterStatus } from 'panel/actions/filtering';
 import { updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
-import { updateBlockedServices } from 'panel/actions/services';
+import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
 import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
 import { Client, RootState } from 'panel/initialState';
@@ -190,7 +190,28 @@ export const useUserRulesActions = ({
                 return false;
             }
 
-            dispatch(addSuccessToast(intl.getMessage('user_rules_browsing_security_disabled')));
+            const clientSnapshot = resolvedClient;
+
+            dispatch(addSuccessToast({
+                message: intl.getMessage('user_rules_browsing_security_disabled'),
+                actionLabel: intl.getMessage('notify_undo'),
+                onAction: async () => {
+                    const didUndo = lastSubmittedCheck?.client && clientSnapshot
+                        ? await dispatch(
+                            updateClient(
+                                { ...clientSnapshot, safebrowsing_enabled: true },
+                                clientSnapshot.name,
+                                { showToast: false, toggleModal: false },
+                            ),
+                        )
+                        : await dispatch(toggleSetting('safebrowsing', false));
+
+                    if (didUndo) {
+                        await dispatch(initSettings());
+                        await dispatch(getClients());
+                    }
+                },
+            }));
             await recheckCurrentTarget();
 
             return true;
@@ -323,6 +344,8 @@ export const useUserRulesActions = ({
             return;
         }
 
+        const previousBlockedServiceIds = [...(services.list.ids || [])];
+
         await runWithClosedResult(async () => {
             const ok = lastSubmittedCheck?.client
                 ? await updateResolvedClient((client) => {
@@ -352,7 +375,33 @@ export const useUserRulesActions = ({
                 return false;
             }
 
-            dispatch(addSuccessToast(intl.getMessage('user_rules_service_allowed', { value: matchedService.name })));
+            const clientSnapshot = resolvedClient;
+
+            dispatch(addSuccessToast({
+                message: intl.getMessage('user_rules_service_allowed', { value: matchedService.name }),
+                actionLabel: intl.getMessage('notify_undo'),
+                onAction: async () => {
+                    const didUndo = lastSubmittedCheck?.client && clientSnapshot
+                        ? await dispatch(
+                            updateClient(
+                                { ...clientSnapshot, blocked_services: [...previousBlockedServiceIds] },
+                                clientSnapshot.name,
+                                { showToast: false, toggleModal: false },
+                            ),
+                        )
+                        : await dispatch(
+                            updateBlockedServices({
+                                ...services.list,
+                                ids: previousBlockedServiceIds,
+                            }),
+                        );
+
+                    if (didUndo) {
+                        await dispatch(getBlockedServices());
+                        await dispatch(getClients());
+                    }
+                },
+            }));
             await recheckCurrentTarget();
 
             return true;

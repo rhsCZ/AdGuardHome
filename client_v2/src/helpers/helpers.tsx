@@ -456,7 +456,10 @@ export const normalizeWhois = (whois: any) => {
 };
 
 export const getPathWithQueryString = (path: any, params: any) => {
-    const searchParams = new URLSearchParams(params);
+    const filteredParams = Object.fromEntries(
+        Object.entries(params).filter(([, value]) => value !== undefined && value !== null),
+    );
+    const searchParams = new URLSearchParams(filteredParams as Record<string, string>);
 
     return `${path}?${searchParams.toString()}`;
 };
