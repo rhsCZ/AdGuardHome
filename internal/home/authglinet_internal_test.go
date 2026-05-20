@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AdguardTeam/golibs/testutil"
 	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,6 +34,7 @@ func TestAuthMiddlewareGLiNet(t *testing.T) {
 
 	tokenFileRoot, err := os.OpenRoot(glTokenFolder)
 	require.NoError(t, err)
+	testutil.CleanupAndRequireSuccess(t, tokenFileRoot.Close)
 
 	err = os.MkdirAll(filepath.Join(glTokenFolder, glFilePrefix), testPerm)
 	require.NoError(t, err)

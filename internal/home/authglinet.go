@@ -52,7 +52,8 @@ type authMiddlewareGLiNetConfig struct {
 	// doHRoutes is a list of DoH routes for public access.
 	doHRoutes []string
 
-	// tokenFileRoot is the directory where authentication token is stored.
+	// tokenFileRoot is the root where GLiNet tokens are stored.  It must not be
+	// nil.
 	tokenFileRoot *os.Root
 
 	// ttl is the TTL (Time To Live) of the authentication token.  It must be

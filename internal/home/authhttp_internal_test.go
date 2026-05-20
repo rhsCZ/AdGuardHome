@@ -519,6 +519,7 @@ func TestAuth_ServeHTTP_auth(t *testing.T) {
 
 	gliNetRoot, err := os.OpenRoot(tempDir)
 	require.NoError(t, err)
+	testutil.CleanupAndRequireSuccess(t, gliNetRoot.Close)
 
 	mw := &webMw{}
 	baseMux := http.NewServeMux()

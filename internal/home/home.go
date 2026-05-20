@@ -132,9 +132,10 @@ func Main(clientBuildFS fs.FS) {
 
 	sigHdlrLogger := baseLogger.With(slogutil.KeyPrefix, "signalhdlr")
 	sigHdlr := newSignalHandler(sigHdlrLogger, signals, func(ctx context.Context) {
+		defer close(done)
+
 		cleanup(ctx)
 		cleanupAlways()
-		close(done)
 
 		if !opts.glinetMode {
 			return
@@ -142,10 +143,7 @@ func Main(clientBuildFS fs.FS) {
 
 		err = glTokenFileRoot.Close()
 		if err != nil {
-			baseLogger.ErrorContext(ctx,
-				"error while closing GLiNet token root",
-				slogutil.KeyError, err,
-			)
+			baseLogger.ErrorContext(ctx, "closing glinet token root", slogutil.KeyError, err)
 			os.Exit(osutil.ExitCodeFailure)
 		}
 	})
@@ -752,7 +750,7 @@ func fatalOnError(err error) {
 }
 
 // run configures and starts AdGuard Home.  base and sigHdlr must not be nil.
-// glTokenFileRoot must not be nil is opts.glinetMode is true.  clientBuildFS
+// glTokenFileRoot must not be nil if opts.glinetMode is true.  clientBuildFS
 // must not be nil if opts.localFrontend is false.
 //
 // TODO(e.burkov):  Make opts a pointer.
