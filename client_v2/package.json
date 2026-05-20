@@ -9,7 +9,7 @@
     "watch": "cross-env BUILD_ENV=dev webpack --config webpack.dev.js --watch",
     "watch:hot": "cross-env BUILD_ENV=dev webpack-dev-server --config webpack.dev.js",
     "lint": "eslint --ext .ts,.tsx src",
-    "lint:fix": "eslint --ext .ts,.tsx src --fix",
+    "lint:fix": "prettier --write \"src/**/*.{ts,tsx,json}\" && eslint --ext .ts,.tsx src --fix",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "test:e2e": "npx playwright test tests/e2e",
