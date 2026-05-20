@@ -553,16 +553,19 @@ const getPageLocation = (page: Page) => {
 };
 
 const getRequestCellByDomain = (page: Page, domain: string) =>
-    page.getByTestId('query-log-request-cell').filter({ hasText: domain }).first();
+    page
+        .getByTestId('query-log-request-cell')
+        .filter({ has: page.locator(`[title="${domain}"]`) })
+        .first();
 
 const getClientCellByIp = (page: Page, clientIp: string) =>
     page.getByTestId('query-log-client-cell').filter({ hasText: clientIp }).first();
 
 const getDesktopRowByDomain = (page: Page, domain: string) =>
-    getRequestCellByDomain(page, domain).locator('xpath=ancestor::div[.//*[@data-testid="query-log-row-actions-trigger"]][1]');
+    getRequestCellByDomain(page, domain).locator('xpath=../..');
 
 const getVisibleActionsMenu = (page: Page) =>
-    page.locator('[data-testid="query-log-row-actions-menu"]:visible');
+    page.locator('[data-testid="query-log-row-actions-menu"]:visible').last();
 
 const getVisibleInfiniteScrollTrigger = (page: Page) =>
     page.locator('[data-testid="query-log-infinite-scroll-trigger"]:visible');
@@ -744,7 +747,7 @@ test.describe('Query log desktop', () => {
     test('supports detail-modal actions and row actions', async ({ page }) => {
         const { rulesUpdatePayloads, accessSetPayloads } = await openQueryLog(page);
 
-        await getRequestCellByDomain(page, 'search.example').click();
+        await getDesktopRowByDomain(page, 'search.example').click();
 
         const detailModal = page.getByTestId('query-log-detail-modal');
         await expect(detailModal).toBeVisible();
@@ -754,6 +757,7 @@ test.describe('Query log desktop', () => {
         await expect.poll(() => rulesUpdatePayloads.length).toBe(1);
         expect(rulesUpdatePayloads[0].rules).toContain('||search.example^$important');
         await expect(page.locator('[data-testid="toast"][data-toast-code="notify_user_rule_added"]')).toBeVisible();
+        await expect(page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]')).toHaveCount(0);
         await expect(detailModal).toHaveCount(0);
 
         const blockedRow = getDesktopRowByDomain(page, 'example.org');
@@ -761,6 +765,7 @@ test.describe('Query log desktop', () => {
         await getVisibleActionsMenu(page).getByTestId('query-log-row-action-toggle-block').click();
         await expect.poll(() => rulesUpdatePayloads.length).toBe(2);
         expect(rulesUpdatePayloads[1].rules).toContain('@@||example.org^$important');
+        await expect(page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]')).toHaveCount(0);
         await closeOpenActionMenus(page);
 
         const processedRow = getDesktopRowByDomain(page, 'plain.example');
@@ -867,7 +872,7 @@ test.describe('Query log desktop', () => {
             },
         });
 
-        await getRequestCellByDomain(page, 'streaming.example').click();
+        await getDesktopRowByDomain(page, 'streaming.example').click();
 
         const detailModal = page.getByTestId('query-log-detail-modal');
 
@@ -877,9 +882,10 @@ test.describe('Query log desktop', () => {
         await expect.poll(() => rulesUpdatePayloads.length).toBe(1);
         expect(rulesUpdatePayloads[0].rules).toContain('@@||streaming.example^$important');
         await expect(page.locator('[data-testid="toast"][data-toast-code="notify_user_rule_added"]')).toBeVisible();
+        await expect(page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]')).toHaveCount(0);
         await expect(detailModal).toHaveCount(0);
 
-        await getRequestCellByDomain(page, 'streaming.example').click();
+        await getDesktopRowByDomain(page, 'streaming.example').click();
         await expect(detailModal).toBeVisible();
 
         await page.getByTestId('query-log-detail-action-allow-service').click();

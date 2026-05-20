@@ -11,7 +11,6 @@ import { ClientCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/Cli
 import { StatusCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/StatusCell';
 import { ReasonCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/ReasonCell';
 import { QueryDetailsTooltipContent } from 'panel/components/QueryLog/blocks/LogTable/blocks/QueryDetailsTooltipContent';
-import { ActionsMenu } from 'panel/components/QueryLog/blocks/ActionsMenu';
 import { LogCard } from 'panel/components/QueryLog/blocks/LogCard';
 import { DetailModal } from 'panel/components/QueryLog/blocks/DetailModal';
 import { EmptyState } from 'panel/components/QueryLog/blocks/EmptyState/EmptyState';
