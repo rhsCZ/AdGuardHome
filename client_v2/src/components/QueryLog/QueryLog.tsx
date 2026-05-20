@@ -265,7 +265,7 @@ export const QueryLog = () => {
                     mode={emptyStateMode}
                 />
             );
-        } 
+        }
 
         return (
             <>
