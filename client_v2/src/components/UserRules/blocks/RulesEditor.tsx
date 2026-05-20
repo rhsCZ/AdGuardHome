@@ -41,7 +41,7 @@ export const RulesEditor = ({ control, handleSubmit, onSubmit, processingRules }
                                     <Textarea
                                         {...field}
                                         data-testid="user-rules-editor-textarea"
-                                        placeholder={intl.getMessage('user_rules_placeholder')}
+                                        placeholder={`# ${intl.getMessage('user_rules_placeholder')}\n\n@@||example.org`}
                                         rows={12}
                                         size="large"
                                         onScroll={(e) => syncScroll(e, highlightRef)}

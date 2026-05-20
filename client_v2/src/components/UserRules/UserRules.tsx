@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import cn from 'clsx';
-import { useDispatch, useSelector } from 'react-redux';
+import { batch, useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from 'panel/store/types';
 
 import intl from 'panel/common/intl';
@@ -53,14 +53,15 @@ export const UserRules = () => {
         rewrites.processingUpdate ||
         services.processingSet;
 
-    // TODO use batch
     useEffect(() => {
-        dispatch(getFilteringStatus());
-        dispatch(initSettings());
-        dispatch(getClients());
-        dispatch(getRewritesList());
-        dispatch(getBlockedServices());
-        dispatch(getAllBlockedServices());
+        batch(() => {
+            dispatch(getFilteringStatus());
+            dispatch(initSettings());
+            dispatch(getClients());
+            dispatch(getRewritesList());
+            dispatch(getBlockedServices());
+            dispatch(getAllBlockedServices());
+        });
     }, [dispatch]);
 
     useEffect(() => {

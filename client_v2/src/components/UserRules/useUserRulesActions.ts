@@ -87,7 +87,7 @@ export const useUserRulesActions = ({
         return CLIENT_SCOPED_ACTIONS;
     }, [resolvedClient, lastSubmittedCheck?.client]);
 
-    const runWithClosedResult = async <T,>(callback: () => Promise<T>): Promise<T> => {
+    const runWithClosedResult = async <T>(callback: () => Promise<T>): Promise<T> => {
         setIsResultVisible(false);
 
         return callback();
@@ -135,8 +135,7 @@ export const useUserRulesActions = ({
 
         const primaryRule = getPrimaryRule(checkResult);
         const matchedCustomRule =
-            !lastSubmittedCheck.client &&
-            primaryRule?.filter_list_id === SPECIAL_FILTER_ID.CUSTOM_FILTERING_RULES
+            !lastSubmittedCheck.client && primaryRule?.filter_list_id === SPECIAL_FILTER_ID.CUSTOM_FILTERING_RULES
                 ? primaryRule.text
                 : undefined;
 
@@ -167,23 +166,23 @@ export const useUserRulesActions = ({
         await runWithClosedResult(async () => {
             const ok = lastSubmittedCheck?.client
                 ? await updateResolvedClient((client) => {
-                    const effectiveSettings = getEffectiveClientProtectionSettings({
-                        client,
-                        globalFilteringEnabled: filteringEnabled,
-                        settingsList,
-                    });
+                      const effectiveSettings = getEffectiveClientProtectionSettings({
+                          client,
+                          globalFilteringEnabled: filteringEnabled,
+                          settingsList,
+                      });
 
-                    if (!effectiveSettings) {
-                        return null;
-                    }
+                      if (!effectiveSettings) {
+                          return null;
+                      }
 
-                    return {
-                        ...client,
-                        ...effectiveSettings,
-                        use_global_settings: false,
-                        safebrowsing_enabled: false,
-                    };
-                })
+                      return {
+                          ...client,
+                          ...effectiveSettings,
+                          use_global_settings: false,
+                          safebrowsing_enabled: false,
+                      };
+                  })
                 : await dispatch(toggleSetting('safebrowsing', true));
 
             if (!ok) {
@@ -192,26 +191,29 @@ export const useUserRulesActions = ({
 
             const clientSnapshot = resolvedClient;
 
-            dispatch(addSuccessToast({
-                message: intl.getMessage('user_rules_browsing_security_disabled'),
-                actionLabel: intl.getMessage('notify_undo'),
-                onAction: async () => {
-                    const didUndo = lastSubmittedCheck?.client && clientSnapshot
-                        ? await dispatch(
-                            updateClient(
-                                { ...clientSnapshot, safebrowsing_enabled: true },
-                                clientSnapshot.name,
-                                { showToast: false, toggleModal: false },
-                            ),
-                        )
-                        : await dispatch(toggleSetting('safebrowsing', false));
+            dispatch(
+                addSuccessToast({
+                    message: intl.getMessage('user_rules_browsing_security_disabled'),
+                    actionLabel: intl.getMessage('notify_undo'),
+                    onAction: async () => {
+                        const didUndo =
+                            lastSubmittedCheck?.client && clientSnapshot
+                                ? await dispatch(
+                                      updateClient(
+                                          { ...clientSnapshot, safebrowsing_enabled: true },
+                                          clientSnapshot.name,
+                                          { showToast: false, toggleModal: false },
+                                      ),
+                                  )
+                                : await dispatch(toggleSetting('safebrowsing', false));
 
-                    if (didUndo) {
-                        await dispatch(initSettings());
-                        await dispatch(getClients());
-                    }
-                },
-            }));
+                        if (didUndo) {
+                            await dispatch(initSettings());
+                            await dispatch(getClients());
+                        }
+                    },
+                }),
+            );
             await recheckCurrentTarget();
 
             return true;
@@ -222,23 +224,23 @@ export const useUserRulesActions = ({
         await runWithClosedResult(async () => {
             const ok = lastSubmittedCheck?.client
                 ? await updateResolvedClient((client) => {
-                    const effectiveSettings = getEffectiveClientProtectionSettings({
-                        client,
-                        globalFilteringEnabled: filteringEnabled,
-                        settingsList,
-                    });
+                      const effectiveSettings = getEffectiveClientProtectionSettings({
+                          client,
+                          globalFilteringEnabled: filteringEnabled,
+                          settingsList,
+                      });
 
-                    if (!effectiveSettings) {
-                        return null;
-                    }
+                      if (!effectiveSettings) {
+                          return null;
+                      }
 
-                    return {
-                        ...client,
-                        ...effectiveSettings,
-                        use_global_settings: false,
-                        parental_enabled: false,
-                    };
-                })
+                      return {
+                          ...client,
+                          ...effectiveSettings,
+                          use_global_settings: false,
+                          parental_enabled: false,
+                      };
+                  })
                 : await dispatch(toggleSetting('parental', true));
 
             if (!ok) {
@@ -262,29 +264,29 @@ export const useUserRulesActions = ({
         await runWithClosedResult(async () => {
             const ok = lastSubmittedCheck?.client
                 ? await updateResolvedClient((client) => {
-                    const effectiveSettings = getEffectiveClientProtectionSettings({
-                        client,
-                        globalFilteringEnabled: filteringEnabled,
-                        settingsList,
-                    });
+                      const effectiveSettings = getEffectiveClientProtectionSettings({
+                          client,
+                          globalFilteringEnabled: filteringEnabled,
+                          settingsList,
+                      });
 
-                    if (!effectiveSettings) {
-                        return null;
-                    }
+                      if (!effectiveSettings) {
+                          return null;
+                      }
 
-                    const safeSearch = {
-                        ...effectiveSettings.safe_search,
-                        enabled: false,
-                    };
+                      const safeSearch = {
+                          ...effectiveSettings.safe_search,
+                          enabled: false,
+                      };
 
-                    return {
-                        ...client,
-                        ...effectiveSettings,
-                        use_global_settings: false,
-                        safe_search: safeSearch,
-                        safesearch_enabled: safeSearch.enabled,
-                    };
-                })
+                      return {
+                          ...client,
+                          ...effectiveSettings,
+                          use_global_settings: false,
+                          safe_search: safeSearch,
+                          safesearch_enabled: safeSearch.enabled,
+                      };
+                  })
                 : await dispatch(toggleSetting('safesearch', { ...currentSafeSearch, enabled: false }));
 
             if (!ok) {
@@ -349,27 +351,27 @@ export const useUserRulesActions = ({
         await runWithClosedResult(async () => {
             const ok = lastSubmittedCheck?.client
                 ? await updateResolvedClient((client) => {
-                    const effectiveBlockedServices = getEffectiveBlockedServices(client, services.list);
+                      const effectiveBlockedServices = getEffectiveBlockedServices(client, services.list);
 
-                    if (!effectiveBlockedServices) {
-                        return null;
-                    }
+                      if (!effectiveBlockedServices) {
+                          return null;
+                      }
 
-                    return {
-                        ...client,
-                        ...effectiveBlockedServices,
-                        use_global_blocked_services: false,
-                        blocked_services: effectiveBlockedServices.blocked_services.filter(
-                            (id) => id !== matchedService.id,
-                        ),
-                    };
-                })
+                      return {
+                          ...client,
+                          ...effectiveBlockedServices,
+                          use_global_blocked_services: false,
+                          blocked_services: effectiveBlockedServices.blocked_services.filter(
+                              (id) => id !== matchedService.id,
+                          ),
+                      };
+                  })
                 : await dispatch(
-                    updateBlockedServices({
-                        ...services.list,
-                        ids: (services.list.ids || []).filter((id: string) => id !== matchedService.id),
-                    }),
-                );
+                      updateBlockedServices({
+                          ...services.list,
+                          ids: (services.list.ids || []).filter((id: string) => id !== matchedService.id),
+                      }),
+                  );
 
             if (!ok) {
                 return false;
@@ -377,31 +379,34 @@ export const useUserRulesActions = ({
 
             const clientSnapshot = resolvedClient;
 
-            dispatch(addSuccessToast({
-                message: intl.getMessage('user_rules_service_allowed', { value: matchedService.name }),
-                actionLabel: intl.getMessage('notify_undo'),
-                onAction: async () => {
-                    const didUndo = lastSubmittedCheck?.client && clientSnapshot
-                        ? await dispatch(
-                            updateClient(
-                                { ...clientSnapshot, blocked_services: [...previousBlockedServiceIds] },
-                                clientSnapshot.name,
-                                { showToast: false, toggleModal: false },
-                            ),
-                        )
-                        : await dispatch(
-                            updateBlockedServices({
-                                ...services.list,
-                                ids: previousBlockedServiceIds,
-                            }),
-                        );
+            dispatch(
+                addSuccessToast({
+                    message: intl.getMessage('user_rules_service_allowed', { value: matchedService.name }),
+                    actionLabel: intl.getMessage('notify_undo'),
+                    onAction: async () => {
+                        const didUndo =
+                            lastSubmittedCheck?.client && clientSnapshot
+                                ? await dispatch(
+                                      updateClient(
+                                          { ...clientSnapshot, blocked_services: [...previousBlockedServiceIds] },
+                                          clientSnapshot.name,
+                                          { showToast: false, toggleModal: false },
+                                      ),
+                                  )
+                                : await dispatch(
+                                      updateBlockedServices({
+                                          ...services.list,
+                                          ids: previousBlockedServiceIds,
+                                      }),
+                                  );
 
-                    if (didUndo) {
-                        await dispatch(getBlockedServices());
-                        await dispatch(getClients());
-                    }
-                },
-            }));
+                        if (didUndo) {
+                            await dispatch(getBlockedServices());
+                            await dispatch(getClients());
+                        }
+                    },
+                }),
+            );
             await recheckCurrentTarget();
 
             return true;
