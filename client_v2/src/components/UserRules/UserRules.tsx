@@ -32,7 +32,7 @@ export const UserRules = () => {
         dispatch(getRewritesList());
         dispatch(getBlockedServices());
         dispatch(getAllBlockedServices());
-    }, [dispatch]);
+    }, []);
 
     const {
         control: rulesControl,

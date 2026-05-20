@@ -17,6 +17,7 @@ import {
 } from 'panel/actions/queryLogs';
 import { blockDomain, blockDomainForClient, getClients, unblockDomain } from 'panel/actions';
 import { toggleClientBlock, getAccessList } from 'panel/actions/access';
+import { getFilteringStatus } from 'panel/actions/filtering';
 import { allowBlockedService, getAllBlockedServices } from 'panel/actions/services';
 import {
     DEFAULT_LOGS_FILTER,
@@ -81,8 +82,9 @@ export const QueryLog = () => {
         dispatch(getLogsConfig());
         dispatch(getAccessList());
         dispatch(getClients());
+        dispatch(getFilteringStatus());
         dispatch(getAllBlockedServices());
-    }, [dispatch]);
+    }, []);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
