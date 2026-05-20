@@ -69,9 +69,10 @@ export const DetailModal = ({
     const isBlocked = isBlockedReason(entry.reason);
     const isBlockedService = checkBlockedService(entry.reason);
     const isSafeSearch = entry.reason === FILTERED_STATUS.FILTERED_SAFE_SEARCH;
-    const isRewrite = entry.reason === FILTERED_STATUS.REWRITE
-        || entry.reason === FILTERED_STATUS.REWRITE_HOSTS
-        || entry.reason === FILTERED_STATUS.REWRITE_RULE;
+    const isRewrite =
+        entry.reason === FILTERED_STATUS.REWRITE ||
+        entry.reason === FILTERED_STATUS.REWRITE_HOSTS ||
+        entry.reason === FILTERED_STATUS.REWRITE_RULE;
     const showBlock = !isBlocked && !isRewrite && !isSafeSearch;
     const showAllowlist = isBlocked || isSafeSearch;
     const reasonDetails = getQueryReasonDetails({

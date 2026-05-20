@@ -123,26 +123,27 @@ export const LogCard = ({
                 </div>
 
                 <div className={s.fieldGrid}>
-                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('time_table_header')}</span>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                        {intl.getMessage('time_table_header')}
+                    </span>
                     <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
                         {formatLogDate(entry.time)}, {formatLogTime(entry.time)}
                     </span>
 
-                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('status_table_header')}</span>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                        {intl.getMessage('status_table_header')}
+                    </span>
                     <span
-                        className={cn(
-                            s.status,
-                            theme.text.t4,
-                            theme.text.condenced,
-                            getStatusClassName(entry.reason),
-                        )}
+                        className={cn(s.status, theme.text.t4, theme.text.condenced, getStatusClassName(entry.reason))}
                     >
                         {statusLabel}
                     </span>
 
                     {reasonKey !== 'none' && (
                         <>
-                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                                {intl.getMessage('reason_table_header')}
+                            </span>
                             <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
                                 {reasonLabel}
                                 {reasonDetails ? ` / ${reasonDetails}` : ''}
@@ -150,12 +151,16 @@ export const LogCard = ({
                         </>
                     )}
 
-                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_ip')}</span>
+                    <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                        {intl.getMessage('client_ip')}
+                    </span>
                     <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
 
                     {clientDetails && (
                         <>
-                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_details')}</span>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                                {intl.getMessage('client_details')}
+                            </span>
                             <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
                                 {clientDetails}
                             </span>
@@ -164,7 +169,9 @@ export const LogCard = ({
 
                     {clientLocation && (
                         <>
-                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_location')}</span>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
+                                {intl.getMessage('client_location')}
+                            </span>
                             <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
                                 {clientLocation}
                             </span>
