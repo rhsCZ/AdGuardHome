@@ -69,45 +69,49 @@ export const ActionsMenu = ({
     };
 
     const menu = (
-        <ul
-            className={s.menu}
-            data-testid={`${testIdPrefix}-actions-menu`}
-            data-client={client}
-        >
-            <li
-                data-testid={`${testIdPrefix}-action-toggle-block`}
-                className={cn(
-                    s.menuItem,
-                    theme.text.t3,
-                    isBlocked ? s.statusGreen : s.statusRed,
-                )}
-                onClick={handleBlock}
-            >
-                {isBlocked ? intl.getMessage('unblock') : intl.getMessage('block')}
+        <ul className={s.menu} role="menu" data-testid={`${testIdPrefix}-actions-menu`} data-client={client}>
+            <li role="none">
+                <button
+                    type="button"
+                    data-testid={`${testIdPrefix}-action-toggle-block`}
+                    className={cn(s.menuItem, s.menuButton, theme.text.t3, isBlocked ? s.statusGreen : s.statusRed)}
+                    onClick={handleBlock}
+                >
+                    {isBlocked ? intl.getMessage('unblock') : intl.getMessage('block')}
+                </button>
             </li>
             {!isBlocked && (
-                <li
-                    data-testid={`${testIdPrefix}-action-block-client`}
-                    className={cn(s.menuItem, theme.text.t3)}
-                    onClick={handleBlockClient}
-                >
-                    {intl.getMessage('block_for_this_client_only')}
+                <li role="none">
+                    <button
+                        type="button"
+                        data-testid={`${testIdPrefix}-action-block-client`}
+                        className={cn(s.menuItem, s.menuButton, theme.text.t3)}
+                        onClick={handleBlockClient}
+                    >
+                        {intl.getMessage('block_for_this_client_only')}
+                    </button>
                 </li>
             )}
-            <li
-                data-testid={`${testIdPrefix}-action-disallow-client`}
-                className={cn(s.menuItem, theme.text.t3)}
-                onClick={handleDisallowClient}
-            >
-                {intl.getMessage('disallow_this_client')}
+            <li role="none">
+                <button
+                    type="button"
+                    data-testid={`${testIdPrefix}-action-disallow-client`}
+                    className={cn(s.menuItem, s.menuButton, theme.text.t3)}
+                    onClick={handleDisallowClient}
+                >
+                    {intl.getMessage('disallow_this_client')}
+                </button>
             </li>
             {showAddPersistentClient && onAddPersistentClient && (
-                <li
-                    data-testid={`${testIdPrefix}-action-add-persistent-client`}
-                    className={cn(s.menuItem, theme.text.t3)}
-                    onClick={handleAddPersistentClient}
-                >
-                    {intl.getMessage('add_persistent_client')}
+                <li role="none">
+                    <button
+                        type="button"
+                        data-testid={`${testIdPrefix}-action-add-persistent-client`}
+                        className={cn(s.menuItem, s.menuButton, theme.text.t3)}
+                        onClick={handleAddPersistentClient}
+                    >
+                        {intl.getMessage('add_persistent_client')}
+                    </button>
                 </li>
             )}
         </ul>

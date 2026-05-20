@@ -15,13 +15,7 @@ type Props = {
 
 const VIEWPORT_OFFSET = 200;
 
-export const InfiniteScrollTrigger = ({
-    hasMore,
-    loading,
-    disabled,
-    onLoadMore,
-    className,
-}: Props) => {
+export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, className }: Props) => {
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     const requestedRef = useRef(false);
     const wasNearEndRef = useRef(false);
@@ -69,12 +63,7 @@ export const InfiniteScrollTrigger = ({
             wasNearEndRef.current = nearEnd;
         };
 
-        const handleScroll = () => {
-            if (window.scrollY <= 0) {
-                wasNearEndRef.current = false;
-                return;
-            }
-
+        const scheduleMaybeLoadMore = () => {
             if (frameRef.current !== null) {
                 return;
             }
@@ -85,13 +74,29 @@ export const InfiniteScrollTrigger = ({
             });
         };
 
+        const handleScroll = () => {
+            if (window.scrollY <= 0) {
+                wasNearEndRef.current = false;
+            }
+
+            scheduleMaybeLoadMore();
+        };
+
+        const handleResize = () => {
+            scheduleMaybeLoadMore();
+        };
+
+        scheduleMaybeLoadMore();
+
         window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleResize);
 
         return () => {
             if (frameRef.current !== null) {
                 window.cancelAnimationFrame(frameRef.current);
             }
             window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
         };
     }, [disabled, hasMore, triggerLoadMore]);
 
@@ -105,9 +110,7 @@ export const InfiniteScrollTrigger = ({
             data-testid="query-log-infinite-scroll-trigger"
             className={cn(s.loader, className, { [s.loading]: loading })}
         >
-            {loading && (
-                <InlineLoader className={s.icon} />
-            )}
+            {loading && <InlineLoader className={s.icon} />}
         </div>
     );
 };

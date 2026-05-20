@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -11,9 +11,11 @@ import { ClientCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/Cli
 import { StatusCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/StatusCell';
 import { ReasonCell } from 'panel/components/QueryLog/blocks/LogTable/blocks/ReasonCell';
 import { QueryDetailsTooltipContent } from 'panel/components/QueryLog/blocks/LogTable/blocks/QueryDetailsTooltipContent';
+import { ActionsMenu } from 'panel/components/QueryLog/blocks/ActionsMenu';
 import { LogCard } from 'panel/components/QueryLog/blocks/LogCard';
 import { DetailModal } from 'panel/components/QueryLog/blocks/DetailModal';
 import { EmptyState } from 'panel/components/QueryLog/blocks/EmptyState/EmptyState';
+import { InfiniteScrollTrigger } from 'panel/components/QueryLog/blocks/InfiniteScrollTrigger';
 import type { LogEntry, Service } from 'panel/components/QueryLog/types';
 import type { Filter } from 'panel/helpers/helpers';
 
@@ -128,6 +130,24 @@ describe('Query log cells', () => {
 });
 
 describe('Query log composition components', () => {
+    test('loads more immediately when the sentinel is already visible', async () => {
+        const onLoadMore = vi.fn();
+
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            callback(0);
+
+            return 1;
+        });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 0, 0));
+
+        render(<InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />);
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(1);
+        });
+    });
+
     test('render text and actions across composed query log components', () => {
         const row = makeLogEntry({
             answer_dnssec: false,

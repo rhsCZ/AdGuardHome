@@ -21,8 +21,9 @@ const queryLogs = handleActions(
         [actions.setFilteredLogsSuccess.toString()]: (state: any, { payload }: any) => {
             const { logs, oldest, filter } = payload;
 
-            const isFiltered = !!filter
-                && Object.entries(filter).some(
+            const isFiltered =
+                !!filter &&
+                Object.entries(filter).some(
                     ([key, value]) => value !== DEFAULT_LOGS_FILTER[key as keyof typeof DEFAULT_LOGS_FILTER],
                 );
 
@@ -121,7 +122,6 @@ const queryLogs = handleActions(
             ...state,
             processingAdditionalLogs: false,
             processingGetLogs: false,
-            isEntireLog: true,
         }),
     },
     {

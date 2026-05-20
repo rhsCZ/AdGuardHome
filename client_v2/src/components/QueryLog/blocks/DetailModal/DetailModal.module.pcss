@@ -43,6 +43,14 @@
     }
 }
 
+.section {
+    padding: 0 32px;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        padding: 0;
+    }
+}
+
 .statusValue {
     display: inline;
 }
@@ -52,7 +60,11 @@
 }
 
 .sectionTitle {
-    padding: 16px 16px 8px 16px;
+    padding: 16px 0 8px;
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        padding: 16px 16px 8px 16px;
+    }
 }
 
 .row {
@@ -60,8 +72,12 @@
     align-items: flex-start;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 8px 16px;
+    padding: 8px 0;
     font-weight: var(--weight-semi-bold);
+
+    @media (min-width: 1024px) and (min-height: 720px) {
+        padding: 8px 16px;
+    }
 }
 
 .row strong,
