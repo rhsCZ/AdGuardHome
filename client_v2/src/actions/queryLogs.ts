@@ -48,10 +48,10 @@ type ShortPollTotal = {
 // Maps the frontend "status" broad category to backend reason value(s)
 // when the reason filter is "all" (meaning the status should drive server filtering).
 const STATUS_TO_REASON: Record<string, string | string[]> = {
-    allowed: 'not_filtered_allowlist',
-    processed: 'not_filtered_notfound',
-    blocked: ['filtered_blocklist', 'filtered_blocked_service', 'filtered_safe_browsing', 'filtered_parental'],
-    rewritten: ['rewrite', 'rewrite_etc_hosts', 'rewrite_rule', 'filtered_safe_search'],
+    allowed: 'NotFilteredWhiteList',
+    processed: 'NotFilteredNotFound',
+    blocked: ['FilteredBlackList', 'FilteredBlockedService', 'FilteredSafeBrowsing', 'FilteredParental'],
+    rewritten: ['Rewrite', 'RewriteEtcHosts', 'RewriteRule', 'FilteredSafeSearch'],
 };
 
 const getEffectiveReason = (filter?: SearchFormValues): string | string[] => {

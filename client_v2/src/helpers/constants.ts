@@ -299,27 +299,27 @@ export const QUERY_LOG_REASON_FILTER = {
         LABEL: intl.getMessage('query_log_all_reasons'),
     },
     BLOCKED_BY_FILTER: {
-        QUERY: 'filtered_blocklist',
+        QUERY: 'FilteredBlackList',
         LABEL: intl.getMessage('query_log_blocked_by_filter'),
     },
     BLOCKED_SERVICES: {
-        QUERY: 'filtered_blocked_service',
+        QUERY: 'FilteredBlockedService',
         LABEL: intl.getMessage('query_log_blocked_services'),
     },
     BLOCKED_BY_THREATS: {
-        QUERY: 'filtered_safe_browsing',
+        QUERY: 'FilteredSafeBrowsing',
         LABEL: intl.getMessage('query_log_blocked_threats'),
     },
     BLOCKED_BY_PARENTAL_CONTROL: {
-        QUERY: 'filtered_parental',
+        QUERY: 'FilteredParental',
         LABEL: intl.getMessage('query_log_blocked_by_parental_control'),
     },
     DNS_REWRITES: {
-        QUERY: 'rewrite',
+        QUERY: 'Rewrite',
         LABEL: intl.getMessage('dns_rewrites'),
     },
     SAFE_SEARCH: {
-        QUERY: 'filtered_safe_search',
+        QUERY: 'FilteredSafeSearch',
         LABEL: intl.getMessage('query_log_safe_search'),
     },
 } as const;
