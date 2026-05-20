@@ -202,7 +202,9 @@ describe('Query log composition components', () => {
         render(<InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />);
 
         // Wait a tick for the rAF to fire
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 50);
+        });
 
         expect(onLoadMore).not.toHaveBeenCalled();
     });
@@ -274,7 +276,9 @@ describe('Query log composition components', () => {
         );
 
         // Wait for rAF to fire
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 50);
+        });
 
         // Should NOT trigger again because sentinel is out of viewport
         expect(onLoadMore).toHaveBeenCalledTimes(1);
