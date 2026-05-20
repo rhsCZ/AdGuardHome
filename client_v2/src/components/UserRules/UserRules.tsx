@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import cn from 'clsx';
-import { useDispatch, useSelector } from 'react-redux';
+import { batch, useDispatch, useSelector } from 'react-redux';
 
 import intl from 'panel/common/intl';
 import { PageLoader } from 'panel/common/ui/Loader';
@@ -27,12 +27,14 @@ export const UserRules = () => {
     const isDataLoading = processingFilters;
 
     useEffect(() => {
-        dispatch(getFilteringStatus());
-        dispatch(initSettings());
-        dispatch(getRewritesList());
-        dispatch(getBlockedServices());
-        dispatch(getAllBlockedServices());
-    }, []);
+        batch(() => {
+            dispatch(getFilteringStatus());
+            dispatch(initSettings());
+            dispatch(getRewritesList());
+            dispatch(getBlockedServices());
+            dispatch(getAllBlockedServices());
+        });
+    }, [dispatch]);
 
     const {
         control: rulesControl,

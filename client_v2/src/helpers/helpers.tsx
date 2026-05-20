@@ -471,18 +471,23 @@ export const normalizeWhois = (whois: any) => {
 };
 
 export const getPathWithQueryString = (path: any, params: any) => {
-    const filteredParams = Object.entries(params || {}).reduce(
-        (acc, [key, value]) => {
-            if (value === '' || value === undefined || value === null) {
-                return acc;
-            }
+    const searchParams = new URLSearchParams();
 
-            acc[key] = String(value);
-            return acc;
-        },
-        {} as Record<string, string>,
-    );
-    const searchParams = new URLSearchParams(filteredParams);
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value === '' || value === undefined || value === null) {
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            value.forEach((v) => {
+                if (v !== '' && v !== undefined && v !== null) {
+                    searchParams.append(key, String(v));
+                }
+            });
+        } else {
+            searchParams.append(key, String(value));
+        }
+    });
 
     return `${path}?${searchParams.toString()}`;
 };

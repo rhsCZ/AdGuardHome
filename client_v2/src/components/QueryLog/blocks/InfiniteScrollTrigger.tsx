@@ -10,12 +10,20 @@ type Props = {
     loading: boolean;
     disabled: boolean;
     onLoadMore: () => void;
+    resetToken?: string;
     className?: string;
 };
 
 const VIEWPORT_OFFSET = 200;
 
-export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, className }: Props) => {
+export const InfiniteScrollTrigger = ({
+    hasMore,
+    loading,
+    disabled,
+    onLoadMore,
+    resetToken,
+    className,
+}: Props) => {
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     const requestedRef = useRef(false);
     const wasNearEndRef = useRef(false);
@@ -33,6 +41,7 @@ export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, 
     useEffect(() => {
         if (!disabled) {
             requestedRef.current = false;
+            wasNearEndRef.current = false;
         }
     }, [disabled]);
 
@@ -43,6 +52,11 @@ export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, 
     }, [hasMore]);
 
     useEffect(() => {
+        requestedRef.current = false;
+        wasNearEndRef.current = false;
+    }, [resetToken]);
+
+    useEffect(() => {
         const isNearEnd = () => {
             const node = sentinelRef.current;
             if (!node) {
@@ -50,6 +64,12 @@ export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, 
             }
 
             const rect = node.getBoundingClientRect();
+
+            // Ignore hidden elements (e.g. inside display:none containers)
+            if (rect.width === 0 && rect.height === 0) {
+                return false;
+            }
+
             return rect.top <= window.innerHeight + VIEWPORT_OFFSET;
         };
 
@@ -94,11 +114,12 @@ export const InfiniteScrollTrigger = ({ hasMore, loading, disabled, onLoadMore, 
         return () => {
             if (frameRef.current !== null) {
                 window.cancelAnimationFrame(frameRef.current);
+                frameRef.current = null;
             }
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('resize', handleResize);
         };
-    }, [disabled, hasMore, triggerLoadMore]);
+    }, [disabled, hasMore, resetToken, triggerLoadMore]);
 
     if (!hasMore && !loading) {
         return null;

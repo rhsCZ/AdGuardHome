@@ -133,18 +133,151 @@ describe('Query log composition components', () => {
         const onLoadMore = vi.fn();
 
         vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
-            callback(0);
-
-            return 1;
+            return window.setTimeout(() => callback(0), 0);
         });
-        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
-        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 0, 0));
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId: number) => {
+            window.clearTimeout(frameId);
+        });
+        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 300, 20));
 
         render(<InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />);
 
         await waitFor(() => {
             expect(onLoadMore).toHaveBeenCalledTimes(1);
         });
+    });
+
+    test('loads more again when the reset token changes while the sentinel stays visible', async () => {
+        const onLoadMore = vi.fn();
+
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            return window.setTimeout(() => callback(0), 0);
+        });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId: number) => {
+            window.clearTimeout(frameId);
+        });
+        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 300, 20));
+
+        const { rerender } = render(
+            <InfiniteScrollTrigger
+                hasMore
+                loading={false}
+                disabled={false}
+                onLoadMore={onLoadMore}
+                resetToken="few"
+            />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(1);
+        });
+
+        rerender(
+            <InfiniteScrollTrigger
+                hasMore
+                loading={false}
+                disabled={false}
+                onLoadMore={onLoadMore}
+                resetToken="all"
+            />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    test('does not trigger load when sentinel is hidden (zero-size rect)', async () => {
+        const onLoadMore = vi.fn();
+
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            return window.setTimeout(() => callback(0), 0);
+        });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId: number) => {
+            window.clearTimeout(frameId);
+        });
+        // Zero width and height simulates element inside display:none container
+        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 0, 0));
+
+        render(<InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />);
+
+        // Wait a tick for the rAF to fire
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(onLoadMore).not.toHaveBeenCalled();
+    });
+
+    test('re-triggers load after disabled cycles back to false (auto-fill)', async () => {
+        const onLoadMore = vi.fn();
+
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            return window.setTimeout(() => callback(0), 0);
+        });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId: number) => {
+            window.clearTimeout(frameId);
+        });
+        vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 100, 300, 20));
+
+        const { rerender } = render(
+            <InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(1);
+        });
+
+        // Simulate load in flight
+        rerender(
+            <InfiniteScrollTrigger hasMore loading disabled onLoadMore={onLoadMore} />,
+        );
+
+        // Load completes, disabled goes back to false
+        rerender(
+            <InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    test('stops auto-triggering when sentinel moves out of viewport', async () => {
+        const onLoadMore = vi.fn();
+        const rectMock = vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect');
+
+        vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) => {
+            return window.setTimeout(() => callback(0), 0);
+        });
+        vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId: number) => {
+            window.clearTimeout(frameId);
+        });
+        // Initially in viewport
+        rectMock.mockReturnValue(new DOMRect(0, 100, 300, 20));
+
+        const { rerender } = render(
+            <InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />,
+        );
+
+        await waitFor(() => {
+            expect(onLoadMore).toHaveBeenCalledTimes(1);
+        });
+
+        // After load, sentinel has moved far below viewport
+        rectMock.mockReturnValue(new DOMRect(0, 2000, 300, 20));
+
+        // Simulate load cycle: disabled → true → false
+        rerender(
+            <InfiniteScrollTrigger hasMore loading disabled onLoadMore={onLoadMore} />,
+        );
+        rerender(
+            <InfiniteScrollTrigger hasMore loading={false} disabled={false} onLoadMore={onLoadMore} />,
+        );
+
+        // Wait for rAF to fire
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Should NOT trigger again because sentinel is out of viewport
+        expect(onLoadMore).toHaveBeenCalledTimes(1);
     });
 
     test('render text and actions across composed query log components', () => {

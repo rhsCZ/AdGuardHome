@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import cn from 'clsx';
-import { useSelector, useDispatch } from 'react-redux';
+import { batch, useSelector, useDispatch } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -79,18 +79,20 @@ export const QueryLog = () => {
     const [isIncrementalLoad, setIsIncrementalLoad] = useState(false);
 
     useEffect(() => {
-        dispatch(getLogsConfig());
-        dispatch(getAccessList());
-        dispatch(getClients());
-        dispatch(getFilteringStatus());
-        dispatch(getAllBlockedServices());
-    }, []);
+        batch(() => {
+            dispatch(getLogsConfig());
+            dispatch(getAccessList());
+            dispatch(getClients());
+            dispatch(getFilteringStatus());
+            dispatch(getAllBlockedServices());
+        });
+    }, [dispatch]);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const search = searchParams.get('search') || DEFAULT_LOGS_FILTER.search;
         const statusParam = searchParams.get('status') || DEFAULT_LOGS_FILTER.status;
-        const reasonParam = searchParams.get('reason') || DEFAULT_LOGS_FILTER.response_status;
+        const reasonParam = searchParams.get('reason') || DEFAULT_LOGS_FILTER.reason;
         const status = Object.prototype.hasOwnProperty.call(QUERY_LOG_STATUS_FILTER_QUERIES, statusParam)
             ? statusParam
             : DEFAULT_LOGS_FILTER.status;
@@ -99,11 +101,11 @@ export const QueryLog = () => {
             reasonParam,
         )
             ? reasonParam
-            : DEFAULT_LOGS_FILTER.response_status;
+            : DEFAULT_LOGS_FILTER.reason;
         const nextFilter = {
             search,
             status,
-            response_status: reason,
+            reason,
         };
         const nextSearch = getLogsUrlParams(search, status, reason);
 
@@ -115,7 +117,7 @@ export const QueryLog = () => {
         setIsIncrementalLoad(false);
         dispatch(setLogsFilter(nextFilter));
         dispatch(setFilteredLogs(nextFilter));
-    }, [dispatch, history, location.search]);
+    }, [history, location.search]);
 
     useEffect(() => {
         if (!processingGetLogs && !processingAdditionalLogs) {
@@ -125,7 +127,8 @@ export const QueryLog = () => {
 
     const currentSearch = filter?.search ?? DEFAULT_LOGS_FILTER.search;
     const currentStatus = filter?.status ?? DEFAULT_LOGS_FILTER.status;
-    const currentReason = filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status;
+    const currentReason = filter?.reason ?? DEFAULT_LOGS_FILTER.reason;
+    const infiniteScrollResetToken = `${currentSearch}:${currentStatus}:${currentReason}`;
     const persistentClientIds = persistentClients.flatMap((persistentClient) => persistentClient.ids ?? []);
     const visibleLogs = filterLogsByStatus(logs, currentStatus);
     const emptyStateMode = getEmptyStateMode(enabled, interval);
@@ -142,7 +145,7 @@ export const QueryLog = () => {
     const handleStatusFilterChange = useCallback(
         (status: string) => {
             setIsIncrementalLoad(false);
-            history.replace(getLogsUrlParams(currentSearch, status, DEFAULT_LOGS_FILTER.response_status));
+            history.replace(getLogsUrlParams(currentSearch, status, DEFAULT_LOGS_FILTER.reason));
         },
         [currentSearch, history],
     );
@@ -221,7 +224,6 @@ export const QueryLog = () => {
     const isRequestInFlight = processingGetLogs || processingAdditionalLogs;
     const isLoadingMore = isIncrementalLoad && isRequestInFlight;
     const isInitialLoading = processingGetLogs && logs.length === 0;
-    let mobileContent = null;
 
     const handleLoadMore = useCallback(() => {
         if (isRequestInFlight || isEntireLog) {
@@ -247,21 +249,25 @@ export const QueryLog = () => {
     };
     const allowedClients = getAllowedClients();
 
-    if (isInitialLoading) {
-        mobileContent = (
-            <div className={s.mobileInitialLoader} data-testid="query-log-initial-loader">
-                <Loader />
-            </div>
-        );
-    } else if (visibleLogs.length === 0) {
-        mobileContent = (
-            <EmptyState
-                className={s.emptyState}
-                mode={emptyStateMode}
-            />
-        );
-    } else {
-        mobileContent = (
+    const renderMobileContent = () => {
+        if (isInitialLoading) {
+            return (
+                <div className={s.mobileInitialLoader} data-testid="query-log-initial-loader">
+                    <Loader />
+                </div>
+            );
+        }
+
+        if (visibleLogs.length === 0) {
+            return (
+                <EmptyState
+                    className={s.emptyState}
+                    mode={emptyStateMode}
+                />
+            );
+        } 
+
+        return (
             <>
                 <div className={s.mobileList}>
                     {visibleLogs.map((entry: LogEntry) => (
@@ -288,6 +294,7 @@ export const QueryLog = () => {
                     loading={isLoadingMore}
                     disabled={isRequestInFlight}
                     onLoadMore={handleLoadMore}
+                    resetToken={infiniteScrollResetToken}
                     className={s.mobileLoader}
                 />
             </>
@@ -316,6 +323,7 @@ export const QueryLog = () => {
                         isLoadingMore={isLoadingMore}
                         isRequestInFlight={isRequestInFlight}
                         isInitialLoading={isInitialLoading}
+                        infiniteScrollResetToken={infiniteScrollResetToken}
                         onLoadMore={handleLoadMore}
                         onRowClick={handleRowClick}
                         onBlock={handleBlockDomain}
@@ -333,7 +341,7 @@ export const QueryLog = () => {
                 </div>
 
                 <div className={s.mobileView}>
-                    {mobileContent}
+                    {renderMobileContent()}
                 </div>
 
                 {selectedEntry && (

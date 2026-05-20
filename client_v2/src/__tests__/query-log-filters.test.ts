@@ -12,20 +12,20 @@ describe('Query Log filter model', () => {
         expect(DEFAULT_LOGS_FILTER).toEqual({
             search: '',
             status: 'all',
-            response_status: 'all',
+            reason: 'all',
         });
     });
 
     test('serializes all three filter fields into the URL', () => {
-        expect(getLogsUrlParams('example.org', 'blocked', 'blocked_services')).toBe(
-            '?search=example.org&status=blocked&reason=blocked_services',
+        expect(getLogsUrlParams('example.org', 'blocked', 'filtered_blocked_service')).toBe(
+            '?search=example.org&status=blocked&reason=filtered_blocked_service',
         );
     });
 
     test('keeps status and reason option sets separate', () => {
         expect(QUERY_LOG_STATUS_FILTER.REWRITTEN.QUERY).toBe('rewritten');
         expect(Object.keys(QUERY_LOG_STATUS_FILTER)).not.toContain('ERROR');
-        expect(QUERY_LOG_REASON_FILTER.BLOCKED_BY_FILTER.QUERY).toBe('blocked');
-        expect(QUERY_LOG_REASON_FILTER.SAFE_SEARCH.QUERY).toBe('safe_search');
+        expect(QUERY_LOG_REASON_FILTER.BLOCKED_BY_FILTER.QUERY).toBe('filtered_blocklist');
+        expect(QUERY_LOG_REASON_FILTER.SAFE_SEARCH.QUERY).toBe('filtered_safe_search');
     });
 });

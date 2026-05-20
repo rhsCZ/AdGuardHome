@@ -15,7 +15,7 @@ import { addErrorToast, addSuccessToast } from './toasts';
 export type SearchFormValues = {
     search: string;
     status: string;
-    response_status: string;
+    reason: string;
 };
 
 export type QueryLogConfigPayload = Pick<QueryLogsData, 'anonymize_client_ip' | 'enabled' | 'ignored'> & {
@@ -45,11 +45,33 @@ type ShortPollTotal = {
     oldest?: string;
 };
 
+// Maps the frontend "status" broad category to backend reason value(s)
+// when the reason filter is "all" (meaning the status should drive server filtering).
+const STATUS_TO_REASON: Record<string, string | string[]> = {
+    allowed: 'not_filtered_allowlist',
+    processed: 'not_filtered_notfound',
+    blocked: ['filtered_blocklist', 'filtered_blocked_service', 'filtered_safe_browsing', 'filtered_parental'],
+    rewritten: ['rewrite', 'rewrite_etc_hosts', 'rewrite_rule', 'filtered_safe_search'],
+};
+
+const getEffectiveReason = (filter?: SearchFormValues): string | string[] => {
+    const reason = filter?.reason ?? DEFAULT_LOGS_FILTER.reason;
+    const status = filter?.status ?? DEFAULT_LOGS_FILTER.status;
+
+    // If the reason filter is already specific, use it directly
+    if (reason !== 'all') {
+        return reason;
+    }
+
+    // Otherwise, map the broad status category to a backend value if supported
+    return STATUS_TO_REASON[status] ?? reason;
+};
+
 const getLogsWithParams = async (config: GetLogsParams): Promise<LogsResponse> => {
     const { older_than, filter, ...values } = config;
     const requestFilter = {
         search: filter?.search ?? DEFAULT_LOGS_FILTER.search,
-        response_status: filter?.response_status ?? DEFAULT_LOGS_FILTER.response_status,
+        reason: getEffectiveReason(filter),
     };
     const rawLogs = await apiClient.getQueryLog({
         ...requestFilter,
@@ -181,7 +203,7 @@ export const setLogsFilterRequest = createAction('SET_LOGS_FILTER_REQUEST');
  * @param filter
  * @param {string} filter.search
  * @param {string} filter.status 'QUERY' field of QUERY_LOG_STATUS_FILTER object
- * @param {string} filter.response_status 'QUERY' field of QUERY_LOG_REASON_FILTER object
+ * @param {string} filter.reason 'QUERY' field of QUERY_LOG_REASON_FILTER object
  * @returns function
  */
 export const setLogsFilter = (filter: SearchFormValues) => setLogsFilterRequest(filter);

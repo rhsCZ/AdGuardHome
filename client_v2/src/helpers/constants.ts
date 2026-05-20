@@ -231,7 +231,7 @@ export const WHOIS_ICONS = {
 export const DEFAULT_LOGS_FILTER = {
     search: '',
     status: 'all',
-    response_status: 'all',
+    reason: 'all',
 };
 
 export const DEFAULT_LANGUAGE = 'en';
@@ -299,31 +299,27 @@ export const QUERY_LOG_REASON_FILTER = {
         LABEL: intl.getMessage('query_log_all_reasons'),
     },
     BLOCKED_BY_FILTER: {
-        QUERY: 'blocked',
+        QUERY: 'filtered_blocklist',
         LABEL: intl.getMessage('query_log_blocked_by_filter'),
     },
     BLOCKED_SERVICES: {
-        QUERY: 'blocked_services',
+        QUERY: 'filtered_blocked_service',
         LABEL: intl.getMessage('query_log_blocked_services'),
     },
     BLOCKED_BY_THREATS: {
-        QUERY: 'blocked_safebrowsing',
+        QUERY: 'filtered_safe_browsing',
         LABEL: intl.getMessage('query_log_blocked_threats'),
     },
     BLOCKED_BY_PARENTAL_CONTROL: {
-        QUERY: 'blocked_parental',
+        QUERY: 'filtered_parental',
         LABEL: intl.getMessage('query_log_blocked_by_parental_control'),
     },
-    ALLOWLISTS: {
-        QUERY: 'whitelisted',
-        LABEL: intl.getMessage('allowlists'),
-    },
     DNS_REWRITES: {
-        QUERY: 'rewritten',
+        QUERY: 'rewrite',
         LABEL: intl.getMessage('dns_rewrites'),
     },
     SAFE_SEARCH: {
-        QUERY: 'safe_search',
+        QUERY: 'filtered_safe_search',
         LABEL: intl.getMessage('query_log_safe_search'),
     },
 } as const;

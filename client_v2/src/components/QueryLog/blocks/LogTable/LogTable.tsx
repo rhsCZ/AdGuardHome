@@ -23,6 +23,7 @@ type Props = {
     isLoadingMore: boolean;
     isRequestInFlight: boolean;
     isInitialLoading: boolean;
+    infiniteScrollResetToken: string;
     onLoadMore: () => void;
     onRowClick: (entry: LogEntry) => void;
     onBlock: (domain: string) => void;
@@ -45,6 +46,7 @@ export const LogTable = ({
     isLoadingMore,
     isRequestInFlight,
     isInitialLoading,
+    infiniteScrollResetToken,
     onLoadMore,
     onRowClick,
     onBlock,
@@ -190,6 +192,7 @@ export const LogTable = ({
                     loading={isLoadingMore}
                     disabled={isRequestInFlight}
                     onLoadMore={onLoadMore}
+                    resetToken={infiniteScrollResetToken}
                     className={s.loadingRow}
                 />
             )}
