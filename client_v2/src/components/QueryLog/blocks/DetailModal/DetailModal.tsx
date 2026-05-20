@@ -7,6 +7,7 @@ import { Dialog } from 'panel/common/ui/Dialog';
 import theme from 'panel/lib/theme';
 
 import { checkBlockedService, formatElapsedMs, getServiceName, type Filter } from 'panel/helpers/helpers';
+import { FILTERED_STATUS } from 'panel/helpers/constants';
 import {
     getQueryReasonDetails,
     getQueryReasonLabel,
@@ -67,6 +68,12 @@ export const DetailModal = ({
     const reasonKey = getQueryReasonKey(entry.reason, entry.rules ?? []);
     const isBlocked = isBlockedReason(entry.reason);
     const isBlockedService = checkBlockedService(entry.reason);
+    const isSafeSearch = entry.reason === FILTERED_STATUS.FILTERED_SAFE_SEARCH;
+    const isRewrite = entry.reason === FILTERED_STATUS.REWRITE
+        || entry.reason === FILTERED_STATUS.REWRITE_HOSTS
+        || entry.reason === FILTERED_STATUS.REWRITE_RULE;
+    const showBlock = !isBlocked && !isRewrite && !isSafeSearch;
+    const showAllowlist = isBlocked || isSafeSearch;
     const reasonDetails = getQueryReasonDetails({
         elapsedMs: entry.elapsedMs,
         filters,
@@ -389,7 +396,7 @@ export const DetailModal = ({
                 </div>
 
                 <div className={s.actionFooter} data-testid="query-log-detail-action-footer">
-                    {!isBlocked && (
+                    {showBlock && (
                         <Button
                             data-testid="query-log-detail-action-block"
                             data-action="block"
@@ -403,7 +410,7 @@ export const DetailModal = ({
                         </Button>
                     )}
 
-                    {isBlocked && (
+                    {showAllowlist && (
                         <Button
                             data-testid="query-log-detail-action-allowlist"
                             data-action="allowlist"
@@ -428,6 +435,20 @@ export const DetailModal = ({
                             onClick={handleAllowService}
                         >
                             {intl.getMessage('allow_service')}
+                        </Button>
+                    )}
+
+                    {!showBlock && !showAllowlist && (
+                        <Button
+                            data-testid="query-log-detail-action-close"
+                            data-action="close"
+                            type="button"
+                            variant="primary"
+                            size="small"
+                            className={s.actionButton}
+                            onClick={onClose}
+                        >
+                            {intl.getMessage('close')}
                         </Button>
                     )}
                 </div>

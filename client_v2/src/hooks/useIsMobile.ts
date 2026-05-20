@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const MIN_SMALL_BREAKPOINT = '(min-width: 768px)';
+const MIN_SMALL_BREAKPOINT = '(min-width: 1024px)';
 
 /**
  * Hook to detect if viewport is mobile or desktop

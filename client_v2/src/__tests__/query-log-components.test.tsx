@@ -335,7 +335,7 @@ describe('Query log composition components', () => {
         expect(screen.getAllByText('query_log_rewritten').length).toBeGreaterThan(0);
         expect(screen.getAllByText('query_log_safe_search').length).toBeGreaterThan(0);
         expect(screen.getByText('France')).toBeVisible();
-        expect(screen.getByRole('button', { name: 'block' })).toBeVisible();
+        expect(screen.getByRole('button', { name: 'add_to_allowlist' })).toBeVisible();
         expect(screen.getByRole('link', { name: 'open settings' })).toBeVisible();
     });
 

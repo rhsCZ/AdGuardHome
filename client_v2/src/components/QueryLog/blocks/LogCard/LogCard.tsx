@@ -125,13 +125,12 @@ export const LogCard = ({
                 <div className={s.fieldGrid}>
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('time_table_header')}</span>
                     <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
-                        {formatLogTime(entry.time)} {formatLogDate(entry.time)}
+                        {formatLogDate(entry.time)}, {formatLogTime(entry.time)}
                     </span>
 
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('status_table_header')}</span>
                     <span
                         className={cn(
-                            s.fieldValue,
                             s.status,
                             theme.text.t4,
                             theme.text.condenced,
@@ -141,13 +140,15 @@ export const LogCard = ({
                         {statusLabel}
                     </span>
 
-                    <>
-                        <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
-                        <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
-                            {reasonLabel}
-                            {reasonDetails ? ` · ${reasonDetails}` : ''}
-                        </span>
-                    </>
+                    {reasonKey !== 'none' && (
+                        <>
+                            <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('reason_table_header')}</span>
+                            <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                                {reasonLabel}
+                                {reasonDetails ? ` / ${reasonDetails}` : ''}
+                            </span>
+                        </>
+                    )}
 
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>{intl.getMessage('client_ip')}</span>
                     <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
