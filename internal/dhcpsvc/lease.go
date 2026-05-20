@@ -17,7 +17,8 @@ import (
 //
 // TODO(e.burkov):  Add validation method.
 //
-// TODO(e.burkov):  Migrate to add DUID and IAID fields for DHCPv6 leases.
+// TODO(e.burkov):  Migrate the database to use the client's DUID and IAID from
+// the Client Identifier option for DHCPv6 lease identification.
 type Lease struct {
 	// IP is the IP address leased to the client.  It must not be empty.
 	IP netip.Addr
@@ -29,7 +30,8 @@ type Lease struct {
 	// Hostname of the client.  It may be empty if the lease is blocked.
 	Hostname string
 
-	// HWAddr is the physical hardware (MAC) address.  It must not be nil.
+	// HWAddr is the physical hardware (MAC) address.  It must be a valid
+	// hardware address of length 6, 8, or 20 bytes, see [netutil.ValidateMAC].
 	HWAddr net.HardwareAddr
 
 	// IsStatic defines if the lease is static.

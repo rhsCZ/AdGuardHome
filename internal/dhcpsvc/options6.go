@@ -232,3 +232,51 @@ func clientDUID6(opts layers.DHCPv6Options) (duid []byte, ok bool) {
 func serverDUID6(opts layers.DHCPv6Options) (duid []byte, ok bool) {
 	return findOption6(opts, layers.DHCPv6OptServerID)
 }
+
+// solMaxRTSeconds is the recommended SOL_MAX_RT value sent to clients,
+// in seconds.  It caps the client's solicit retransmission interval.
+//
+// See RFC 9915 Section 21.24.
+const solMaxRTSeconds = 3600
+
+// newPreferenceOption returns a DHCPv6 Preference option with the given value.
+//
+// See RFC 9915 Section 21.8.
+func newPreferenceOption(pref byte) (opt layers.DHCPv6Option) {
+	return layers.NewDHCPv6Option(layers.DHCPv6OptPreference, []byte{pref})
+}
+
+// newSOLMaxRTOption returns a DHCPv6 SOL_MAX_RT option with the given value.
+//
+// See RFC 9915 Section 21.24.
+func newSOLMaxRTOption(rtt time.Duration) (opt layers.DHCPv6Option) {
+	data := binary.BigEndian.AppendUint32(nil, uint32(rtt.Seconds()))
+
+	return layers.NewDHCPv6Option(layers.DHCPv6OptSolMaxRt, data)
+}
+
+// newIANAWithStatus returns a DHCPv6 IA_NA option carrying only a Status Code
+// nested option, with T1 and T2 set to zero.  It is used when the server
+// cannot assign an address to the requested IA.
+//
+// See RFC 9915 Sections 21.4 and 21.13.
+func newIANAWithStatus(iaid uint32, status layers.DHCPv6StatusCode) (opt layers.DHCPv6Option) {
+	// Nested Status Code option: code (2) + length (2) + status (2) = 6 bytes.
+	const statusOptLen = 6
+
+	data := make([]byte, 0, iaNAMinLen+statusOptLen)
+
+	data = binary.BigEndian.AppendUint32(data, iaid)
+	// T1 and T2 are set to zero.
+	data = binary.BigEndian.AppendUint32(data, 0)
+	data = binary.BigEndian.AppendUint32(data, 0)
+
+	// Nested Status Code option.
+	data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptStatusCode))
+
+	// The length of the Status Code option data is 2 bytes.
+	data = binary.BigEndian.AppendUint16(data, 2)
+	data = binary.BigEndian.AppendUint16(data, uint16(status))
+
+	return layers.NewDHCPv6Option(layers.DHCPv6OptIANA, data)
+}

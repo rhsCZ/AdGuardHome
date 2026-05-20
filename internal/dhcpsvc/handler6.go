@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/AdguardTeam/golibs/errors"
+	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
@@ -67,11 +68,9 @@ func (iface *dhcpInterfaceV6) handleDHCPv6(
 
 // handleSolicit handles messages of type SOLICIT.  req must not be nil and must
 // be a valid DHCPv6 message of type SOLICIT.  fd must be valid.
-//
-// TODO(e.burkov):  Implement.  This is a stub for now.
 func (iface *dhcpInterfaceV6) handleSolicit(
 	ctx context.Context,
-	_ *frameData6,
+	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
 	cliID, err := clientIDNoServer(req.Options)
@@ -82,7 +81,37 @@ func (iface *dhcpInterfaceV6) handleSolicit(
 	l := iface.common.logger
 	l.DebugContext(ctx, "handling message", "type", req.MsgType, "cli_id", cliID)
 
-	return nil
+	iface.common.indexMu.Lock()
+	defer iface.common.indexMu.Unlock()
+
+	respIANAs, leases, allOK := iface.handleSolicitOpts(ctx, fd.ether.SrcMAC, req)
+
+	if len(respIANAs) == 0 {
+		l.DebugContext(ctx, "no ia_na in solicit; ignoring")
+
+		return nil
+	}
+
+	_, hasRapidCommit := findOption6(req.Options, layers.DHCPv6OptRapidCommit)
+
+	resp := &layers.DHCPv6{
+		MsgType:       layers.DHCPv6MsgTypeAdverstise,
+		TransactionID: req.TransactionID,
+		Options:       newSolicitRespOpts(fd, cliID, respIANAs),
+	}
+
+	if !hasRapidCommit || !allOK {
+		return respond6(fd, resp)
+	}
+
+	err = iface.commitRapidly(ctx, leases)
+	if err != nil {
+		l.WarnContext(ctx, "committing rapid leases", slogutil.KeyError, err)
+	}
+
+	resp.Options = append(resp.Options, layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, nil))
+
+	return respond6(fd, resp)
 }
 
 // handleRequest handles messages of type REQUEST.  req must not be nil and must
