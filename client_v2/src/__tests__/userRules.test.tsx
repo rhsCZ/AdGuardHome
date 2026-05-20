@@ -4,7 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserRules } from 'panel/components/UserRules/UserRules';
-import { BLOCK_ACTIONS, FILTERED_STATUS, MODAL_TYPE, SETTINGS_NAMES } from 'panel/helpers/constants';
+import {
+    BLOCK_ACTIONS,
+    FILTERED_STATUS,
+    MODAL_TYPE,
+    SETTINGS_NAMES,
+} from 'panel/helpers/constants';
 import { initialState, RootState } from 'panel/initialState';
 
 const mocks = vi.hoisted(() => ({
@@ -18,16 +23,25 @@ const mocks = vi.hoisted(() => ({
         Promise.resolve({ type: 'toggleFilterStatus', payload: { url, data, whitelist } }),
     ),
     initSettings: vi.fn(() => ({ type: 'initSettings' })),
-    toggleBlocking: vi.fn((type, domain) => ({ type: 'toggleBlocking', payload: { type, domain } })),
+    toggleBlocking: vi.fn((type, domain) => ({
+        type: 'toggleBlocking',
+        payload: { type, domain },
+    })),
     toggleBlockingForClient: vi.fn((type, domain, client) => ({
         type: 'toggleBlockingForClient',
         payload: { type, domain, client },
     })),
     toggleSetting: vi.fn(() => Promise.resolve(true)),
     getRewritesList: vi.fn(() => ({ type: 'getRewritesList' })),
-    updateRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'updateRewrite', payload, options })),
-    deleteRewrite: vi.fn((payload, options) => Promise.resolve({ type: 'deleteRewrite', payload, options })),
-    updateClient: vi.fn((payload, name, options) => Promise.resolve({ type: 'updateClient', payload, name, options })),
+    updateRewrite: vi.fn((payload, options) =>
+        Promise.resolve({ type: 'updateRewrite', payload, options }),
+    ),
+    deleteRewrite: vi.fn((payload, options) =>
+        Promise.resolve({ type: 'deleteRewrite', payload, options }),
+    ),
+    updateClient: vi.fn((payload, name, options) =>
+        Promise.resolve({ type: 'updateClient', payload, name, options }),
+    ),
     getBlockedServices: vi.fn(() => ({ type: 'getBlockedServices' })),
     getAllBlockedServices: vi.fn(() => ({ type: 'getAllBlockedServices' })),
     updateBlockedServices: vi.fn((payload, options) =>
@@ -37,6 +51,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('react-redux', () => ({
+    batch: (fn: () => void) => fn(),
     useDispatch: () => mocks.dispatch,
     useSelector: (selector: (state: RootState) => unknown) => selector(mocks.state),
 }));
@@ -76,53 +91,56 @@ vi.mock('panel/actions/toasts', () => ({
     addSuccessToast: mocks.addSuccessToast,
 }));
 
-vi.mock('panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal', async () => {
-    const React = await import('react');
+vi.mock(
+    'panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal',
+    async () => {
+        const React = await import('react');
 
-    return {
-        ConfigureRewritesModal: ({ modalId, rewriteToEdit, onSubmit }: any) => {
-            const [domain, setDomain] = React.useState(rewriteToEdit?.domain ?? '');
-            const [answer, setAnswer] = React.useState(rewriteToEdit?.answer ?? '');
+        return {
+            ConfigureRewritesModal: ({ modalId, rewriteToEdit, onSubmit }: any) => {
+                const [domain, setDomain] = React.useState(rewriteToEdit?.domain ?? '');
+                const [answer, setAnswer] = React.useState(rewriteToEdit?.answer ?? '');
 
-            React.useEffect(() => {
-                setDomain(rewriteToEdit?.domain ?? '');
-                setAnswer(rewriteToEdit?.answer ?? '');
-            }, [rewriteToEdit]);
+                React.useEffect(() => {
+                    setDomain(rewriteToEdit?.domain ?? '');
+                    setAnswer(rewriteToEdit?.answer ?? '');
+                }, [rewriteToEdit]);
 
-            if (mocks.state.modals.modalId !== modalId) {
-                return null;
-            }
+                if (mocks.state.modals.modalId !== modalId) {
+                    return null;
+                }
 
-            return (
-                <div role="dialog">
-                    <input
-                        data-testid="rewrite-domain-input"
-                        value={domain}
-                        onChange={(event) => setDomain(event.currentTarget.value)}
-                    />
-                    <input
-                        data-testid="rewrite-answer-input"
-                        value={answer}
-                        onChange={(event) => setAnswer(event.currentTarget.value)}
-                    />
-                    <button
-                        type="button"
-                        data-testid="rewrite-save-button"
-                        onClick={() =>
-                            onSubmit?.({
-                                domain,
-                                answer,
-                                enabled: rewriteToEdit?.enabled ?? false,
-                            })
-                        }
-                    >
-                        Save
-                    </button>
-                </div>
-            );
-        },
-    };
-});
+                return (
+                    <div role="dialog">
+                        <input
+                            data-testid="rewrite-domain-input"
+                            value={domain}
+                            onChange={(event) => setDomain(event.currentTarget.value)}
+                        />
+                        <input
+                            data-testid="rewrite-answer-input"
+                            value={answer}
+                            onChange={(event) => setAnswer(event.currentTarget.value)}
+                        />
+                        <button
+                            type="button"
+                            data-testid="rewrite-save-button"
+                            onClick={() =>
+                                onSubmit?.({
+                                    domain,
+                                    answer,
+                                    enabled: rewriteToEdit?.enabled ?? false,
+                                })
+                            }
+                        >
+                            Save
+                        </button>
+                    </div>
+                );
+            },
+        };
+    },
+);
 
 vi.mock('panel/components/FilterLists/blocks/DeleteRewriteModal', () => ({
     DeleteRewriteModal: ({ rewriteToDelete, onConfirm }: any) => {
@@ -131,7 +149,11 @@ vi.mock('panel/components/FilterLists/blocks/DeleteRewriteModal', () => ({
         }
 
         return (
-            <button type="button" data-testid="rewrite-delete-confirm" onClick={() => onConfirm?.()}>
+            <button
+                type="button"
+                data-testid="rewrite-delete-confirm"
+                onClick={() => onConfirm?.()}
+            >
                 Remove
             </button>
         );
@@ -401,7 +423,7 @@ const settingToggleScenarios = [
         reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
         settingKey: SETTINGS_NAMES.safebrowsing,
         expectedSettingValue: true,
-        toast: 'Browsing security disabled',
+        toast: expect.objectContaining({ message: 'Browsing security disabled', actionLabel: 'Undo' }),
     },
     {
         name: 'parental control',
@@ -410,7 +432,7 @@ const settingToggleScenarios = [
         reason: FILTERED_STATUS.FILTERED_PARENTAL,
         settingKey: SETTINGS_NAMES.parental,
         expectedSettingValue: true,
-        toast: 'Parental control disabled',
+        toast: expect.objectContaining({ message: 'Parental control disabled', actionLabel: 'Undo' }),
     },
     {
         name: 'safe search',
@@ -419,7 +441,7 @@ const settingToggleScenarios = [
         reason: FILTERED_STATUS.FILTERED_SAFE_SEARCH,
         settingKey: SETTINGS_NAMES.safesearch,
         expectedSettingValue: expect.objectContaining({ enabled: false }),
-        toast: 'Safe search disabled',
+        toast: expect.objectContaining({ message: 'Safe search disabled', actionLabel: 'Undo' }),
     },
 ];
 
@@ -495,7 +517,10 @@ describe('UserRules harness', () => {
         renderUserRules();
 
         await user.type(screen.getByLabelText('Hostname or domain name'), 'qtype.example');
-        await user.type(screen.getByLabelText('Client identifier (name, ClientID, or IP address)'), 'office-laptop');
+        await user.type(
+            screen.getByLabelText('Client identifier (name, ClientID, or IP address)'),
+            'office-laptop',
+        );
         await user.click(screen.getByLabelText('DNS record type'));
         await user.click(screen.getByText('CNAME'));
         await user.click(screen.getByRole('button', { name: 'Check' }));
@@ -568,27 +593,31 @@ describe('UserRules harness', () => {
         expect(screen.queryByText('Domain is processed')).not.toBeInTheDocument();
     });
 
-    resultActionScenarios.forEach(({ name, renderScenario, title, description, rejectsObjectObject, actions }) => {
-        it(`renders expected result actions for ${name}`, () => {
-            renderScenario();
+    resultActionScenarios.forEach(
+        ({ name, renderScenario, title, description, rejectsObjectObject, actions }) => {
+            it(`renders expected result actions for ${name}`, () => {
+                renderScenario();
 
-            if (title) {
-                expect(screen.getByText(title)).toBeInTheDocument();
-            }
+                if (title) {
+                    expect(screen.getByText(title)).toBeInTheDocument();
+                }
 
-            if (description) {
-                expect(screen.getByText(description)).toBeInTheDocument();
-            }
+                if (description) {
+                    expect(screen.getByText(description)).toBeInTheDocument();
+                }
 
-            if (rejectsObjectObject) {
-                expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
-            }
+                if (rejectsObjectObject) {
+                    expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
+                }
 
-            actions.forEach(([actionKind, label]) => {
-                expect(screen.getByTestId(`user-rules-result-action-${actionKind}`)).toHaveTextContent(label);
+                actions.forEach(([actionKind, label]) => {
+                    expect(
+                        screen.getByTestId(`user-rules-result-action-${actionKind}`),
+                    ).toHaveTextContent(label);
+                });
             });
-        });
-    });
+        },
+    );
 
     it('does not show qtype or source rows in the result details', async () => {
         const user = userEvent.setup();
@@ -612,7 +641,9 @@ describe('UserRules harness', () => {
 
         const resultCard = screen.getByTestId('user-rules-result-card');
 
-        expect(within(resultCard).queryByText('Reason:', { selector: 'strong' })).not.toBeInTheDocument();
+        expect(
+            within(resultCard).queryByText('Reason:', { selector: 'strong' }),
+        ).not.toBeInTheDocument();
     });
 
     it('uses the client-specific toggle when allowlisting a client-specific block', async () => {
@@ -688,7 +719,9 @@ describe('UserRules harness', () => {
             { showToast: false, toggleModal: false },
         );
         expect(mocks.toggleSetting).not.toHaveBeenCalled();
-        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Browsing security disabled');
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith(
+            expect.objectContaining({ message: 'Browsing security disabled', actionLabel: 'Undo' }),
+        );
         expectRecheck('malware.example', 'office-laptop');
     });
 
@@ -702,7 +735,9 @@ describe('UserRules harness', () => {
             client: 'unknown-client',
         });
 
-        expect(screen.queryByTestId('user-rules-result-action-disable-parental')).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId('user-rules-result-action-disable-parental'),
+        ).not.toBeInTheDocument();
         expect(screen.getByTestId('user-rules-result-action-allow')).toBeInTheDocument();
     });
 
@@ -741,11 +776,17 @@ describe('UserRules harness', () => {
 
         expect(within(resultCard).getByText('Rewrite rule is applied')).toBeInTheDocument();
         expect(within(resultCard).getByText('Status:', { selector: 'strong' })).toBeInTheDocument();
-        expect(within(resultCard).getByText('Rewritten')).toBeInTheDocument();
-        expect(within(resultCard).getByText('Redirected to:', { selector: 'strong' })).toBeInTheDocument();
+        expect(within(resultCard).getByText('Safe search')).toBeInTheDocument();
+        expect(
+            within(resultCard).getByText('Redirected to:', { selector: 'strong' }),
+        ).toBeInTheDocument();
         expect(within(resultCard).getByText('forcesafesearch.google.com')).toBeInTheDocument();
-        expect(within(resultCard).queryByText('CNAME:', { selector: 'strong' })).not.toBeInTheDocument();
-        expect(screen.getByTestId('user-rules-result-action-allow')).toHaveTextContent('Add to allowlist');
+        expect(
+            within(resultCard).queryByText('CNAME:', { selector: 'strong' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByTestId('user-rules-result-action-allow')).toHaveTextContent(
+            'Add to allowlist',
+        );
         expect(screen.getByTestId('user-rules-result-action-disable-safesearch')).toHaveTextContent(
             'Disable Safe Search',
         );
@@ -804,10 +845,15 @@ describe('UserRules harness', () => {
         renderMatchedAllowlistResult();
 
         const actionOrder = Array.from(
-            screen.getByTestId('user-rules-result-card').querySelectorAll('[data-testid^="user-rules-result-action-"]'),
+            screen
+                .getByTestId('user-rules-result-card')
+                .querySelectorAll('[data-testid^="user-rules-result-action-"]'),
         ).map((element) => element.getAttribute('data-testid'));
 
-        expect(actionOrder).toEqual(['user-rules-result-action-block', 'user-rules-result-action-disable-filter']);
+        expect(actionOrder).toEqual([
+            'user-rules-result-action-block',
+            'user-rules-result-action-disable-filter',
+        ]);
     });
 
     settingToggleScenarios.forEach(
@@ -848,8 +894,8 @@ describe('UserRules harness', () => {
             },
             false,
         );
-        const toastMessage = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
-        render(<>{toastMessage}</>);
+        const toastPayload = mocks.addSuccessToast.mock.calls.at(-1)?.[0];
+        render(<>{toastPayload.message}</>);
         expect(screen.getByText('Example Blocklist', { selector: 'strong' })).toBeInTheDocument();
         expectRecheck('filtered.example');
     });
@@ -1050,7 +1096,9 @@ describe('UserRules harness', () => {
             ip_addrs: ['127.0.0.1'],
         });
 
-        expect(screen.queryByTestId('user-rules-result-action-edit-rewrite')).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId('user-rules-result-action-edit-rewrite'),
+        ).not.toBeInTheDocument();
     });
 
     it('does not show rewrite edit actions for dnsrewrite filter rules', () => {
@@ -1060,7 +1108,9 @@ describe('UserRules harness', () => {
             cname: 'target.example',
         });
 
-        expect(screen.queryByTestId('user-rules-result-action-edit-rewrite')).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId('user-rules-result-action-edit-rewrite'),
+        ).not.toBeInTheDocument();
     });
 
     it('uses the User Rules delete toast when removing a matched rewrite', async () => {
@@ -1068,8 +1118,12 @@ describe('UserRules harness', () => {
 
         renderMatchedRewriteResult();
 
-        expect(screen.getByTestId('user-rules-result-action-edit-rewrite')).toHaveTextContent('Edit DNS rewrite');
-        expect(screen.getByTestId('user-rules-result-action-delete-rewrite')).toHaveTextContent('Remove DNS rewrite');
+        expect(screen.getByTestId('user-rules-result-action-edit-rewrite')).toHaveTextContent(
+            'Edit DNS rewrite',
+        );
+        expect(screen.getByTestId('user-rules-result-action-delete-rewrite')).toHaveTextContent(
+            'Remove DNS rewrite',
+        );
 
         await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
         await user.click(await screen.findByTestId('rewrite-delete-confirm'));

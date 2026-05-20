@@ -84,7 +84,7 @@ export const CheckResult = ({
         }
 
         if (meta.tone === 'rewritten') {
-            return intl.getMessage('user_rules_status', { reason: intl.getMessage('rewritten') });
+            return intl.getMessage('user_rules_status', { reason: meta.reason });
         }
 
         if (meta.reason) {
