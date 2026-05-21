@@ -13,7 +13,6 @@ export const CLIENT_SCOPED_ACTIONS: ResultActionKind[] = [
     'disable-parental',
     'disable-safebrowsing',
     'disable-safesearch',
-    'disable-blocked-service',
 ];
 
 export const getPrimaryRule = (result?: CheckResultData | null) => result?.rules?.[0];

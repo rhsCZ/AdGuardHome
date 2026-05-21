@@ -411,7 +411,7 @@ export const useUserRulesActions = ({
 
         await performWithUndo({
             perform: () =>
-                lastSubmittedCheck?.client
+                resolvedClient
                     ? updateResolvedClient((client) => {
                           const effectiveBlockedServices = getEffectiveBlockedServices(
                               client,
@@ -441,7 +441,7 @@ export const useUserRulesActions = ({
                       ),
             message: intl.getMessage('user_rules_service_allowed', { value: matchedService.name }),
             undo: () =>
-                lastSubmittedCheck?.client && clientSnapshot
+                clientSnapshot
                     ? dispatch(
                           updateClient(
                               {
