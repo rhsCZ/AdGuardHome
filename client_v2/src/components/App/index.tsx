@@ -26,6 +26,7 @@ import { RootState } from '../../initialState';
 import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
 import { BlockedServices } from '../BlockedServices';
+import { Clients } from '../Clients/Clients';
 import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
 
 type RouteConfig = {
@@ -82,14 +83,19 @@ const ROUTES: RouteConfig[] = [
         component: BlockedServices,
         exact: true,
     },
+    {
+        path: '/clients',
+        component: Clients,
+        exact: true,
+    },
 ];
 
 const App = () => {
     const dispatch = useDispatch();
-    const { language, isCoreRunning, processing, theme } = useSelector<RootState, RootState['dashboard']>(
-        (state) => state.dashboard,
-        shallowEqual,
-    );
+    const { language, isCoreRunning, processing, theme } = useSelector<
+        RootState,
+        RootState['dashboard']
+    >((state) => state.dashboard, shallowEqual);
 
     useEffect(() => {
         dispatch(getDnsStatus());
@@ -170,7 +176,12 @@ const App = () => {
                     {!processing &&
                         isCoreRunning &&
                         ROUTES.map((route, index) => (
-                            <Route key={index} exact={route.exact} path={route.path} component={route.component} />
+                            <Route
+                                key={index}
+                                exact={route.exact}
+                                path={route.path}
+                                component={route.component}
+                            />
                         ))}
                 </div>
             </div>

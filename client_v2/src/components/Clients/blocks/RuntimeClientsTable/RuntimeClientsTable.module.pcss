@@ -1,0 +1,109 @@
+.headerCell {
+    @media (min-width: 768px) {
+        width: 100%;
+        min-height: 42px;
+        padding: 0 12px;
+    }
+}
+
+.cell {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    @media (min-width: 768px) {
+        padding: 0 12px;
+    }
+}
+
+.cellLabel {
+    width: 100%;
+
+    @media (min-width: 768px) {
+        display: none;
+    }
+}
+
+.cellValue {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: right;
+
+    @media (min-width: 768px) {
+        text-align: left;
+        justify-content: initial;
+    }
+}
+
+.emptyTableContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.emptyTableIcon {
+    width: 64px;
+    height: 64px;
+}
+
+.emptyTableDesc {
+    color: var(--default-description-text);
+}
+
+.table {
+    @media (min-width: 768px) {
+        grid-template-columns: 2fr 2fr 1fr 2fr 1fr;
+    }
+}
+
+.whoisCell {
+    position: relative;
+    display: inline-flex;
+}
+
+.whoisTrigger {
+    cursor: default;
+    text-decoration: underline dotted;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    min-width: 180px;
+    max-width: 280px;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background: var(--page-background-additional);
+    color: var(--default-main-text);
+    border-radius: 6px;
+    box-shadow: 8px 8px 24px 0 #0000001a;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.whoisCell:hover .tooltip,
+.whoisCell:focus-within .tooltip {
+    opacity: 1;
+}
+
+.tooltipRow {
+    display: flex;
+    gap: 8px;
+}
+
+.tooltipLabel {
+    font-weight: 600;
+}

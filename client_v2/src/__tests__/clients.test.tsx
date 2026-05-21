@@ -1,0 +1,287 @@
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { MODAL_TYPE } from 'panel/helpers/constants';
+import type { RootState } from 'panel/initialState';
+import { initialState } from 'panel/initialState';
+import { Clients } from 'panel/components/Clients/Clients';
+
+const mocks = vi.hoisted(() => ({
+    dispatch: vi.fn((action) => action),
+    state: null as unknown as RootState,
+    getClients: vi.fn(() => ({ type: 'GET_CLIENTS' })),
+    getStats: vi.fn(() => ({ type: 'GET_STATS' })),
+    toggleClientModal: vi.fn(() => ({ type: 'TOGGLE_CLIENT_MODAL' })),
+    deleteClient: vi.fn(() => ({ type: 'DELETE_CLIENT' })),
+}));
+
+vi.mock('react-redux', () => ({
+    batch: (fn: () => void) => fn(),
+    useDispatch: () => mocks.dispatch,
+    useSelector: (selector: (state: RootState) => unknown) => selector(mocks.state),
+}));
+
+vi.mock('panel/actions', () => ({
+    getClients: mocks.getClients,
+}));
+
+vi.mock('panel/actions/stats', () => ({
+    getStats: mocks.getStats,
+}));
+
+vi.mock('panel/actions/clients', () => ({
+    toggleClientModal: mocks.toggleClientModal,
+    deleteClient: mocks.deleteClient,
+}));
+
+describe('Clients Page', () => {
+    beforeEach(() => {
+        mocks.state = JSON.parse(JSON.stringify(initialState));
+        mocks.dispatch.mockClear();
+        mocks.getClients.mockClear();
+        mocks.getStats.mockClear();
+        mocks.toggleClientModal.mockClear();
+        mocks.deleteClient.mockClear();
+        localStorage.clear();
+    });
+
+    it('renders page header with title and add button', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [];
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Client settings')).toBeInTheDocument();
+            expect(screen.getByText('Add Client')).toBeInTheDocument();
+        });
+    });
+
+    it('renders persistent clients section title', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [];
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Persistent clients')).toBeInTheDocument();
+        });
+    });
+
+    it('renders runtime clients section title', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [];
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Runtime clients')).toBeInTheDocument();
+        });
+    });
+
+    it('dispatches getClients on mount', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(mocks.getClients).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it('dispatches getStats on mount', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(mocks.getStats).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it('triggers the add client flow when the add button is clicked', async () => {
+        const user = userEvent.setup();
+
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+
+        render(<Clients />);
+
+        await user.click(screen.getByRole('button', { name: 'Add Client' }));
+
+        expect(mocks.toggleClientModal).toHaveBeenCalledWith({
+            type: MODAL_TYPE.ADD_CLIENT,
+        });
+    });
+
+    it('renders persistent client rows with correct data', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [
+            {
+                name: 'My Laptop',
+                ids: ['192.168.1.10', '00:11:22:33:44:55'],
+                use_global_settings: true,
+                filtering_enabled: true,
+                parental_enabled: false,
+                safebrowsing_enabled: false,
+                safe_search: {},
+                safesearch_enabled: false,
+                use_global_blocked_services: true,
+                blocked_services: [],
+                blocked_services_schedule: { time_zone: 'UTC' },
+                upstreams: [],
+                upstreams_cache_enabled: false,
+                upstreams_cache_size: 0,
+                tags: ['user_admin'],
+                ignore_querylog: false,
+                ignore_statistics: false,
+            },
+        ];
+        mocks.state.dashboard.autoClients = [];
+        mocks.state.stats.normalizedTopClients = {
+            auto: {},
+            configured: { 'My Laptop': 1234 },
+        };
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('My Laptop')).toBeInTheDocument();
+            expect(screen.getByText('192.168.1.10')).toBeInTheDocument();
+            expect(screen.getByText('00:11:22:33:44:55')).toBeInTheDocument();
+            expect(screen.getByText('user_admin')).toBeInTheDocument();
+            expect(screen.getByText('1,234')).toBeInTheDocument();
+        });
+    });
+
+    it('renders runtime client rows with correct data', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [
+            {
+                ip: '10.0.0.5',
+                name: 'phone.local',
+                source: 'rDNS',
+                whois_info: { country: 'US', org: 'Cloudflare' },
+            },
+        ];
+        mocks.state.stats.normalizedTopClients = {
+            auto: { '10.0.0.5': 567 },
+            configured: {},
+        };
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('10.0.0.5')).toBeInTheDocument();
+            expect(screen.getByText('phone.local')).toBeInTheDocument();
+            expect(screen.getByText('rDNS')).toBeInTheDocument();
+            expect(screen.getByText('567')).toBeInTheDocument();
+        });
+    });
+
+    it('renders empty state when no clients exist', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [];
+
+        render(<Clients />);
+
+        const notFoundElements = await screen.findAllByText('No clients found');
+
+        expect(notFoundElements.length).toBe(2);
+    });
+
+    it('uses the persisted persistent-clients page size from localStorage', async () => {
+        localStorage.setItem('clients_page_size', JSON.stringify(5));
+
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = Array.from({ length: 6 }, (_, index) => ({
+            name: `Client ${index + 1}`,
+            ids: [`192.168.1.${index + 1}`],
+            use_global_settings: true,
+            filtering_enabled: true,
+            parental_enabled: false,
+            safebrowsing_enabled: false,
+            safe_search: {},
+            safesearch_enabled: false,
+            use_global_blocked_services: true,
+            blocked_services: [] as string[],
+            blocked_services_schedule: { time_zone: 'UTC' },
+            upstreams: [] as string[],
+            upstreams_cache_enabled: false,
+            upstreams_cache_size: 0,
+            tags: [] as string[],
+            ignore_querylog: false,
+            ignore_statistics: false,
+        }));
+        mocks.state.dashboard.autoClients = [];
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Client 1')).toBeInTheDocument();
+            expect(screen.getByText('Client 5')).toBeInTheDocument();
+            expect(screen.queryByText('Client 6')).not.toBeInTheDocument();
+        });
+    });
+
+    it('displays WHOIS tooltip content on hover', async () => {
+        const user = userEvent.setup();
+
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [
+            {
+                ip: '10.0.0.5',
+                name: 'device',
+                source: 'rDNS',
+                whois_info: { country: 'DE', org: 'Hetzner' },
+            },
+        ];
+
+        render(<Clients />);
+
+        const whoisTriggers = await screen.findAllByText('WHOIS');
+
+        await user.hover(whoisTriggers[whoisTriggers.length - 1]);
+
+        await waitFor(() => {
+            expect(screen.getByText('DE')).toBeInTheDocument();
+            expect(screen.getByText('Hetzner')).toBeInTheDocument();
+        });
+    });
+
+    it('renders dash for runtime client without WHOIS', async () => {
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [
+            {
+                ip: '10.0.0.6',
+                name: 'unknown',
+                source: 'ARP',
+                whois_info: {},
+            },
+        ];
+
+        render(<Clients />);
+
+        await waitFor(() => {
+            expect(screen.getByText('10.0.0.6')).toBeInTheDocument();
+            expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+        });
+    });
+});
