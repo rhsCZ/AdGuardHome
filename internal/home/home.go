@@ -141,9 +141,9 @@ func Main(clientBuildFS fs.FS) {
 			return
 		}
 
-		err = glTokenFileRoot.Close()
-		if err != nil {
-			baseLogger.ErrorContext(ctx, "closing glinet token root", slogutil.KeyError, err)
+		closeErr := glTokenFileRoot.Close()
+		if closeErr != nil {
+			baseLogger.ErrorContext(ctx, "closing glinet token root", slogutil.KeyError, closeErr)
 			os.Exit(osutil.ExitCodeFailure)
 		}
 	})
