@@ -26,6 +26,12 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
 
+### Fixed
+
+- DNS caching with disabled DNSSEC ([#8384]).
+
+[#8384]: https://github.com/AdguardTeam/AdGuardHome/issues/8384
+
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
 -->
