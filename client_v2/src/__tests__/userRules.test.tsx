@@ -91,6 +91,15 @@ vi.mock('panel/actions/toasts', () => ({
     addSuccessToast: mocks.addSuccessToast,
 }));
 
+vi.mock('panel/helpers/helpers', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('panel/helpers/helpers')>();
+
+    return {
+        ...actual,
+        delay: () => Promise.resolve(),
+    };
+});
+
 vi.mock(
     'panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal',
     async () => {

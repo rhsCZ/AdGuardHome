@@ -16,6 +16,7 @@ import { updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
 import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
 import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
+import { delay } from 'panel/helpers/helpers';
 import { Client, RootState } from 'panel/initialState';
 import { openModal } from 'panel/reducers/modals';
 import type { AppDispatch } from 'panel/store/types';
@@ -36,6 +37,8 @@ const EMPTY_REWRITE: RewriteEntry = {
     answer: '',
     enabled: false,
 };
+
+const RECHECK_DELAY_MS = 500;
 
 type UseUserRulesActionsParams = {
     checkResult: CheckResultData | null;
@@ -106,6 +109,8 @@ export const useUserRulesActions = ({
         if (!lastSubmittedCheck) {
             return;
         }
+
+        await delay(RECHECK_DELAY_MS);
 
         await dispatch(
             checkHost({
