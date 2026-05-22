@@ -733,7 +733,7 @@ export const toggleBlocking =
         }
 
         dispatch(addSuccessToast({
-            message: intl.getMessage('notify_user_rule_added'),
+            message: intl.getMessage('notify_user_rule_added', { rule: desiredRule }),
             code: 'notify_user_rule_added',
         }));
 
