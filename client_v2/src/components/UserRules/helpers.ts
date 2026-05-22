@@ -86,21 +86,26 @@ export const getEffectiveBlockedServices = (client: Client, globalBlockedService
     };
 };
 
+const matchesDomain = (hostname: string, pattern: string): boolean => {
+    const h = hostname.toLowerCase();
+    const p = pattern.toLowerCase();
+
+    if (p === h) {
+        return true;
+    }
+
+    return p.startsWith('*.') && h.endsWith(p.slice(1));
+};
+
 export const findMatchedRewrite = (
     rewrites: RootState['rewrites']['list'],
     checkResult?: CheckResultData | null,
 ): RewriteEntry | null => {
-    const matches = rewrites.filter((entry) => {
-        if (entry.domain !== checkResult?.hostname) {
-            return false;
-        }
+    if (!checkResult?.hostname) {
+        return null;
+    }
 
-        if (checkResult?.cname) {
-            return entry.answer === checkResult.cname;
-        }
-
-        return Boolean(checkResult?.ip_addrs?.includes(entry.answer));
-    });
+    const matches = rewrites.filter((entry) => matchesDomain(checkResult.hostname!, entry.domain));
 
     return matches.length === 1 ? matches[0] : null;
 };
