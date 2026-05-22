@@ -84,6 +84,7 @@ export const Dashboard = () => {
     const { dashboard, stats, access } = useSelector((state: RootState) => state);
     const [protectionMenuOpen, setProtectionMenuOpen] = useState(false);
     const [remainingTime, setRemainingTime] = useState<number | null>(null);
+    const [selectedDisableTime, setSelectedDisableTime] = useState<number | null>(null);
     const [selectedPeriod, setSelectedPeriod] = useState(DAY);
     const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
     const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
@@ -207,12 +208,14 @@ export const Dashboard = () => {
             clearInterval(timerRef.current);
             timerRef.current = null;
             setRemainingTime(null);
+            setSelectedDisableTime(null);
         }
         dispatch(toggleProtection(protectionEnabled));
     };
 
     const handleDisableProtection = (time: number) => {
         const duration = time - ONE_SECOND_IN_MS;
+        setSelectedDisableTime(time);
         startCountdown(duration);
         dispatch(toggleProtection(protectionEnabled, duration));
         setProtectionMenuOpen(false);
@@ -258,9 +261,14 @@ export const Dashboard = () => {
             {DISABLE_PROTECTION_ITEMS.map((item) => (
                 <div
                     key={item.key}
-                    className={s.protectionMenuItem}
+                    className={cn(theme.text.t2, theme.text.condenced, s.protectionMenuItem)}
                     onMouseDown={() => handleDisableProtection(item.time)}
                 >
+                    {selectedDisableTime === item.time && remainingTime ? (
+                        <Icon icon="check_tiny" className={s.periodMenuIcon} />
+                    ) : (
+                        <span className={s.periodMenuDot}></span>
+                    )}
                     {getDisableText(item.key, item.time)}
                 </div>
             ))}
