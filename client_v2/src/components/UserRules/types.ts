@@ -33,7 +33,8 @@ export type ResultActionKind =
     | 'disable-blocked-service'
     | 'disable-filter'
     | 'edit-rewrite'
-    | 'delete-rewrite';
+    | 'delete-rewrite'
+    | 'remove-rewrite-rule';
 
 export type ResultAction = {
     kind: ResultActionKind;

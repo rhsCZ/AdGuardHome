@@ -34,6 +34,7 @@ const getActionLabel = (action: ResultActionKind) => {
         case 'edit-rewrite':
             return intl.getMessage('user_rules_edit_dns_rewrite');
         case 'delete-rewrite':
+        case 'remove-rewrite-rule':
             return intl.getMessage('user_rules_remove_dns_rewrite');
         default:
             return '';
@@ -168,12 +169,19 @@ export const getCheckResultMeta = ({
                 rule: primaryRule?.text,
             };
         case FILTERED_STATUS.REWRITE:
-        case FILTERED_STATUS.REWRITE_RULE:
             return {
                 tone: 'rewritten',
                 title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
                 reason: intl.getMessage('rewrite_applied'),
                 actions: [],
+            };
+        case FILTERED_STATUS.REWRITE_RULE:
+            return {
+                tone: 'rewritten',
+                title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
+                reason: intl.getMessage('rewrite_applied'),
+                actions: isCustomRule ? [createAction('remove-rewrite-rule')] : [],
+                rule: primaryRule?.text,
             };
         case FILTERED_STATUS.REWRITE_HOSTS:
             return {

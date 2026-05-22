@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import intl from 'panel/common/intl';
 import {
@@ -11,12 +11,12 @@ import {
     toggleSetting,
 } from 'panel/actions';
 import { updateClient } from 'panel/actions/clients';
-import { checkHost, toggleFilterStatus } from 'panel/actions/filtering';
+import { checkHost, getFilteringStatus, setRules, toggleFilterStatus } from 'panel/actions/filtering';
 import { updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
 import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
 import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
-import { delay } from 'panel/helpers/helpers';
+import { delay, splitByNewLine } from 'panel/helpers/helpers';
 import { Client, RootState } from 'panel/initialState';
 import { openModal } from 'panel/reducers/modals';
 import type { AppDispatch } from 'panel/store/types';
@@ -79,6 +79,7 @@ export const useUserRulesActions = ({
     setIsResultVisible,
 }: UseUserRulesActionsParams): UseUserRulesActionsResult => {
     const dispatch = useDispatch<AppDispatch>();
+    const userRules = useSelector((state: RootState) => state.filtering.userRules);
     const [currentRewrite, setCurrentRewrite] = useState<RewriteEntry>(EMPTY_REWRITE);
 
     const matchedRewrite = useMemo(
@@ -530,6 +531,37 @@ export const useUserRulesActions = ({
         dispatch(openModal(MODAL_TYPE.DELETE_REWRITE));
     };
 
+    const handleRemoveRewriteRule = async () => {
+        const primaryRule = getPrimaryRule(checkResult);
+
+        if (!primaryRule?.text) {
+            return;
+        }
+
+        const ruleToRemove = primaryRule.text;
+
+        await runWithClosedResult(async () => {
+            const currentRules = splitByNewLine(userRules || '');
+            const updatedRules = currentRules.filter(
+                (rule: string) => rule !== ruleToRemove,
+            );
+
+            const didSave = (await dispatch(
+                setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
+            )) as boolean;
+
+            if (!didSave) {
+                return false;
+            }
+
+            dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
+            await dispatch(getFilteringStatus());
+            await recheckCurrentTarget();
+
+            return true;
+        });
+    };
+
     const handleAction = async (action: ResultActionKind) => {
         switch (action) {
             case 'allow':
@@ -552,6 +584,9 @@ export const useUserRulesActions = ({
                 break;
             case 'disable-filter':
                 await handleDisableFilter();
+                break;
+            case 'remove-rewrite-rule':
+                await handleRemoveRewriteRule();
                 break;
             case 'edit-rewrite':
             case 'delete-rewrite':

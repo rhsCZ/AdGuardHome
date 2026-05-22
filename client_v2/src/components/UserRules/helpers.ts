@@ -30,13 +30,18 @@ export const findPersistentClient = (clients: Client[], identifier?: string) => 
             return true;
         }
 
-        return client.ids.some((clientId) => normalizeClientIdentifier(clientId) === normalizedIdentifier);
+        return client.ids.some(
+            (clientId) => normalizeClientIdentifier(clientId) === normalizedIdentifier,
+        );
     });
 
     return matches.length === 1 ? matches[0] : undefined;
 };
 
-const getSafeSearchConfig = (config?: Partial<SafeSearchConfig>, fallbackEnabled = false): SafeSearchConfig => ({
+const getSafeSearchConfig = (
+    config?: Partial<SafeSearchConfig>,
+    fallbackEnabled = false,
+): SafeSearchConfig => ({
     ...(config || {}),
     enabled: config?.enabled ?? fallbackEnabled,
 });
@@ -56,10 +61,15 @@ export const getEffectiveClientProtectionSettings = ({
 
     const effectiveSafeSearch = client.use_global_settings
         ? getSafeSearchConfig(settingsList?.safesearch as Partial<SafeSearchConfig> | undefined)
-        : getSafeSearchConfig(client.safe_search as Partial<SafeSearchConfig> | undefined, client.safesearch_enabled);
+        : getSafeSearchConfig(
+              client.safe_search as Partial<SafeSearchConfig> | undefined,
+              client.safesearch_enabled,
+          );
 
     return {
-        filtering_enabled: client.use_global_settings ? globalFilteringEnabled : client.filtering_enabled,
+        filtering_enabled: client.use_global_settings
+            ? globalFilteringEnabled
+            : client.filtering_enabled,
         parental_enabled: client.use_global_settings
             ? Boolean(settingsList?.parental.enabled)
             : client.parental_enabled,
@@ -71,8 +81,13 @@ export const getEffectiveClientProtectionSettings = ({
     };
 };
 
-export const getEffectiveBlockedServices = (client: Client, globalBlockedServices: BlockedServicesList) => {
-    const effectiveIds = client.use_global_blocked_services ? globalBlockedServices.ids : client.blocked_services;
+export const getEffectiveBlockedServices = (
+    client: Client,
+    globalBlockedServices: BlockedServicesList,
+) => {
+    const effectiveIds = client.use_global_blocked_services
+        ? globalBlockedServices.ids
+        : client.blocked_services;
 
     if (!Array.isArray(effectiveIds)) {
         return null;
@@ -81,7 +96,7 @@ export const getEffectiveBlockedServices = (client: Client, globalBlockedService
     return {
         blocked_services: [...effectiveIds],
         blocked_services_schedule: client.use_global_blocked_services
-            ? globalBlockedServices.schedule ?? client.blocked_services_schedule
+            ? (globalBlockedServices.schedule ?? client.blocked_services_schedule)
             : client.blocked_services_schedule,
     };
 };
