@@ -35,12 +35,16 @@ describe('query-log block and unblock toasts', () => {
 
         await blockDomain('fresh.example')(dispatch, getState as never);
 
-        expect(mocks.setRules).toHaveBeenCalledWith('||fresh.example^$important\n', { showToast: false });
+        expect(mocks.setRules).toHaveBeenCalledWith('||fresh.example^$important\n', {
+            showToast: false,
+        });
         expect(mocks.addSuccessToast).toHaveBeenCalledTimes(1);
         expect(mocks.addSuccessToast).toHaveBeenCalledWith(
             expect.objectContaining({
                 code: 'notify_user_rule_added',
-                message: intl.getMessage('notify_user_rule_added'),
+                message: intl.getMessage('notify_user_rule_added', {
+                    rule: '||fresh.example^$important',
+                }),
             }),
         );
     });
@@ -50,7 +54,9 @@ describe('query-log block and unblock toasts', () => {
 
         await unblockDomain('blocked.example')(dispatch, getState as never);
 
-        expect(mocks.setRules).toHaveBeenCalledWith('@@||blocked.example^$important\n', { showToast: false });
+        expect(mocks.setRules).toHaveBeenCalledWith('@@||blocked.example^$important\n', {
+            showToast: false,
+        });
         expect(mocks.addSuccessToast).toHaveBeenCalledTimes(1);
         expect(mocks.addSuccessToast).toHaveBeenCalledWith(
             expect.objectContaining({ code: 'notify_user_rule_added' }),

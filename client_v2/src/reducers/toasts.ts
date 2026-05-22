@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { handleActions } from 'redux-actions';
 import { nanoid } from 'nanoid';
 
@@ -5,10 +6,12 @@ import { addErrorToast, addNoticeToast, addSuccessToast } from '../actions/toast
 import { removeToast } from '../actions';
 import { TOAST_TYPES } from '../helpers/constants';
 
-type SuccessToastPayload = string | {
-    message: string;
-    code?: string;
-};
+type SuccessToastPayload =
+    | string
+    | {
+          message: ReactNode;
+          code?: string;
+      };
 
 const toasts = handleActions(
     {
@@ -28,9 +31,8 @@ const toasts = handleActions(
         },
         [addSuccessToast.toString()]: (state: any, { payload }: any) => {
             const successPayload = payload as SuccessToastPayload;
-            const message = typeof successPayload === 'string'
-                ? successPayload
-                : successPayload.message;
+            const message =
+                typeof successPayload === 'string' ? successPayload : successPayload.message;
 
             const successToast = {
                 id: nanoid(),

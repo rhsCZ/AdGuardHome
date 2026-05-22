@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
 import { Icon } from 'panel/common/ui/Icon';
 import cn from 'clsx';
@@ -9,7 +10,7 @@ import s from './styles.module.pcss';
 
 interface ToastProps {
     id: string;
-    message: string;
+    message: ReactNode;
     type: string;
     code?: string;
 }
@@ -40,7 +41,10 @@ const Toast = ({ id, message, type, code }: ToastProps) => {
             onMouseOver={clearRemoveToastTimeout}
             onMouseOut={setRemoveToastTimeout}
         >
-            <Icon icon={type === 'success' ? 'check' : 'attention'} className={cn(s.icon, s[type])} />
+            <Icon
+                icon={type === 'success' ? 'check' : 'attention'}
+                className={cn(s.icon, s[type])}
+            />
 
             <div className={s.content}>{message}</div>
         </div>

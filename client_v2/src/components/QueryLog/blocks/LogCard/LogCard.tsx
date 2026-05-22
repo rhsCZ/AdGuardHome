@@ -79,7 +79,12 @@ export const LogCard = ({
                     <div className={s.titleBlock}>
                         <div className={s.titleRow}>
                             <span
-                                className={cn(s.domain, theme.text.t3, theme.text.condenced, theme.text.semibold)}
+                                className={cn(
+                                    s.domain,
+                                    theme.text.t3,
+                                    theme.text.condenced,
+                                    theme.text.semibold,
+                                )}
                                 title={displayDomain}
                             >
                                 {displayDomain}
@@ -87,7 +92,11 @@ export const LogCard = ({
 
                             <div className={s.iconsRow}>
                                 <span className={s.iconWrapper} aria-hidden="true">
-                                    <Icon icon="tracking" color={entry.tracker ? 'green' : 'gray'} className={s.icon} />
+                                    <Icon
+                                        icon="tracking"
+                                        color={entry.tracker ? 'green' : 'gray'}
+                                        className={s.icon}
+                                    />
                                 </span>
 
                                 {entry.answer_dnssec && (
@@ -115,7 +124,8 @@ export const LogCard = ({
                             onAddPersistentClient={onAddPersistentClient}
                             isBlocked={isBlockedReason(entry.reason)}
                             showAddPersistentClient={
-                                persistentClientsLoaded && !hasPersistentClient(entry, persistentClientIds)
+                                persistentClientsLoaded &&
+                                !hasPersistentClient(entry, persistentClientIds)
                             }
                             testIdPrefix="query-log-card"
                         />
@@ -134,7 +144,12 @@ export const LogCard = ({
                         {intl.getMessage('status_table_header')}
                     </span>
                     <span
-                        className={cn(s.status, theme.text.t4, theme.text.condenced, getStatusClassName(entry.reason))}
+                        className={cn(
+                            s.status,
+                            theme.text.t4,
+                            theme.text.condenced,
+                            getStatusClassName(entry.reason),
+                        )}
                     >
                         {statusLabel}
                     </span>
@@ -154,7 +169,9 @@ export const LogCard = ({
                     <span className={cn(s.fieldLabel, theme.text.t4, theme.text.condenced)}>
                         {intl.getMessage('client_ip')}
                     </span>
-                    <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>{entry.client}</span>
+                    <span className={cn(s.fieldValue, theme.text.t4, theme.text.condenced)}>
+                        {entry.client}
+                    </span>
 
                     {clientDetails && (
                         <>

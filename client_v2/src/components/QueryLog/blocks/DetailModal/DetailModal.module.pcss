@@ -95,6 +95,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex-basis: 100%;
 }
 
 .link {
@@ -125,8 +126,15 @@
 }
 
 .actionButton {
-    width: auto;
-    min-width: 200px;
+    flex: 1 1 200px;
+    min-width: 0;
+
+    @media (min-width: 1024px) {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 200px;
+        max-width: none;
+    }
 }
 
 .dialog :global(.rc-dialog-header) {
@@ -157,6 +165,7 @@
 .dialog :global(.rc-dialog-close) {
     right: 24px;
     top: 24px;
+    z-index: 2;
 
     @media (min-width: 1024px) and (min-height: 720px) {
         right: 16px;

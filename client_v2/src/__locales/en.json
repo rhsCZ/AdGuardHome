@@ -1079,7 +1079,7 @@
   "query_log_nothing_available_rotation": "Nothing available. To collect logs, edit log rotation in <a>General settings</a>",
   "allow_service": "Allow service",
   "add_to_allowlist": "Add to allowlist",
-  "notify_user_rule_added": "User rule added",
+  "notify_user_rule_added": "User rule added: <strong>%rule%</strong>",
   "notify_updated": "Updated",
   "blocked_services": "Blocked services",
   "blocked_services_desc": "Select popular websites and services that should be blocked",

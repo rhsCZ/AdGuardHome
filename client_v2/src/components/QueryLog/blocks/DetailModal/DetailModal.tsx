@@ -6,7 +6,12 @@ import { Button } from 'panel/common/ui/Button';
 import { Dialog } from 'panel/common/ui/Dialog';
 import theme from 'panel/lib/theme';
 
-import { checkBlockedService, formatElapsedMs, getServiceName, type Filter } from 'panel/helpers/helpers';
+import {
+    checkBlockedService,
+    formatElapsedMs,
+    getServiceName,
+    type Filter,
+} from 'panel/helpers/helpers';
 import { FILTERED_STATUS } from 'panel/helpers/constants';
 import {
     getQueryReasonDetails,
@@ -52,7 +57,8 @@ const formatResponses = (responses: ResponseEntry[] = []) =>
         })
         .filter(Boolean);
 
-const hasValue = (value: React.ReactNode) => value !== undefined && value !== null && value !== '' && value !== false;
+const hasValue = (value: React.ReactNode) =>
+    value !== undefined && value !== null && value !== '' && value !== false;
 
 export const DetailModal = ({
     entry,
@@ -100,9 +106,13 @@ export const DetailModal = ({
     const rowClassName = cn(s.row, theme.text.t3);
     const labelClassName = cn(s.label, theme.text.semibold);
     const renderValue = (content: React.ReactNode) => <span className={s.value}>{content}</span>;
-    const renderListValue = (content: React.ReactNode) => <div className={cn(s.value, s.responseList)}>{content}</div>;
+    const renderListValue = (content: React.ReactNode) => (
+        <div className={cn(s.value, s.responseList)}>{content}</div>
+    );
     const renderStatusValue = (content: React.ReactNode) => (
-        <span className={cn(s.value, s.statusValue, theme.text.semibold, statusClassName)}>{content}</span>
+        <span className={cn(s.value, s.statusValue, theme.text.semibold, statusClassName)}>
+            {content}
+        </span>
     );
 
     const handleBlock = () => {
@@ -128,7 +138,9 @@ export const DetailModal = ({
         <Dialog
             visible
             onClose={onClose}
-            title={<span data-testid="query-log-detail-title">{intl.getMessage('query_details')}</span>}
+            title={
+                <span data-testid="query-log-detail-title">{intl.getMessage('query_details')}</span>
+            }
             className={s.dialog}
             wrapClassName={s.wrap}
         >
@@ -140,39 +152,63 @@ export const DetailModal = ({
                                 {intl.getMessage('validated_with_dnssec')}
                             </div>
                         )}
-                        <div className={rowClassName} data-testid="query-log-detail-time" data-field="time">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-time"
+                            data-field="time"
+                        >
                             {intl.getMessage('query_log_detail_time', {
                                 value: formatLogTimeDetailed(entry.time),
                                 span: renderValue,
                             })}
                         </div>
-                        <div className={rowClassName} data-testid="query-log-detail-date" data-field="date">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-date"
+                            data-field="date"
+                        >
                             {intl.getMessage('query_log_detail_date', {
                                 value: formatLogDate(entry.time),
                                 span: renderValue,
                             })}
                         </div>
-                        <div className={rowClassName} data-testid="query-log-detail-domain" data-field="domain">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-domain"
+                            data-field="domain"
+                        >
                             {intl.getMessage('query_log_detail_domain', {
                                 value: entry.unicodeName || entry.domain,
                                 span: renderValue,
                             })}
                         </div>
                         {hasValue(entry.ecs) && (
-                            <div className={rowClassName} data-testid="query-log-detail-ecs" data-field="ecs">
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-ecs"
+                                data-field="ecs"
+                            >
                                 {intl.getMessage('query_log_detail_ecs', {
                                     value: entry.ecs,
                                     span: renderValue,
                                 })}
                             </div>
                         )}
-                        <div className={rowClassName} data-testid="query-log-detail-type" data-field="type">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-type"
+                            data-field="type"
+                        >
                             {intl.getMessage('query_log_detail_type', {
                                 value: entry.type,
                                 span: renderValue,
                             })}
                         </div>
-                        <div className={rowClassName} data-testid="query-log-detail-protocol" data-field="protocol">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-protocol"
+                            data-field="protocol"
+                        >
                             {intl.getMessage('query_log_detail_protocol', {
                                 value: protocol,
                                 span: renderValue,
@@ -182,7 +218,9 @@ export const DetailModal = ({
 
                     {entry.tracker && (
                         <div className={s.section}>
-                            <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('known_tracker')}</h3>
+                            <h3 className={cn(s.sectionTitle, theme.title.h6)}>
+                                {intl.getMessage('known_tracker')}
+                            </h3>
                             <div
                                 className={rowClassName}
                                 data-testid="query-log-detail-tracker-name"
@@ -231,22 +269,40 @@ export const DetailModal = ({
                     )}
 
                     <div className={s.section}>
-                        <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('response_details')}</h3>
-                        <div className={rowClassName} data-testid="query-log-detail-status" data-field="status">
+                        <h3 className={cn(s.sectionTitle, theme.title.h6)}>
+                            {intl.getMessage('response_details')}
+                        </h3>
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-status"
+                            data-field="status"
+                        >
                             {intl.getMessage('query_log_detail_status', {
                                 value: getQueryStatusLabel(statusKey),
                                 span: renderStatusValue,
                             })}
                         </div>
                         {reasonKey !== 'none' && (
-                            <div className={rowClassName} data-testid="query-log-detail-reason" data-field="reason">
-                                <span className={labelClassName}>{intl.getMessage('query_log_detail_reason')}</span>{' '}
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-reason"
+                                data-field="reason"
+                            >
+                                <span className={labelClassName}>
+                                    {intl.getMessage('query_log_detail_reason')}
+                                </span>{' '}
                                 {renderValue(reasonValue)}
                             </div>
                         )}
-                        <div className={rowClassName} data-testid="query-log-detail-cached" data-field="cached">
+                        <div
+                            className={rowClassName}
+                            data-testid="query-log-detail-cached"
+                            data-field="cached"
+                        >
                             {intl.getMessage('query_log_detail_served_from_cache', {
-                                value: entry.cached ? intl.getMessage('yes') : intl.getMessage('no'),
+                                value: entry.cached
+                                    ? intl.getMessage('yes')
+                                    : intl.getMessage('no'),
                                 span: renderValue,
                             })}
                         </div>
@@ -263,7 +319,11 @@ export const DetailModal = ({
                             </div>
                         )}
                         {hasValue(entry.elapsedMs) && (
-                            <div className={rowClassName} data-testid="query-log-detail-elapsed" data-field="elapsed">
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-elapsed"
+                                data-field="elapsed"
+                            >
                                 {intl.getMessage('query_log_detail_elapsed', {
                                     value: formatElapsedMs(
                                         entry.elapsedMs,
@@ -286,8 +346,14 @@ export const DetailModal = ({
                             </div>
                         )}
                         {responseList.length > 0 && (
-                            <div className={rowClassName} data-testid="query-log-detail-response" data-field="response">
-                                <span className={labelClassName}>{intl.getMessage('query_log_detail_response')}</span>{' '}
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-response"
+                                data-field="response"
+                            >
+                                <span className={labelClassName}>
+                                    {intl.getMessage('query_log_detail_response')}
+                                </span>{' '}
                                 {renderListValue(
                                     responseList.map((response, index) => (
                                         <div key={index} className={theme.text.t3}>
@@ -310,12 +376,21 @@ export const DetailModal = ({
                             </div>
                         )}
                         {(entry.rules?.length || hasValue(entry.rule)) && (
-                            <div className={rowClassName} data-testid="query-log-detail-rules" data-field="rules">
-                                <span className={labelClassName}>{intl.getMessage('query_log_detail_rules')}</span>{' '}
+                            <div
+                                className={rowClassName}
+                                data-testid="query-log-detail-rules"
+                                data-field="rules"
+                            >
+                                <span className={labelClassName}>
+                                    {intl.getMessage('query_log_detail_rules')}
+                                </span>{' '}
                                 {entry.rules?.length
                                     ? renderListValue(
                                           entry.rules.map((rule, index) => (
-                                              <div key={`${rule.text}-${index}`} className={theme.text.t3}>
+                                              <div
+                                                  key={`${rule.text}-${index}`}
+                                                  className={theme.text.t3}
+                                              >
                                                   {rule.text}
                                               </div>
                                           )),
@@ -344,7 +419,9 @@ export const DetailModal = ({
                     </div>
 
                     <div className={s.section}>
-                        <h3 className={cn(s.sectionTitle, theme.title.h6)}>{intl.getMessage('client_details')}</h3>
+                        <h3 className={cn(s.sectionTitle, theme.title.h6)}>
+                            {intl.getMessage('client_details')}
+                        </h3>
                         {hasValue(entry.client) && (
                             <div
                                 className={rowClassName}
