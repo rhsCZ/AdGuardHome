@@ -25,8 +25,8 @@ type Props = {
     processingRules: boolean;
     onDismiss?: () => void;
     onAction: (action: ResultActionKind) => void;
-    onEditRewrite?: () => void;
-    onDeleteRewrite?: () => void;
+    onEditRewrite: () => void;
+    onDeleteRewrite: () => void;
     hasMatchedRewrite?: boolean;
     hiddenActionKinds?: ResultActionKind[];
 };
@@ -75,7 +75,9 @@ export const CheckResult = ({
     const showSource = reason === FILTERED_STATUS.FILTERED_SAFE_BROWSING && Boolean(meta.source);
     const hasStandaloneResultMessage = reason ? STANDALONE_RESULT_REASONS.has(reason) : false;
     const redirectedValue = cname || (ip_addrs && ip_addrs.length > 0 ? ip_addrs.join(', ') : null);
-    const normalizedServiceName = service_name ? getServiceName(allServices, service_name) || service_name : null;
+    const normalizedServiceName = service_name
+        ? getServiceName(allServices, service_name) || service_name
+        : null;
     const hiddenActionKindSet = new Set(hiddenActionKinds);
 
     const getReasonContent = () => {
@@ -100,7 +102,12 @@ export const CheckResult = ({
         <div className={cn(s.checkResult, theme.text.t3)} data-testid="user-rules-result-card">
             <div className={s.checkResultHeader}>
                 <h3
-                    className={cn(s.checkResultTitle, theme.text.t3, theme.text.semibold, statusClassName)}
+                    className={cn(
+                        s.checkResultTitle,
+                        theme.text.t3,
+                        theme.text.semibold,
+                        statusClassName,
+                    )}
                     data-testid="user-rules-result-title"
                 >
                     {meta.title}
@@ -120,12 +127,16 @@ export const CheckResult = ({
             </div>
 
             <div className={s.checkResultItems}>
-                <div className={s.resultItem}>{intl.getMessage('user_rules_domain', { value: hostname })}</div>
+                <div className={s.resultItem}>
+                    {intl.getMessage('user_rules_domain', { value: hostname })}
+                </div>
 
                 {reasonContent && <div className={s.resultItem}>{reasonContent}</div>}
 
                 {showSource && meta.source && (
-                    <div className={s.resultItem}>{intl.getMessage('user_rules_source', { value: meta.source })}</div>
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_source', { value: meta.source })}
+                    </div>
                 )}
 
                 {normalizedServiceName && (
@@ -135,7 +146,9 @@ export const CheckResult = ({
                 )}
 
                 {meta.rule && (
-                    <div className={s.resultItem}>{intl.getMessage('user_rules_rule', { rule: meta.rule })}</div>
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_rule', { rule: meta.rule })}
+                    </div>
                 )}
 
                 {meta.tone === 'rewritten' && redirectedValue && (
@@ -145,29 +158,35 @@ export const CheckResult = ({
                 )}
 
                 {meta.tone !== 'rewritten' && cname && (
-                    <div className={s.resultItem}>{intl.getMessage('user_rules_cname', { cname })}</div>
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_cname', { cname })}
+                    </div>
                 )}
 
                 {meta.tone !== 'rewritten' && ip_addrs && ip_addrs.length > 0 && (
-                    <div className={s.resultItem}>{intl.getMessage('user_rules_ip', { ip: ip_addrs.join(', ') })}</div>
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_ip', { ip: ip_addrs.join(', ') })}
+                    </div>
                 )}
             </div>
 
             <div className={s.actionButtons}>
-                {meta.actions.filter((action) => !hiddenActionKindSet.has(action.kind)).map((action) => (
-                    <button
-                        key={action.kind}
-                        type="button"
-                        disabled={processingRules}
-                        className={s.actionLink}
-                        data-testid={`user-rules-result-action-${action.kind}`}
-                        onClick={() => onAction(action.kind)}
-                    >
-                        {action.label}
-                    </button>
-                ))}
+                {meta.actions
+                    .filter((action) => !hiddenActionKindSet.has(action.kind))
+                    .map((action) => (
+                        <button
+                            key={action.kind}
+                            type="button"
+                            disabled={processingRules}
+                            className={s.actionLink}
+                            data-testid={`user-rules-result-action-${action.kind}`}
+                            onClick={() => onAction(action.kind)}
+                        >
+                            {action.label}
+                        </button>
+                    ))}
 
-                {showRewriteActions && onEditRewrite && (
+                {showRewriteActions && (
                     <button
                         type="button"
                         disabled={processingRules}
@@ -179,7 +198,7 @@ export const CheckResult = ({
                     </button>
                 )}
 
-                {showRewriteActions && onDeleteRewrite && (
+                {showRewriteActions && (
                     <button
                         type="button"
                         disabled={processingRules}
