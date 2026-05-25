@@ -18,6 +18,10 @@ See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Fixed
+
+- Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
+
 ### Added
 
 - New `reason` query parameter in `GET /control/querylog`.  See `openapi/openapi.yaml` for the full description.
