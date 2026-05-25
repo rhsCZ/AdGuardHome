@@ -378,14 +378,20 @@ export const Dhcp = () => {
                         {intl.getMessage('dhcp_static_leases')}
                     </h2>
                     <div className={theme.form.group}>
-                        <StaticLeasesTable
-                        staticLeases={staticLeases || []}
-                        processingDeleting={!!processingDeleting}
-                        processingUpdating={!!processingUpdating}
-                        onEdit={handleEditStaticLease}
-                        onDelete={handleDeleteStaticLease}
-                        onRefresh={handleRefreshLeases}
-                    />
+                        {staticLeases && staticLeases.length > 0 ? (
+                            <StaticLeasesTable
+                                staticLeases={staticLeases || []}
+                                processingDeleting={!!processingDeleting}
+                                processingUpdating={!!processingUpdating}
+                                onEdit={handleEditStaticLease}
+                                onDelete={handleDeleteStaticLease}
+                                onRefresh={handleRefreshLeases}
+                            />
+                        ) : (
+                            <div className={cn(theme.text.t1, s.emptyTable)}>
+                                {intl.getMessage('static_dhcp_leases_not_found')}
+                            </div>
+                        )}
                     </div>
                     <div className={theme.form.buttonGroup}>
                         <Button
