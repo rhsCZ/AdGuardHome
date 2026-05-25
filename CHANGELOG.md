@@ -9,16 +9,54 @@ The format is based on [*Keep a Changelog*](https://keepachangelog.com/en/1.0.0/
 <!--
 ## [v0.108.0] – TBA
 
-## [v0.107.75] - 2026-05-01 (APPROX.)
+## [v0.107.77] - 2026-06-01 (APPROX.)
 
-See also the [v0.107.75 GitHub milestone][ms-v0.107.75].
+See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
 
-[ms-v0.107.75]: https://github.com/AdguardTeam/AdGuardHome/milestone/110?closed=1
+[ms-v0.107.77]: https://github.com/AdguardTeam/AdGuardHome/milestone/112?closed=1
 
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Added
+
+- New `reason` query parameter in `GET /control/querylog`.  See `openapi/openapi.yaml` for the full description.
+
+### Deprecated
+
+- Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
+
+<!--
+NOTE: Add new changes ABOVE THIS COMMENT.
+-->
+
+## [v0.107.76] - 2026-05-21
+
+See also the [v0.107.76 GitHub milestone][ms-v0.107.76].
+
+### Changed
+
+- Duration values in YAML configuration file now support `d` (days) units and has been updated.
+
+    **NOTE:** Any rollback to version below the `v0.107.76` should convert the values back to hours.
+
+### Fixed
+
+- DNS caching with disabled DNSSEC ([#8384]).
+
+[#8384]: https://github.com/AdguardTeam/AdGuardHome/issues/8384
+
+[ms-v0.107.76]: https://github.com/AdguardTeam/AdGuardHome/milestone/111?closed=1
+
+## [v0.107.75] - 2026-05-19
+
+See also the [v0.107.75 GitHub milestone][ms-v0.107.75].
+
 ### Security
+
+- Authorization in GLiNET mode is no longer vulnerable to path traversal attacks.
+
+- Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.3][go-1.26.3].
 
 - IDs of requests received over DoH and DoQ and forwarded to plain-DNS upstreams are now set to non-zero values to improve security.
 
@@ -47,6 +85,9 @@ NOTE: Add new changes BELOW THIS COMMENT.
 [#7046]: https://github.com/AdguardTeam/AdGuardHome/issues/7046
 [#6823]: https://github.com/AdguardTeam/AdGuardHome/issues/6823
 [#8348]: https://github.com/AdguardTeam/AdGuardHome/issues/8348
+
+[go-1.26.3]:    https://groups.google.com/g/golang-announce/c/4JylIpReDWw
+[ms-v0.107.75]: https://github.com/AdguardTeam/AdGuardHome/milestone/110?closed=1
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
@@ -3588,11 +3629,13 @@ See also the [v0.104.2 GitHub milestone][ms-v0.104.2].
 [ms-v0.104.2]: https://github.com/AdguardTeam/AdGuardHome/milestone/28?closed=1
 
 <!--
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.75...HEAD
-[v0.107.75]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...v0.107.75
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.77...HEAD
+[v0.107.77]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.76...v0.107.77
 -->
 
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...HEAD
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.76...HEAD
+[v0.107.76]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.75...v0.107.76
+[v0.107.75]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...v0.107.75
 [v0.107.74]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.73...v0.107.74
 [v0.107.73]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.72...v0.107.73
 [v0.107.72]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.71...v0.107.72

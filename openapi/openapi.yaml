@@ -235,6 +235,17 @@
           - 'rewritten'
           - 'safe_search'
           - 'processed'
+      - 'name': 'reason'
+        'in': 'query'
+        'description': >
+          Filter by response filtering reason.  Multiple reasons can be
+          provided.
+
+          NOTE: This parameter cannot be used with 'response_status' parameter.
+        'schema':
+          'type': 'array'
+          'items':
+            '$ref': '#/components/schemas/FilteringReason'
       'responses':
         '200':
           'description': 'OK.'
