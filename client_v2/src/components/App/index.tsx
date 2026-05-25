@@ -16,6 +16,7 @@ import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStora
 import { Allowlists } from 'panel/components/FilterLists/Allowlists';
 import { DNSRewrites } from 'panel/components/FilterLists/DNSRewrites';
 import { SetupGuide } from 'panel/components/SetupGuide';
+import { QueryLog } from 'panel/components/QueryLog';
 import Toasts from '../Toasts';
 import i18n from '../../i18n';
 import { THEMES } from '../../helpers/constants';
@@ -28,6 +29,7 @@ import { DnsSettings } from '../DnsSettings';
 import { BlockedServices } from '../BlockedServices';
 import { Clients } from '../Clients/Clients';
 import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
+import { UserRules } from '../UserRules';
 
 type RouteConfig = {
     path: string;
@@ -74,6 +76,11 @@ const ROUTES: RouteConfig[] = [
         exact: true,
     },
     {
+        path: '/logs',
+        component: QueryLog,
+        exact: true,
+    },
+    {
         path: '/blocked_services/schedule',
         component: InactivitySchedule,
         exact: true,
@@ -86,6 +93,11 @@ const ROUTES: RouteConfig[] = [
     {
         path: '/clients',
         component: Clients,
+        exact: true,
+    },
+    {
+        path: '/user_rules',
+        component: UserRules,
         exact: true,
     },
 ];

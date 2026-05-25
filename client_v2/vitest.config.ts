@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,7 +13,7 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['src/__tests__/**'],
+        include: ['src/__tests__/**/*.{test,spec}.{ts,tsx}'],
         setupFiles: ['src/__tests__/setup.ts'],
     },
 });
