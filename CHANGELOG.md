@@ -18,10 +18,6 @@ See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
-### Fixed
-
-- Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
-
 ### Added
 
 - New `reason` query parameter in `GET /control/querylog`.  See `openapi/openapi.yaml` for the full description.
@@ -29,6 +25,10 @@ NOTE: Add new changes BELOW THIS COMMENT.
 ### Deprecated
 
 - Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
+
+### Fixed
+
+- Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
