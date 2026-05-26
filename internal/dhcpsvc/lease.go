@@ -17,8 +17,10 @@ import (
 //
 // TODO(e.burkov):  Add validation method.
 //
-// TODO(e.burkov):  Migrate the database to use the client's DUID and IAID from
-// the Client Identifier option for DHCPv6 lease identification.
+// BUG(e.burkov):  The implementation currently relies on the client's hardware
+// address for client identification.  This approach is not recommended by RFC
+// 9915, so the database should be migrated to use the client's DUID and IAID
+// for lease identification.
 type Lease struct {
 	// IP is the IP address leased to the client.  It must not be empty.
 	IP netip.Addr

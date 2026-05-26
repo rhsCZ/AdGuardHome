@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"slices"
 	"time"
 
 	"github.com/AdguardTeam/golibs/validate"
@@ -27,6 +28,8 @@ type iaNAOption struct {
 
 	// iaid is the Identity Association IDentifier, a 4-octet value uniquely
 	// identifying this IA within the client.
+	//
+	// TODO(e.burkov):  Add new type.
 	iaid uint32
 
 	// t1 is the time after which the client must contact the same server to
@@ -110,7 +113,7 @@ func (opt iaNAOption) Encode() (iaOpt layers.DHCPv6Option) {
 	data = binary.BigEndian.AppendUint32(data, uint32(opt.t2.Seconds()))
 
 	for _, addr := range opt.nested {
-		data = addr.append(data)
+		data = addr.appendTo(data)
 	}
 
 	return layers.NewDHCPv6Option(layers.DHCPv6OptIANA, data)
@@ -180,9 +183,9 @@ func (ia *iaAddrOption) UnmarshalBinary(data []byte) (err error) {
 	return nil
 }
 
-// append returns the data portion of the IA Address option encoding,
-// suitable for use as a nested option inside an IA_NA.
-func (ia iaAddrOption) append(orig []byte) (data []byte) {
+// appendTo returns the data portion of the IA Address option encoding, suitable
+// for use as a nested option inside an IA_NA.
+func (ia iaAddrOption) appendTo(orig []byte) (data []byte) {
 	data = orig
 
 	data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptIAAddr))
@@ -200,7 +203,7 @@ func (ia iaAddrOption) append(orig []byte) (data []byte) {
 // newServerDUID creates a DUID-LL (Link-Layer Address) from the given MAC
 // address per RFC 9915 §11.4.  The result is deterministic: the same MAC
 // address always produces the same DUID, satisfying the stability requirement
-// of §11.
+// of §11.  mac must be a valid MAC address according to [netutil.ValidateMAC].
 func newServerDUID(mac net.HardwareAddr) (duid *layers.DHCPv6DUID) {
 	return &layers.DHCPv6DUID{
 		Type:             layers.DHCPv6DUIDTypeLL,
@@ -233,11 +236,11 @@ func serverDUID6(opts layers.DHCPv6Options) (duid []byte, ok bool) {
 	return findOption6(opts, layers.DHCPv6OptServerID)
 }
 
-// solMaxRTSeconds is the recommended SOL_MAX_RT value sent to clients,
-// in seconds.  It caps the client's solicit retransmission interval.
+// solMaxRT is the recommended SOL_MAX_RT value sent to clients.  It caps the
+// client's solicit retransmission interval.
 //
 // See RFC 9915 Section 21.24.
-const solMaxRTSeconds = 3600
+const solMaxRT = 1 * time.Hour
 
 // newPreferenceOption returns a DHCPv6 Preference option with the given value.
 //
@@ -255,9 +258,19 @@ func newSOLMaxRTOption(rtt time.Duration) (opt layers.DHCPv6Option) {
 	return layers.NewDHCPv6Option(layers.DHCPv6OptSolMaxRt, data)
 }
 
+// newStatusCodeOption returns a DHCPv6 Status Code option with the given
+// status.
+//
+// See RFC 9915 Section 21.13.
+func newStatusCodeOption(status layers.DHCPv6StatusCode) (opt layers.DHCPv6Option) {
+	data := binary.BigEndian.AppendUint16(nil, uint16(status))
+
+	return layers.NewDHCPv6Option(layers.DHCPv6OptStatusCode, data)
+}
+
 // newIANAWithStatus returns a DHCPv6 IA_NA option carrying only a Status Code
-// nested option, with T1 and T2 set to zero.  It is used when the server
-// cannot assign an address to the requested IA.
+// nested option, with T1 and T2 set to zero.  It is used when the server can't
+// assign an address to the requested IA.
 //
 // See RFC 9915 Sections 21.4 and 21.13.
 func newIANAWithStatus(iaid uint32, status layers.DHCPv6StatusCode) (opt layers.DHCPv6Option) {
@@ -279,4 +292,24 @@ func newIANAWithStatus(iaid uint32, status layers.DHCPv6StatusCode) (opt layers.
 	data = binary.BigEndian.AppendUint16(data, uint16(status))
 
 	return layers.NewDHCPv6Option(layers.DHCPv6OptIANA, data)
+}
+
+// requestedOptions6 returns the list of option codes in the Option Request
+// option of msg, if any.  msg must not be nil.
+func requestedOptions6(msg *layers.DHCPv6) (codes []layers.DHCPv6Opt) {
+	data, ok := findOption6(msg.Options, layers.DHCPv6OptOro)
+	if !ok {
+		return nil
+	}
+
+	for codeData := range slices.Chunk(data, 2) {
+		if len(codeData) != 2 {
+			return codes
+		}
+
+		code := binary.BigEndian.Uint16(codeData)
+		codes = append(codes, layers.DHCPv6Opt(code))
+	}
+
+	return codes
 }

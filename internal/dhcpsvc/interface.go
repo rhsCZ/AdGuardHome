@@ -163,8 +163,8 @@ func (iface *netInterface) nextIP() (ip netip.Addr) {
 	return ip
 }
 
-// findExpiredLease returns the first found lease that has expired.  indexMu
-// must be locked.
+// findExpiredLease returns the first found lease that has expired.
+// iface.indexMu must be locked.
 func (iface *netInterface) findExpiredLease(now time.Time) (l *Lease) {
 	for _, lease := range iface.leases {
 		if !lease.IsStatic && lease.Expiry.Before(now) {
@@ -186,6 +186,8 @@ func (iface *netInterface) allocateLease(
 	checker addressChecker,
 	clock timeutil.Clock,
 ) (lease *Lease, err error) {
+	key := macToKey(mac)
+
 	for {
 		lease, err = iface.reserveLease(ctx, mac, clock)
 		if err != nil {
@@ -199,7 +201,7 @@ func (iface *netInterface) allocateLease(
 		}
 
 		if ok {
-			iface.leases[macToKey(mac)] = lease
+			iface.leases[key] = lease
 
 			off, _ := iface.addrSpace.offset(lease.IP)
 			iface.leasedOffsets.set(off, true)
@@ -218,12 +220,13 @@ func (iface *netInterface) allocateLease(
 
 // reserveLease reserves a lease for a client by its MAC-address.  lease is nil
 // if a new lease can't be allocated.  mac must be a valid according to
-// [netutil.ValidateMAC].  index mutex must be locked.
+// [netutil.ValidateMAC].  iface.indexMu mutex must be locked.
 func (iface *netInterface) reserveLease(
 	ctx context.Context,
 	mac net.HardwareAddr,
 	clock timeutil.Clock,
 ) (lease *Lease, err error) {
+	// TODO(e.burkov):  Limit the number of attempts.
 	nextIP := iface.nextIP()
 	if nextIP != (netip.Addr{}) {
 		lease = &Lease{

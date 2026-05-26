@@ -84,32 +84,35 @@ func (iface *dhcpInterfaceV6) handleSolicit(
 	iface.common.indexMu.Lock()
 	defer iface.common.indexMu.Unlock()
 
-	respIANAs, leases, allOK := iface.handleSolicitOpts(ctx, fd.ether.SrcMAC, req)
-
-	if len(respIANAs) == 0 {
-		l.DebugContext(ctx, "no ia_na in solicit; ignoring")
-
-		return nil
-	}
-
-	_, hasRapidCommit := findOption6(req.Options, layers.DHCPv6OptRapidCommit)
+	lease, iaid := iface.allocateForSolicit(ctx, fd.ether.SrcMAC, req)
 
 	resp := &layers.DHCPv6{
 		MsgType:       layers.DHCPv6MsgTypeAdverstise,
 		TransactionID: req.TransactionID,
-		Options:       newSolicitRespOpts(fd, cliID, respIANAs),
 	}
 
-	if !hasRapidCommit || !allOK {
+	if lease == nil {
+		l.DebugContext(ctx, "no ia_na in solicit; responding with no addresses")
+		resp.Options = iface.newSolicitRespOpts(fd, req, cliID, iaid, nil, false)
+
 		return respond6(fd, resp)
 	}
 
-	err = iface.commitRapidly(ctx, leases)
-	if err != nil {
-		l.WarnContext(ctx, "committing rapid leases", slogutil.KeyError, err)
+	_, isRapidCommit := findOption6(req.Options, layers.DHCPv6OptRapidCommit)
+
+	if !isRapidCommit {
+		resp.Options = iface.newSolicitRespOpts(fd, req, cliID, iaid, lease, false)
+
+		return respond6(fd, resp)
 	}
 
-	resp.Options = append(resp.Options, layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, nil))
+	err = iface.commitRapidly(ctx, lease)
+	if err != nil {
+		l.WarnContext(ctx, "committing rapid leases", slogutil.KeyError, err)
+		isRapidCommit = false
+	}
+
+	resp.Options = iface.newSolicitRespOpts(fd, req, cliID, iaid, lease, isRapidCommit)
 
 	return respond6(fd, resp)
 }
