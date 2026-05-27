@@ -379,7 +379,13 @@ func respond6(fd *frameData6, resp *layers.DHCPv6) (err error) {
 		NextHeader: layers.IPProtocolUDP,
 		HopLimit:   defaultHopLimit,
 		SrcIP:      fd.localAddr.AsSlice(),
-		DstIP:      fd.ip.SrcIP,
+		// If the original message was received directly by the server, the
+		// server unicasts the Advertise or Reply message directly to the client
+		// using the address in the source address field from the IP datagram in
+		// which the original message was received.
+		//
+		// See RFC 9915 Section 18.3.10.
+		DstIP: fd.ip.SrcIP,
 	}
 
 	udp := &layers.UDP{
@@ -388,7 +394,10 @@ func respond6(fd *frameData6, resp *layers.DHCPv6) (err error) {
 	}
 
 	// It only returns an error if the network layer is not an IP layer.
-	_ = udp.SetNetworkLayerForChecksum(ip)
+	err = udp.SetNetworkLayerForChecksum(ip)
+	if err != nil {
+		panic(err)
+	}
 
 	err = respond(fd.device, eth, udp, ip, resp)
 	if err != nil {

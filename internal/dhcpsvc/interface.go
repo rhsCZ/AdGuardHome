@@ -7,11 +7,11 @@ import (
 	"net"
 	"net/netip"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/AdguardTeam/golibs/errors"
+	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/timeutil"
 )
 
@@ -248,18 +248,12 @@ func (iface *netInterface) reserveLease(
 		return nil, errors.Error("no addresses available to lease")
 	}
 
-	// TODO(e.burkov):  Move validation from index methods into server's
-	// methods and use index here.
-	delete(iface.leases, macToKey(lease.HWAddr))
-
-	idx := iface.index
-	delete(idx.byAddr, lease.IP)
-	delete(idx.byName, strings.ToLower(lease.Hostname))
-
-	err = idx.dbStore(ctx, iface.logger)
+	err = iface.index.remove(ctx, iface.logger, lease, iface)
 	if err != nil {
-		// Don't wrap the error since it's informative enough as is.
-		return nil, err
+		// TODO(e.burkov):  Reconsider the severity of this error, it actually
+		// seems impossible to get the error about the existing lease from the
+		// method.
+		iface.logger.DebugContext(ctx, "deleting expired lease", slogutil.KeyError, err)
 	}
 
 	lease.HWAddr = slices.Clone(mac)

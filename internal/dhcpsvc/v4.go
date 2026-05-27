@@ -439,7 +439,10 @@ func newIPv4UDPLayers(fd *frameData4, req, resp *layers.DHCPv4) (ip *layers.IPv4
 	}
 
 	// It only returns an error if the network layer is not an IP layer.
-	_ = udp.SetNetworkLayerForChecksum(ip)
+	err := udp.SetNetworkLayerForChecksum(ip)
+	if err != nil {
+		panic(err)
+	}
 
 	return ip, udp
 }
