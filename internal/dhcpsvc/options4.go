@@ -425,7 +425,7 @@ func clientIdentifier4(msg *layers.DHCPv4) (id []byte) {
 // requestedOptions4 returns the list of options requested in DHCPv4 message, if
 // any.
 //
-// TODO(e.burkov):  Use [iter.Seq1].
+// TODO(e.burkov):  Use [iter.Seq].
 func requestedOptions4(msg *layers.DHCPv4) (opts []layers.DHCPOpt) {
 	for _, opt := range msg.Options {
 		l := len(opt.Data)

@@ -10,6 +10,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
@@ -400,7 +401,9 @@ func respond6(fd *frameData6, resp *layers.DHCPv6) (err error) {
 // allocateForSolicit allocates a lease for the first IA_NA option in req and
 // returns it.  It returns a zero iaid if there is no IA_NA option, if the
 // option is malformed.  lease is nil if there is no address available for
-// leasing.
+// leasing.  mac must be a valid MAC address according to [netutil.ValidateMAC],
+// req must be a valid DHCPv6 message of SOLICIT type, iface.common.indexMu
+// mutex must be locked.
 //
 // TODO(e.burkov):  Support allocating several leases at a time when the
 // database will migrate, see the BUG at [Lease]'s documentation.
@@ -501,16 +504,26 @@ func (iface *dhcpInterfaceV6) iaNAFromLease(lease *Lease, iaid uint32) (iana lay
 	}.Encode()
 }
 
-// commitRapidly commits the leases allocated for a SOLICIT with Rapid Commit.
-// It returns an error if at least a single lease couldn't be committed.
+// commit updates the lease allocated previously via a SOLICIT, or during
+// handling the Rapid Commit option, assigning a hostname according to req.  It
+// deallocates the lease if the one fails to be committed.  lease must be
+// non-nil and allocated for the client corresponding to req,
 // iface.common.indexMu mutex must be locked.
 //
 // TODO(e.burkov):  Support committing several leases at a time when the
 // database will migrate, see the BUG at [Lease]'s documentation.
-func (iface *dhcpInterfaceV6) commitRapidly(ctx context.Context, lease *Lease) (err error) {
-	l := iface.common.logger
+func (iface *dhcpInterfaceV6) commit(
+	ctx context.Context,
+	req *layers.DHCPv6,
+	lease *Lease,
+) (err error) {
+	if hostname := clientFQDN6(req); hostname != "" {
+		lease.Hostname = hostname
+	} else {
+		lease.Hostname = aghnet.GenerateHostname(lease.IP)
+	}
 
-	err = iface.common.index.add(ctx, l, lease, iface.common)
+	err = iface.common.index.update(ctx, iface.common.logger, lease, iface.common)
 	if err != nil {
 		rmErr := iface.common.removeLease(lease)
 		err = errors.WithDeferred(err, rmErr)

@@ -127,13 +127,18 @@ func (iface *netInterface) removeLease(l *Lease) (err error) {
 }
 
 // blockLease marks l as blocked for a configured TTL, as reported by
-// [Lease.IsBlocked].  It also removes the lease from iface.  iface.indexMu must
-// be locked, l must not be nil.
+// [Lease.IsBlocked].  It also removes the lease from iface, but leaves it in
+// the index.  iface.indexMu must be locked, l and clock must not be nil.
 func (iface *netInterface) blockLease(
 	ctx context.Context,
 	l *Lease,
 	clock timeutil.Clock,
 ) (err error) {
+	err = iface.removeLease(l)
+	if err != nil {
+		return fmt.Errorf("removing lease: %w", err)
+	}
+
 	l.HWAddr = blockedHardwareAddr
 	l.Hostname = ""
 	l.Expiry = clock.Now().Add(iface.leaseTTL)

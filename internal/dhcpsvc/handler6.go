@@ -106,7 +106,7 @@ func (iface *dhcpInterfaceV6) handleSolicit(
 		return respond6(fd, resp)
 	}
 
-	err = iface.commitRapidly(ctx, lease)
+	err = iface.commit(ctx, req, lease)
 	if err != nil {
 		l.WarnContext(ctx, "committing rapid leases", slogutil.KeyError, err)
 		isRapidCommit = false

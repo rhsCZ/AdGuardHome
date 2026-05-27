@@ -296,6 +296,8 @@ func newIANAWithStatus(iaid uint32, status layers.DHCPv6StatusCode) (opt layers.
 
 // requestedOptions6 returns the list of option codes in the Option Request
 // option of msg, if any.  msg must not be nil.
+//
+// TODO(e.burkov):  Use [iter.Seq].
 func requestedOptions6(msg *layers.DHCPv6) (codes []layers.DHCPv6Opt) {
 	data, ok := findOption6(msg.Options, layers.DHCPv6OptOro)
 	if !ok {
@@ -312,4 +314,21 @@ func requestedOptions6(msg *layers.DHCPv6) (codes []layers.DHCPv6Opt) {
 	}
 
 	return codes
+}
+
+// clientFQDN6 returns the client's fully qualified domain name from the Client
+// FQDN option of msg, if any.
+//
+// See RFC 4704.
+func clientFQDN6(msg *layers.DHCPv6) (fqdn string) {
+	data, ok := findOption6(msg.Options, layers.DHCPv6OptClientFQDN)
+	if !ok {
+		return ""
+	}
+
+	// The first byte of the FQDN option data is the flags field, which we
+	// intentionally ignore.
+	//
+	// See RFC 4704 Section 4.1.
+	return string(data[1:])
 }
