@@ -18,6 +18,7 @@ import { DNSRewrites } from 'panel/components/FilterLists/DNSRewrites';
 import { SetupGuide } from 'panel/components/SetupGuide';
 import { Dashboard } from 'panel/components/Dashboard';
 import { Dhcp } from 'panel/components/Dhcp';
+import { QueryLog } from 'panel/components/QueryLog';
 import Toasts from '../Toasts';
 import i18n from '../../i18n';
 import { THEMES } from '../../helpers/constants';
@@ -29,6 +30,7 @@ import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
 import { BlockedServices } from '../BlockedServices';
 import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
+import { UserRules } from '../UserRules';
 
 type RouteConfig = {
     path: string;
@@ -85,6 +87,11 @@ const ROUTES: RouteConfig[] = [
         exact: true,
     },
     {
+        path: '/logs',
+        component: QueryLog,
+        exact: true,
+    },
+    {
         path: '/blocked_services/schedule',
         component: InactivitySchedule,
         exact: true,
@@ -94,6 +101,11 @@ const ROUTES: RouteConfig[] = [
         component: BlockedServices,
         exact: true,
     },
+    {
+        path: '/user_rules',
+        component: UserRules,
+        exact: true,
+    }
 ];
 
 const App = () => {
