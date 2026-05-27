@@ -253,10 +253,6 @@ export const Dhcp = () => {
                 </h1>
 
                 <div className={s.settingsColumn}>
-                    <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
-                        {intl.getMessage('dhcp_title')}
-                    </h2>
-
                     <SwitchGroup
                         id="dhcp_toggle"
                         title={intl.getMessage('dhcp_title')}
