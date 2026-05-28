@@ -1,0 +1,372 @@
+import React, { useCallback, useEffect, useMemo, ChangeEvent } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory, useParams } from 'react-router-dom';
+import cn from 'clsx';
+import intl from 'panel/common/intl';
+import { Input } from 'panel/common/controls/Input';
+import { Select } from 'panel/common/controls/Select';
+import { IOption } from 'panel/lib/helpers/utils';
+import { Textarea } from 'panel/common/controls/Textarea';
+import { Button } from 'panel/common/ui/Button';
+import { Icon } from 'panel/common/ui/Icon';
+import { Link } from 'panel/common/ui/Link';
+import { PageLoader } from 'panel/common/ui/Loader';
+import { SwitchGroup } from 'panel/common/ui/SettingsGroup';
+import { RootState, Client } from 'panel/initialState';
+import {
+    updateClientFormField,
+    clearClientForm,
+    saveClient,
+    initClientForm,
+} from 'panel/actions/clientForm';
+import { getClients } from 'panel/actions';
+import { RoutePath, Paths } from 'panel/components/Routes/Paths';
+import theme from 'panel/lib/theme';
+
+import { ClientsHeader } from './blocks/ClientsHeader';
+import { Identifiers } from './blocks/Identifiers/Identifiers';
+
+import s from './AddClient.module.pcss';
+
+export const AddClient = () => {
+    const dispatch = useDispatch();
+    const history = useHistory();
+    const { clientName: urlClientName } = useParams<{ clientName?: string }>();
+    const form = useSelector((state: RootState) => state.clientForm);
+    const dashboard = useSelector((state: RootState) => state.dashboard);
+    const clients = dashboard?.clients || [];
+    const isEdit = form.mode === 'edit';
+
+    useEffect(() => {
+        dispatch(getClients());
+    }, [dispatch]);
+
+    // When on the edit route and clients are loaded, initialize the form
+    // from the URL param. This handles page refreshes on the edit page.
+    useEffect(() => {
+        if (!urlClientName || !clients.length) {
+            return;
+        }
+
+        // Only auto-initialize if the form is in its default add state
+        if (form.mode !== 'add' || form.originalName) {
+            return;
+        }
+
+        const decodedName = decodeURIComponent(urlClientName);
+        const client = clients.find((c: Client) => c.name === decodedName);
+
+        if (!client) {
+            dispatch(clearClientForm());
+            history.replace(Paths.Clients);
+            return;
+        }
+
+        dispatch(
+            initClientForm({
+                name: client.name,
+                ids: client.ids || [''],
+                tags: client.tags || [],
+                use_global_settings: client.use_global_settings || false,
+                filtering_enabled: client.filtering_enabled || false,
+                safebrowsing_enabled: client.safebrowsing_enabled || false,
+                parental_enabled: client.parental_enabled || false,
+                safe_search: client.safe_search || {
+                    enabled: false,
+                    google: false,
+                    youtube: false,
+                    bing: false,
+                    duckduckgo: false,
+                    yandex: false,
+                    pixabay: false,
+                },
+                ignore_querylog: client.ignore_querylog || false,
+                ignore_statistics: client.ignore_statistics || false,
+                blocked_services: client.blocked_services || [],
+                use_global_blocked_services: client.use_global_blocked_services || false,
+                blocked_services_schedule: client.blocked_services_schedule || {
+                    time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                },
+                upstreams: (client.upstreams || []).join('\n'),
+                upstreams_cache_enabled: client.upstreams_cache_enabled || false,
+                upstreams_cache_size: client.upstreams_cache_size || 0,
+            }),
+        );
+    }, [urlClientName, clients, form.mode, form.originalName, dispatch, history]);
+
+    const handleCancel = useCallback(() => {
+        dispatch(clearClientForm());
+        history.push(Paths.Clients);
+    }, [dispatch, history]);
+
+    const handleSave = useCallback(async () => {
+        const result = await dispatch(saveClient());
+        if (result) {
+            history.push(Paths.Clients);
+        }
+    }, [dispatch, history]);
+
+    const handleUseGlobalSettings = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            dispatch(
+                updateClientFormField({
+                    field: 'use_global_settings',
+                    value: e.target.checked,
+                }),
+            );
+        },
+        [dispatch],
+    );
+
+    const handleUpstreamsCacheEnabled = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            dispatch(
+                updateClientFormField({
+                    field: 'upstreams_cache_enabled',
+                    value: e.target.checked,
+                }),
+            );
+        },
+        [dispatch],
+    );
+
+    const tagOptions = useMemo(
+        () =>
+            (dashboard.supportedTags || []).map((tag: string) => ({
+                label: tag,
+                value: tag,
+            })),
+        [dashboard.supportedTags],
+    );
+    const tagValue = useMemo(
+        () => form.tags.map((t: string) => ({ label: t, value: t })),
+        [form.tags],
+    );
+
+    const handleTagChange = useCallback(
+        (selected: IOption<string> | IOption<string>[] | null) => {
+            const tags = Array.isArray(selected) ? selected.map((s) => s.value) : [];
+            dispatch(updateClientFormField({ field: 'tags', value: tags }));
+        },
+        [dispatch],
+    );
+
+    const protectionRoute = isEdit ? RoutePath.ClientsEditProtection : RoutePath.ClientsProtection;
+    const blockedServicesRoute = isEdit
+        ? RoutePath.ClientsEditBlockedServices
+        : RoutePath.ClientsBlockedServices;
+    const routeProps = isEdit ? { clientName: encodeURIComponent(form.originalName) } : undefined;
+
+    return (
+        <div className={cn(theme.layout.container, s.containerOverride)} data-testid="client-form">
+            <div
+                className={cn(
+                    theme.layout.containerIn,
+                    theme.layout.containerIn_one_col,
+                    s.pageWrapper,
+                )}
+            >
+                <ClientsHeader currentTitle={intl.getMessage('clients_add')} />
+
+                {form.processingSave && <PageLoader />}
+
+                {!form.processingSave && (
+                    <>
+                        <div className={s.fieldGroupInput}>
+                            <Input
+                                id="client-name"
+                                data-testid="client-form-name"
+                                type="text"
+                                value={form.name}
+                                onChange={(e) =>
+                                    dispatch(
+                                        updateClientFormField({
+                                            field: 'name',
+                                            value: e.target.value,
+                                        }),
+                                    )
+                                }
+                                placeholder={intl.getMessage('clients_add_default_name')}
+                                label={intl.getMessage('clients_add_name')}
+                                size="large"
+                                error={!!form.formErrors.name}
+                                errorMessage={
+                                    typeof form.formErrors.name === 'string'
+                                        ? form.formErrors.name
+                                        : undefined
+                                }
+                            />
+                        </div>
+
+                        <div className={s.section}>
+                            <Identifiers />
+                        </div>
+
+                        <div className={s.section}>
+                            <div className={cn(theme.text.t2, theme.text.semibold, s.fieldLabel)}>
+                                {intl.getMessage('clients_tags')}
+                            </div>
+                            <div className={cn(theme.text.t3, s.fieldDesc)}>
+                                {intl.getMessage('clients_tags_desc', {
+                                    a: (text: string) => (
+                                        <a
+                                            href="https://adguard-dns.io/kb/general/dns-filtering-syntax/#ctag"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {text}
+                                        </a>
+                                    ),
+                                })}
+                            </div>
+                            <Select
+                                options={tagOptions}
+                                value={tagValue}
+                                onChange={handleTagChange}
+                                isMulti
+                                size="responsive"
+                                height="big"
+                            />
+                        </div>
+
+                        <h2
+                            className={cn(
+                                theme.layout.subtitle,
+                                theme.title.h5,
+                                theme.title.h4_tablet,
+                            )}
+                        >
+                            {intl.getMessage('settings')}
+                        </h2>
+
+                        <SwitchGroup
+                            id="use-global-settings"
+                            title={intl.getMessage('clients_use_global_settings')}
+                            description={intl.getMessage('clients_use_global_settings_desc')}
+                            checked={form.use_global_settings}
+                            onChange={handleUseGlobalSettings}
+                        />
+
+                        <Link to={protectionRoute} props={routeProps} className={s.navLink}>
+                            <div className={s.navItem}>
+                                <div className={s.navItemContent}>
+                                    <div
+                                        className={cn(
+                                            theme.text.t2,
+                                            theme.text.semibold,
+                                            s.navTitle,
+                                        )}
+                                    >
+                                        {intl.getMessage('clients_protection')}
+                                    </div>
+                                    <div className={cn(theme.text.t3, s.navDesc)}>
+                                        {intl.getMessage('clients_protection_desc')}
+                                    </div>
+                                </div>
+                                <Icon icon="arrow" color="gray" />
+                            </div>
+                        </Link>
+
+                        <Link to={blockedServicesRoute} props={routeProps} className={s.navLink}>
+                            <div className={s.navItem}>
+                                <div className={s.navItemContent}>
+                                    <div
+                                        className={cn(
+                                            theme.text.t2,
+                                            theme.text.semibold,
+                                            s.navTitle,
+                                        )}
+                                    >
+                                        {intl.getMessage('blocked_services')}
+                                    </div>
+                                    <div className={cn(theme.text.t3, s.navDesc)}>
+                                        {intl.getMessage('blocked_services_desc')}
+                                    </div>
+                                </div>
+                                <Icon icon="arrow" color="gray" />
+                            </div>
+                        </Link>
+
+                        <h2
+                            className={cn(
+                                theme.layout.subtitle,
+                                theme.title.h5,
+                                theme.title.h4_tablet,
+                            )}
+                        >
+                            {intl.getMessage('upstream_dns_servers_title')}
+                        </h2>
+
+                        <div className={s.section}>
+                            <Textarea
+                                id="client-upstreams"
+                                value={form.upstreams}
+                                onChange={(e) =>
+                                    dispatch(
+                                        updateClientFormField({
+                                            field: 'upstreams',
+                                            value: e.target.value,
+                                        }),
+                                    )
+                                }
+                                placeholder={intl.getMessage('upstream_dns_placeholder')}
+                                label={intl.getMessage('clients_upstreams_desc')}
+                                rows={4}
+                            />
+                        </div>
+
+                        <SwitchGroup
+                            id="use-dns-cache"
+                            title={intl.getMessage('clients_use_dns_cache')}
+                            checked={form.upstreams_cache_enabled}
+                            onChange={handleUpstreamsCacheEnabled}
+                        >
+                            {form.upstreams_cache_enabled && (
+                                <div className={s.section}>
+                                    <Input
+                                        id="dns-cache-size"
+                                        type="text"
+                                        value={String(form.upstreams_cache_size)}
+                                        onChange={(e) =>
+                                            dispatch(
+                                                updateClientFormField({
+                                                    field: 'upstreams_cache_size',
+                                                    value: Number(e.target.value) || 0,
+                                                }),
+                                            )
+                                        }
+                                        placeholder={intl.getMessage(
+                                            'clients_dns_cache_size_placeholder',
+                                        )}
+                                        label={intl.getMessage('clients_dns_cache_size')}
+                                        size="large"
+                                    />
+                                </div>
+                            )}
+                        </SwitchGroup>
+
+                        <div className={s.actions}>
+                            <Button
+                                variant="primary"
+                                size="small"
+                                onClick={handleSave}
+                                disabled={form.processingSave}
+                                data-testid="client-form-save"
+                            >
+                                {intl.getMessage('save_btn')}
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                onClick={handleCancel}
+                                data-testid="client-form-cancel"
+                            >
+                                {intl.getMessage('cancel_btn')}
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};

@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MODAL_TYPE } from 'panel/helpers/constants';
 import type { RootState } from 'panel/initialState';
 import { initialState } from 'panel/initialState';
 import { Clients } from 'panel/components/Clients/Clients';
@@ -15,6 +14,7 @@ const mocks = vi.hoisted(() => ({
     getStats: vi.fn(() => ({ type: 'GET_STATS' })),
     toggleClientModal: vi.fn(() => ({ type: 'TOGGLE_CLIENT_MODAL' })),
     deleteClient: vi.fn(() => ({ type: 'DELETE_CLIENT' })),
+    initClientForm: vi.fn(() => ({ type: 'INIT_CLIENT_FORM' })),
 }));
 
 vi.mock('react-redux', () => ({
@@ -36,6 +36,24 @@ vi.mock('panel/actions/clients', () => ({
     deleteClient: mocks.deleteClient,
 }));
 
+vi.mock('panel/actions/clientForm', () => ({
+    initClientForm: mocks.initClientForm,
+}));
+
+vi.mock('react-router-dom', () => ({
+    HashRouter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    Route: ({ component: Component }: { component: React.ComponentType }) => (
+        <>{Component ? <Component /> : null}</>
+    ),
+    MemoryRouter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+        <a href={to}>{children}</a>
+    ),
+    useHistory: () => ({
+        push: vi.fn(),
+    }),
+}));
+
 describe('Clients Page', () => {
     beforeEach(() => {
         mocks.state = JSON.parse(JSON.stringify(initialState));
@@ -44,6 +62,7 @@ describe('Clients Page', () => {
         mocks.getStats.mockClear();
         mocks.toggleClientModal.mockClear();
         mocks.deleteClient.mockClear();
+        mocks.initClientForm.mockClear();
         localStorage.clear();
     });
 
@@ -116,9 +135,7 @@ describe('Clients Page', () => {
 
         await user.click(screen.getByRole('button', { name: 'Add Client' }));
 
-        expect(mocks.toggleClientModal).toHaveBeenCalledWith({
-            type: MODAL_TYPE.ADD_CLIENT,
-        });
+        expect(mocks.initClientForm).toHaveBeenCalledWith(null);
     });
 
     it('renders persistent client rows with correct data', async () => {
@@ -254,13 +271,17 @@ describe('Clients Page', () => {
 
         render(<Clients />);
 
-        const whoisTriggers = await screen.findAllByText('WHOIS');
+        // The WHOIS cell now shows country code "DE" inline — hover it to show tooltip
+        const countryLabel = await screen.findByText('DE');
 
-        await user.hover(whoisTriggers[whoisTriggers.length - 1]);
+        await user.hover(countryLabel);
 
         await waitFor(() => {
-            expect(screen.getByText('DE')).toBeInTheDocument();
-            expect(screen.getByText('Hetzner')).toBeInTheDocument();
+            // Tooltip title appears on hover
+            expect(screen.getByText('Client details')).toBeInTheDocument();
+            // Hetzner appears both inline and in tooltip
+            const hetznerElements = screen.getAllByText(/Hetzner/);
+            expect(hetznerElements.length).toBeGreaterThanOrEqual(2);
         });
     });
 
@@ -281,7 +302,112 @@ describe('Clients Page', () => {
 
         await waitFor(() => {
             expect(screen.getByText('10.0.0.6')).toBeInTheDocument();
-            expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+        });
+    });
+
+    it('allows sorting persistent clients table by name', async () => {
+        const user = userEvent.setup();
+
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [
+            {
+                name: 'Zebra',
+                ids: ['10.0.0.1'],
+                use_global_settings: true,
+                filtering_enabled: true,
+                parental_enabled: false,
+                safebrowsing_enabled: false,
+                safe_search: {},
+                safesearch_enabled: false,
+                use_global_blocked_services: true,
+                blocked_services: [],
+                blocked_services_schedule: { time_zone: 'UTC' },
+                upstreams: [],
+                upstreams_cache_enabled: false,
+                upstreams_cache_size: 0,
+                tags: [],
+                ignore_querylog: false,
+                ignore_statistics: false,
+            },
+            {
+                name: 'Alpha',
+                ids: ['10.0.0.2'],
+                use_global_settings: false,
+                filtering_enabled: true,
+                parental_enabled: false,
+                safebrowsing_enabled: false,
+                safe_search: {},
+                safesearch_enabled: false,
+                use_global_blocked_services: false,
+                blocked_services: [],
+                blocked_services_schedule: { time_zone: 'UTC' },
+                upstreams: ['1.1.1.1'],
+                upstreams_cache_enabled: false,
+                upstreams_cache_size: 0,
+                tags: [],
+                ignore_querylog: false,
+                ignore_statistics: false,
+            },
+        ];
+        mocks.state.dashboard.autoClients = [];
+        mocks.state.stats.normalizedTopClients = {
+            auto: {},
+            configured: { Zebra: 100, Alpha: 200 },
+        };
+
+        render(<Clients />);
+
+        // Before sorting: Zebra appears first (API order)
+        const rowsBefore = screen.getAllByText(/Zebra|Alpha/);
+        const firstRowBefore = rowsBefore[0].closest('[class*="tableRow"]');
+        expect(firstRowBefore).toHaveTextContent('Zebra');
+
+        // Click the "Name" header to sort ascending
+        // getAllByText matches both header cells and mobile cell labels;
+        // persistent table header renders first in DOM
+        const nameHeaders = screen.getAllByText('Name');
+        const persistentNameHeader = nameHeaders[0];
+        await user.click(persistentNameHeader);
+
+        // After sorting ascending, Alpha should appear before Zebra
+        await waitFor(() => {
+            const rows = screen.getAllByText(/Alpha|Zebra/);
+            const firstRow = rows[0].closest('[class*="tableRow"]');
+            expect(firstRow).toHaveTextContent('Alpha');
+        });
+    });
+
+    it('allows sorting runtime clients table by requests count', async () => {
+        const user = userEvent.setup();
+
+        mocks.state.dashboard.processingClients = false;
+        mocks.state.stats.processingStats = false;
+        mocks.state.dashboard.clients = [];
+        mocks.state.dashboard.autoClients = [
+            { ip: '10.0.0.1', name: 'host-a', source: 'DHCP', whois_info: {} },
+            { ip: '10.0.0.2', name: 'host-b', source: 'rDNS', whois_info: {} },
+        ];
+        mocks.state.stats.normalizedTopClients = {
+            auto: { '10.0.0.1': 10, '10.0.0.2': 500 },
+            configured: {},
+        };
+
+        render(<Clients />);
+
+        // Click "Requests" header to sort ascending (lowest first)
+        // getAllByText matches both header cells and mobile cell labels;
+        // persistent table header renders first in DOM, runtime second
+        const requestsHeaders = screen.getAllByText('Requests');
+        const runtimeRequestsHeader = requestsHeaders[1];
+        await user.click(runtimeRequestsHeader);
+
+        // host-a has 10 requests, host-b has 500 — ascending: host-a first
+        await waitFor(() => {
+            const rows = screen.getAllByText(/host-a|host-b/);
+            const firstRow = rows[0].closest('[class*="tableRow"]');
+            expect(firstRow).toHaveTextContent('host-a');
         });
     });
 });

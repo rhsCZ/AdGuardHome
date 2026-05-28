@@ -29,6 +29,8 @@ export const Breadcrumbs = ({ parentLinks, currentTitle }: Props) => (
                 <Icon icon="arrow_bottom" className={s.arrow} />
             </div>
         ))}
-        <div className={theme.common.textOverflow}>{currentTitle}</div>
+        <div className={cn(theme.common.textOverflow, s.current)} title={currentTitle}>
+            {currentTitle}
+        </div>
     </div>
 );

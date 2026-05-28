@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import { Icon } from 'panel/common/ui/Icon';
 import { getClients } from 'panel/actions';
-import { deleteClient, toggleClientModal } from 'panel/actions/clients';
+import { deleteClient } from 'panel/actions/clients';
+import { initClientForm } from 'panel/actions/clientForm';
 import { getStats } from 'panel/actions/stats';
-import { MODAL_TYPE } from 'panel/helpers/constants';
-import { RootState } from 'panel/initialState';
+import { getAllBlockedServices } from 'panel/actions/services';
+import { Client, RootState } from 'panel/initialState';
+import { linkPathBuilder, RoutePath } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 
 import { PersistentClientsTable } from './blocks/PersistentClientsTable/PersistentClientsTable';
@@ -23,6 +26,7 @@ export const Clients = () => {
     const dashboard = useSelector((state: RootState) => state.dashboard);
     const stats = useSelector((state: RootState) => state.stats);
     const clientsState = useSelector((state: RootState) => state.clients);
+    const services = useSelector((state: RootState) => state.services);
 
     const clients = dashboard?.clients || [];
     const autoClients = dashboard?.autoClients || [];
@@ -30,19 +34,61 @@ export const Clients = () => {
     const processingStats = stats?.processingStats || false;
     const normalizedTopClients = stats?.normalizedTopClients;
     const processingDeleting = clientsState?.processingDeleting || false;
+    const allServices = services?.allServices || [];
 
     useEffect(() => {
         dispatch(getClients());
         dispatch(getStats());
+        dispatch(getAllBlockedServices());
     }, [dispatch]);
 
-    const handleAddClient = () => {
-        dispatch(toggleClientModal({ type: MODAL_TYPE.ADD_CLIENT }));
-    };
+    const history = useHistory();
 
-    const handleEditClient = (name: string) => {
-        dispatch(toggleClientModal({ type: MODAL_TYPE.EDIT_CLIENT, name }));
-    };
+    const handleAddClient = useCallback(() => {
+        dispatch(initClientForm(null));
+        history.push('/clients/add');
+    }, [dispatch, history]);
+
+    const handleEditClient = useCallback(
+        (client: Client) => {
+            dispatch(
+                initClientForm({
+                    name: client.name,
+                    ids: client.ids || [''],
+                    tags: client.tags || [],
+                    use_global_settings: client.use_global_settings || false,
+                    filtering_enabled: client.filtering_enabled || false,
+                    safebrowsing_enabled: client.safebrowsing_enabled || false,
+                    parental_enabled: client.parental_enabled || false,
+                    safe_search: client.safe_search || {
+                        enabled: false,
+                        google: false,
+                        youtube: false,
+                        bing: false,
+                        duckduckgo: false,
+                        yandex: false,
+                        pixabay: false,
+                    },
+                    ignore_querylog: client.ignore_querylog || false,
+                    ignore_statistics: client.ignore_statistics || false,
+                    blocked_services: client.blocked_services || [],
+                    use_global_blocked_services: client.use_global_blocked_services || false,
+                    blocked_services_schedule: client.blocked_services_schedule || {
+                        time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    },
+                    upstreams: (client.upstreams || []).join('\n'),
+                    upstreams_cache_enabled: client.upstreams_cache_enabled || false,
+                    upstreams_cache_size: client.upstreams_cache_size || 0,
+                }),
+            );
+            history.push(
+                linkPathBuilder(RoutePath.ClientsEdit, {
+                    clientName: encodeURIComponent(client.name),
+                }),
+            );
+        },
+        [dispatch, history],
+    );
 
     const handleDeleteClient = (name: string) => {
         setClientNameToDelete(name);
@@ -63,7 +109,10 @@ export const Clients = () => {
         <div className={theme.layout.container}>
             <div className={theme.layout.containerIn}>
                 <div className={s.header}>
-                    <h1 className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}>
+                    <h1
+                        className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}
+                        data-testid="clients-title"
+                    >
                         {intl.getMessage('client_settings')}
                     </h1>
 
@@ -71,6 +120,7 @@ export const Clients = () => {
                         type="button"
                         onClick={handleAddClient}
                         className={cn(s.button, s.button_add)}
+                        data-testid="clients-add-button"
                     >
                         <Icon icon="plus" color="green" />
                         {intl.getMessage('client_add')}
@@ -92,6 +142,7 @@ export const Clients = () => {
                         onEdit={handleEditClient}
                         onDelete={handleDeleteClient}
                         deleteDisabled={processingDeleting}
+                        allServices={allServices}
                     />
                 </div>
 
@@ -117,8 +168,8 @@ export const Clients = () => {
                         submitDisabled={processingDeleting}
                         buttonText={intl.getMessage('remove')}
                         cancelText={intl.getMessage('cancel')}
-                        title={intl.getMessage('remove')}
-                        text={intl.getMessage('client_confirm_delete', { key: clientNameToDelete })}
+                        title={intl.getMessage('clients_remove_title')}
+                        text={intl.getMessage('clients_remove_desc', { value: clientNameToDelete })}
                         buttonVariant="danger"
                     />
                 )}

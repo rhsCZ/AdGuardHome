@@ -247,7 +247,7 @@ export const Table = <T extends Record<string, any>>({
     if (loading) {
         return (
             <div className={s.loading}>
-                <Loader />
+                <Loader className={s.tableLoader} />
             </div>
         );
     }
@@ -323,7 +323,7 @@ export const Table = <T extends Record<string, any>>({
                 {!hasData && <div className={s.emptyTableWrapper}>{emptyTable}</div>}
             </div>
 
-            {pagination && sortedData.length > 0 && (
+            {pagination && totalPages > 1 && (
                 <div className={s.tablePagination}>
                     <Pagination
                         currentPage={state.currentPage}

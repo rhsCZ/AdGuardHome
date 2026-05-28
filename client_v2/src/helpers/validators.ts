@@ -405,3 +405,44 @@ export const validatePlainDns = (value: any, allValues: any) => {
 
     return undefined;
 };
+
+/**
+ * Validates a single client identifier value.
+ * Returns undefined if valid, or an i18n error message string if invalid.
+ *
+ * @param value - The identifier string to validate
+ * @param allValues - All identifier values in the form (for duplicate checking)
+ * @param currentIndex - The index of this identifier in the array
+ */
+export const validateIdentifier = (
+    value: string,
+    allValues: string[],
+    currentIndex: number,
+): string | undefined => {
+    const trimmed = (value || '').trim();
+
+    if (!trimmed) {
+        return intl.getMessage('form_error_required');
+    }
+
+    const isValidFormat =
+        R_IPV4.test(trimmed) ||
+        R_IPV6.test(trimmed) ||
+        R_MAC.test(trimmed) ||
+        R_CIDR.test(trimmed) ||
+        R_CIDR_IPV6.test(trimmed) ||
+        R_CLIENT_ID.test(trimmed);
+
+    if (!isValidFormat) {
+        return intl.getMessage('clients_identifier_format_error');
+    }
+
+    const duplicateIndex = allValues.findIndex(
+        (v, i) => i !== currentIndex && v.trim() === trimmed,
+    );
+    if (duplicateIndex !== -1) {
+        return intl.getMessage('clients_identifier_already_used');
+    }
+
+    return undefined;
+};

@@ -1,5 +1,10 @@
 import React from 'react';
-import RSelect, { GroupBase, MenuListProps, OptionProps, SelectComponentsConfig } from 'react-select';
+import RSelect, {
+    GroupBase,
+    MenuListProps,
+    OptionProps,
+    SelectComponentsConfig,
+} from 'react-select';
 import cn from 'clsx';
 import { IOption } from 'panel/lib/helpers/utils';
 
@@ -7,6 +12,7 @@ import { CustomClearIndicator } from './CustomClearIndicator';
 import { CustomDropdownIndicator } from './CustomDropdownIndicator';
 import { CustomLoadingIndicator } from './CustomLoadingIndicator';
 import { CustomLoadingMessage } from './CustomLoadingMessage';
+import { CustomMultiValue } from './CustomMultiValue';
 import { CustomOption } from './CustomOption';
 import { Icon } from '../../ui/Icon/Icon';
 
@@ -47,7 +53,7 @@ const CustomIconOption = ({ data, isSelected, selectOption, isFocused }: any) =>
     <div
         className={cn(s.customOption, {
             [s.isSelected]: isSelected,
-            [s.isFocused]: isFocused
+            [s.isFocused]: isFocused,
         })}
         onClick={() => selectOption(data)}
     >
@@ -93,7 +99,9 @@ interface SelectProps<
     autoFocus?: boolean;
     low?: boolean;
     options: ((IOption<T> & ExtendOption) | Group)[];
-    onChange: (value: Multi extends true ? (IOption<T> & ExtendOption)[] : IOption<T> & ExtendOption) => void;
+    onChange: (
+        value: Multi extends true ? (IOption<T> & ExtendOption)[] : IOption<T> & ExtendOption,
+    ) => void;
     value?: (IOption<T> & ExtendOption) | (IOption<T> & ExtendOption)[];
     formatGroupLabel?: (group: Group) => string;
     components?: SelectComponentsConfig<IOption<T> & ExtendOption, Multi, Group>;
@@ -185,8 +193,11 @@ export const Select = <
 
     const customComponents = {
         ...(!showIcons ? { Option: DefaultOption } : {}),
-        ...(showIcons ? { Option: CustomIconOption, ValueContainer: CustomIconValueContainer } : {}),
+        ...(showIcons
+            ? { Option: CustomIconOption, ValueContainer: CustomIconValueContainer }
+            : {}),
         ...(lazyList ? { MenuList: CustomMenuList } : {}),
+        ...(isMulti ? { MultiValue: CustomMultiValue as any } : {}),
         ClearIndicator: CustomClearIndicator,
         DropdownIndicator: CustomDropdownIndicator,
         LoadingIndicator: CustomLoadingIndicator,
@@ -205,9 +216,11 @@ export const Select = <
             autoFocus={autoFocus}
             isDisabled={isDisabled}
             isMulti={isMulti}
-            onChange={(value: Multi extends true ? (IOption<T> & ExtendOption)[] : IOption<T> & ExtendOption) =>
-                onChange(value)
-            }
+            onChange={(
+                value: Multi extends true
+                    ? (IOption<T> & ExtendOption)[]
+                    : IOption<T> & ExtendOption,
+            ) => onChange(value)}
             value={value}
             formatGroupLabel={formatGroupLabel}
             components={customComponents}

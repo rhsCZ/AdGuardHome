@@ -1097,3 +1097,14 @@ export const getServiceName = (services: any, id: any) => getService(services, i
  * @returns {string}
  */
 export const getServiceIcon = (services: any, id: any) => getService(services, id)?.icon_svg;
+
+/**
+ * Decodes a base64-encoded SVG string. Returns an empty string on failure.
+ */
+export const decodeSvg = (iconSvg: string): string => {
+    try {
+        return atob(iconSvg);
+    } catch {
+        return '';
+    }
+};

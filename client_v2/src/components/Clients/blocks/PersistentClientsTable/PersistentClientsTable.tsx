@@ -1,12 +1,20 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import cn from 'clsx';
+import { useDispatch } from 'react-redux';
+import copy from 'copy-to-clipboard';
 
 import intl from 'panel/common/intl';
 import { Client, NormalizedTopClients } from 'panel/initialState';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
 import { Table as ReactTable, TableColumn } from 'panel/common/ui/Table';
 import { Icon } from 'panel/common/ui/Icon';
+import { Dropdown } from 'panel/common/ui/Dropdown';
+import { addSuccessToast } from 'panel/actions/toasts';
 import theme from 'panel/lib/theme';
+
+import { ServiceCell } from './ServiceCell';
+import { TagCell } from './TagCell';
+import { WebService } from './ServiceIcons';
 
 import s from './PersistentClientsTable.module.pcss';
 
@@ -17,10 +25,11 @@ type Props = {
     clients: Client[];
     normalizedTopClients?: NormalizedTopClients;
     loading?: boolean;
-    onEdit: (name: string) => void;
+    onEdit: (client: Client) => void;
     onDelete: (name: string) => void;
     editDisabled?: boolean;
     deleteDisabled?: boolean;
+    allServices?: WebService[];
 };
 
 export const PersistentClientsTable = ({
@@ -31,10 +40,28 @@ export const PersistentClientsTable = ({
     onDelete,
     editDisabled = false,
     deleteDisabled = false,
+    allServices = [],
 }: Props) => {
+    const dispatch = useDispatch();
     const pageSize = useMemo(
         () => LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.CLIENTS_PAGE_SIZE) || DEFAULT_PAGE_SIZE,
         [],
+    );
+
+    const serviceMap = useMemo(() => {
+        const map = new Map<string, WebService>();
+        allServices.forEach((svc) => {
+            map.set(svc.id, svc);
+        });
+        return map;
+    }, [allServices]);
+
+    const handleCopy = useCallback(
+        (text: string) => {
+            copy(text);
+            dispatch(addSuccessToast(intl.getMessage('copied')));
+        },
+        [dispatch],
     );
 
     const columns: TableColumn<Client>[] = useMemo(
@@ -45,23 +72,48 @@ export const PersistentClientsTable = ({
                     text: intl.getMessage('client_identifier'),
                     className: s.headerCell,
                 },
-                accessor: 'ids',
-                sortable: false,
-                render: (value: string[]) => (
-                    <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('client_identifier')}</span>
+                accessor: (row: Client) => row.ids.join(','),
+                sortable: true,
+                render: (_value: string, row: Client) => {
+                    const { ids } = row;
+                    const firstId = ids[0] || '';
+                    const hiddenCount = ids.length - 1;
 
-                        <div className={s.cellValue}>
-                            <div className={s.ids}>
-                                {value.map((id) => (
-                                    <span key={id} className={theme.common.textOverflow} title={id}>
-                                        {id}
+                    return (
+                        <div className={s.cell}>
+                            <span className={s.cellLabel}>
+                                {intl.getMessage('client_identifier')}
+                            </span>
+
+                            <div className={s.cellValue}>
+                                <div className={s.idsRow}>
+                                    <span className={cn(theme.common.textOverflow, s.idsText)}>
+                                        {firstId}
+                                        {hiddenCount > 0 && ','}
                                     </span>
-                                ))}
+                                    {hiddenCount > 0 && (
+                                        <Dropdown
+                                            trigger="hover"
+                                            noIcon
+                                            overlayClassName={s.idsTooltipOverlay}
+                                            menu={
+                                                <div className={s.idsTooltip}>
+                                                    {ids.map((id) => (
+                                                        <span key={id} className={s.idsTooltipItem}>
+                                                            {id}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            }
+                                        >
+                                            <span className={s.countLabel}>{hiddenCount}</span>
+                                        </Dropdown>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ),
+                    );
+                },
             },
             {
                 key: 'name',
@@ -70,15 +122,36 @@ export const PersistentClientsTable = ({
                     className: s.headerCell,
                 },
                 accessor: 'name',
-                sortable: false,
+                sortable: true,
                 render: (value: string) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('name')}</span>
 
                         <div className={s.cellValue}>
-                            <span className={theme.common.textOverflow} title={value}>
-                                {value}
-                            </span>
+                            <Dropdown
+                                trigger="hover"
+                                noIcon
+                                overlayClassName={s.nameTooltipOverlay}
+                                menu={
+                                    <div className={s.nameTooltip}>
+                                        <span className={s.nameTooltipText}>{value}</span>
+                                        <button
+                                            type="button"
+                                            className={s.copyBtn}
+                                            onClick={() => handleCopy(value)}
+                                            title={intl.getMessage('copy')}
+                                        >
+                                            <Icon icon="copy" color="gray" />
+                                        </button>
+                                    </div>
+                                }
+                                className={s.nameDropdown}
+                                childrenClassName={s.nameDropdownInner}
+                            >
+                                <span className={cn(theme.common.textOverflow, s.nameTrigger)}>
+                                    {value}
+                                </span>
+                            </Dropdown>
                         </div>
                     </div>
                 ),
@@ -90,7 +163,7 @@ export const PersistentClientsTable = ({
                     className: s.headerCell,
                 },
                 accessor: 'use_global_settings',
-                sortable: false,
+                sortable: true,
                 render: (value: boolean) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('settings')}</span>
@@ -99,6 +172,7 @@ export const PersistentClientsTable = ({
                             <span>
                                 {intl.getMessage(value ? 'settings_global' : 'settings_custom')}
                             </span>
+                            {!value && <Icon icon="user" color="gray" className={s.userIconRight} />}
                         </div>
                     </div>
                 ),
@@ -110,17 +184,13 @@ export const PersistentClientsTable = ({
                     className: s.headerCell,
                 },
                 accessor: 'use_global_blocked_services',
-                sortable: false,
-                render: (value: boolean) => (
-                    <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('blocked_services')}</span>
-
-                        <div className={s.cellValue}>
-                            <span>
-                                {intl.getMessage(value ? 'settings_global' : 'settings_custom')}
-                            </span>
-                        </div>
-                    </div>
+                sortable: true,
+                render: (_value: boolean, row: Client) => (
+                    <ServiceCell
+                        serviceIds={row.blocked_services || []}
+                        useGlobal={row.use_global_blocked_services}
+                        serviceMap={serviceMap}
+                    />
                 ),
             },
             {
@@ -129,16 +199,18 @@ export const PersistentClientsTable = ({
                     text: intl.getMessage('upstreams'),
                     className: s.headerCell,
                 },
-                accessor: 'upstreams',
-                sortable: false,
-                render: (value: string[]) => (
+                accessor: (row: Client) => row.upstreams.length > 0,
+                sortable: true,
+                render: (_value: boolean, row: Client) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('upstreams')}</span>
 
                         <div className={s.cellValue}>
                             <span>
                                 {intl.getMessage(
-                                    value.length > 0 ? 'settings_custom' : 'settings_global',
+                                    row.upstreams.length > 0
+                                        ? 'settings_custom'
+                                        : 'settings_global',
                                 )}
                             </span>
                         </div>
@@ -153,36 +225,19 @@ export const PersistentClientsTable = ({
                 },
                 accessor: 'tags',
                 sortable: false,
-                render: (value: string[]) => (
-                    <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('tags_title')}</span>
-
-                        <div className={s.cellValue}>
-                            {value.length > 0 ? (
-                                <div className={s.tags}>
-                                    {value.map((tag) => (
-                                        <span key={tag} className={s.tag}>
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            ) : (
-                                <span>—</span>
-                            )}
-                        </div>
-                    </div>
-                ),
+                render: (value: string[]) => <TagCell tags={value} />,
             },
             {
                 key: 'requests',
                 header: {
-                    text: intl.getMessage('requests_count'),
+                    text: intl.getMessage('requests_table_header'),
                     className: s.headerCell,
                 },
-                sortable: false,
+                accessor: (row: Client) => normalizedTopClients?.configured[row.name] || 0,
+                sortable: true,
                 render: (_value: unknown, row: Client) => (
                     <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('requests_count')}</span>
+                        <span className={s.cellLabel}>{intl.getMessage('requests_table_header')}</span>
 
                         <div className={s.cellValue}>
                             <span>
@@ -210,10 +265,11 @@ export const PersistentClientsTable = ({
                             <div className={s.cellActions}>
                                 <button
                                     type="button"
-                                    onClick={() => onEdit(row.name)}
+                                    onClick={() => onEdit(row)}
                                     disabled={editDisabled}
                                     className={s.action}
                                     title={intl.getMessage('edit_table_action')}
+                                    data-testid="clients-edit-button"
                                 >
                                     <Icon icon="edit" color="gray" />
                                 </button>
@@ -224,6 +280,7 @@ export const PersistentClientsTable = ({
                                     disabled={deleteDisabled}
                                     className={cn(s.action, s.action_danger)}
                                     title={intl.getMessage('delete_table_action')}
+                                    data-testid="clients-delete-button"
                                 >
                                     <Icon icon="delete" color="red" />
                                 </button>
@@ -233,7 +290,15 @@ export const PersistentClientsTable = ({
                 ),
             },
         ],
-        [deleteDisabled, editDisabled, normalizedTopClients, onDelete, onEdit],
+        [
+            deleteDisabled,
+            editDisabled,
+            normalizedTopClients,
+            onDelete,
+            onEdit,
+            serviceMap,
+            handleCopy,
+        ],
     );
 
     const handlePageSizeChange = (newSize: number) => {
@@ -257,7 +322,6 @@ export const PersistentClientsTable = ({
             columns={columns}
             emptyTable={emptyTableContent}
             loading={loading}
-            sortable={false}
             pageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             onPageSizeChange={handlePageSizeChange}
