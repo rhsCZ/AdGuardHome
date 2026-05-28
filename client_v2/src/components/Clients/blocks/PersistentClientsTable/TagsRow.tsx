@@ -4,7 +4,7 @@ import { Dropdown } from 'panel/common/ui/Dropdown';
 
 import s from './PersistentClientsTable.module.pcss';
 
-const MAX_VISIBLE_TAGS = 2;
+const MAX_VISIBLE_TAGS = 1;
 
 type TagsRowProps = {
     tags: string[];
