@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
@@ -11,71 +12,63 @@ import theme from 'panel/lib/theme';
 
 import s from './Identifiers.module.pcss';
 
+type FormValues = {
+    ids: { value: string }[];
+};
+
 export const Identifiers = () => {
     const dispatch = useDispatch();
-    const ids = useSelector((state: RootState) => state.clientForm.ids);
-    const formErrors = useSelector((state: RootState) => state.clientForm.formErrors);
+    const formState = useSelector((state: RootState) => state.clientForm);
+    const { formErrors } = formState;
 
-    const [touchedFields, setTouchedFields] = useState<number[]>([]);
+    const {
+        control,
+        register,
+        formState: rhfState,
+        setValue,
+        getValues,
+        trigger,
+    } = useForm<FormValues>({
+        defaultValues: {
+            ids: formState.ids.map((id: string) => ({ value: id })),
+        },
+        mode: 'onBlur',
+    });
 
-    // When formErrors.ids has errors, mark all those indices as touched
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'ids',
+    });
+
+    // Sync Redux → RHF when external errors arrive (e.g. from saveClient)
     useEffect(() => {
         if (Array.isArray(formErrors.ids)) {
-            const errorIndices = formErrors.ids
-                .map((err: string | undefined, idx: number) => (err ? idx : -1))
-                .filter((idx: number) => idx >= 0);
-            setTouchedFields((prev) => {
-                const newTouched = [...prev];
-                errorIndices.forEach((idx: number) => {
-                    if (!newTouched.includes(idx)) {
-                        newTouched.push(idx);
-                    }
-                });
-                return newTouched;
+            formErrors.ids.forEach((err: string | undefined, idx: number) => {
+                if (err) {
+                    trigger(`ids.${idx}.value`);
+                }
             });
         }
-    }, [formErrors.ids]);
+    }, [formErrors.ids, trigger]);
 
-    const handleChange = useCallback(
-        (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newIds = [...ids];
-            newIds[index] = e.target.value;
-            dispatch(updateClientFormField({ field: 'ids', value: newIds }));
-        },
-        [ids, dispatch],
-    );
+    const syncToRedux = () => {
+        const values = getValues('ids').map((item) => item.value);
+        dispatch(updateClientFormField({ field: 'ids', value: values }));
+    };
 
-    const handleBlur = useCallback(
-        (index: number) => () => {
-            const newIds = [...ids];
-            newIds[index] = newIds[index].trim();
-            dispatch(updateClientFormField({ field: 'ids', value: newIds }));
-            setTouchedFields((prev) => (prev.includes(index) ? prev : [...prev, index]));
-        },
-        [ids, dispatch],
-    );
+    const handleAdd = () => {
+        append({ value: '' });
+        const values = getValues('ids').map((item) => item.value);
+        dispatch(updateClientFormField({ field: 'ids', value: [...values, ''] }));
+    };
 
-    const handleAdd = useCallback(() => {
-        dispatch(updateClientFormField({ field: 'ids', value: [...ids, ''] }));
-    }, [ids, dispatch]);
-
-    const handleRemove = useCallback(
-        (index: number) => () => {
-            const newIds = ids.filter((_, i) => i !== index);
-            if (newIds.length === 0) {
-                newIds.push('');
-            }
-            dispatch(updateClientFormField({ field: 'ids', value: newIds }));
-        },
-        [ids, dispatch],
-    );
-
-    const getError = useCallback(
-        (value: string, index: number): string | undefined => {
-            return validateIdentifier(value, ids, index);
-        },
-        [ids],
-    );
+    const handleRemove = (index: number) => {
+        remove(index);
+        const values = getValues('ids')
+            .filter((_: { value: string }, i: number) => i !== index)
+            .map((item) => item.value);
+        dispatch(updateClientFormField({ field: 'ids', value: values }));
+    };
 
     return (
         <div className={s.wrapper}>
@@ -95,19 +88,18 @@ export const Identifiers = () => {
                     ),
                 })}
             </div>
-            {ids.map((id, index) => {
-                const blurError = getError(id, index);
-                const isTouched = touchedFields.includes(index);
+
+            {fields.map((field, index) => {
                 const saveError = Array.isArray(formErrors.ids) ? formErrors.ids[index] : undefined;
-                const activeError = saveError || (isTouched ? blurError : undefined);
-                const showError = !!activeError;
+                const rhfError = rhfState.errors.ids?.[index]?.value?.message;
+                const activeError = saveError || rhfError;
 
                 const suffixBtn =
                     index > 0 ? (
                         <button
                             type="button"
                             className={s.removeSuffixBtn}
-                            onClick={handleRemove(index)}
+                            onClick={() => handleRemove(index)}
                             aria-label={intl.getMessage('delete_btn')}
                         >
                             <Icon icon="cross" color="gray" />
@@ -115,17 +107,27 @@ export const Identifiers = () => {
                     ) : undefined;
 
                 return (
-                    <div key={index} className={s.row}>
+                    <div key={field.id} className={s.row}>
                         <div className={s.inputCell}>
                             <Input
                                 id={`client-identifier-${index}`}
                                 type="text"
-                                value={id}
-                                onChange={handleChange(index)}
-                                onBlur={handleBlur(index)}
+                                {...register(`ids.${index}.value`, {
+                                    validate: (value: string) => {
+                                        const allValues = getValues('ids').map(
+                                            (item) => item.value,
+                                        );
+                                        return validateIdentifier(value, allValues, index) || true;
+                                    },
+                                    onBlur: () => syncToRedux(),
+                                })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    setValue(`ids.${index}.value`, e.target.value);
+                                    syncToRedux();
+                                }}
                                 placeholder={intl.getMessage('clients_identifier_format_error')}
-                                error={showError}
-                                errorMessage={showError ? activeError : undefined}
+                                error={!!activeError}
+                                errorMessage={activeError}
                                 size="large"
                                 suffixIcon={suffixBtn}
                             />

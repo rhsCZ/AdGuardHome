@@ -1,10 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation, matchPath } from 'react-router-dom';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Breadcrumbs } from 'panel/common/ui/Breadcrumbs';
 import { RootState } from 'panel/initialState';
-import { RoutePath, RoutePathKey } from 'panel/components/Routes/Paths';
+import { Paths, RoutePath, RoutePathKey } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 
 import s from './ClientsHeader.module.pcss';
@@ -22,6 +23,7 @@ type ClientsHeaderProps = {
 
 export const ClientsHeader = ({ currentTitle, extraLinks = [] }: ClientsHeaderProps) => {
     const form = useSelector((state: RootState) => state.clientForm);
+    const location = useLocation();
     const isEdit = form.mode === 'edit';
 
     const clientPageLink = isEdit
@@ -42,8 +44,8 @@ export const ClientsHeader = ({ currentTitle, extraLinks = [] }: ClientsHeaderPr
     ];
 
     const isMainFormPage =
-        currentTitle === intl.getMessage('clients_add') ||
-        currentTitle === intl.getMessage('clients_edit');
+        matchPath(location.pathname, { path: Paths.ClientsAdd, exact: true }) !== null ||
+        matchPath(location.pathname, { path: Paths.ClientsEdit, exact: true }) !== null;
 
     const pageTitle =
         isEdit && isMainFormPage ? form.name || intl.getMessage('clients_edit') : currentTitle;

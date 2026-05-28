@@ -11,7 +11,8 @@ import { updateClientFormField } from 'panel/actions/clientForm';
 import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import theme from 'panel/lib/theme';
 
-import { RoutePath, RoutePathKey } from 'panel/components/Routes/Paths';
+import { RoutePath } from 'panel/components/Routes/Paths';
+import { buildClientBreadcrumbs } from 'panel/helpers/buildClientBreadcrumbs';
 import { ScheduleRow } from './ScheduleRow';
 import { ScheduleModal } from './ScheduleModal';
 import { DayKey, DAYS_OF_WEEK, ScheduleData, ScheduleDayData, getLocalTimezone } from './helpers';
@@ -134,21 +135,7 @@ export const InactivitySchedule = ({ clientScope }: Props) => {
     };
 
     const parentLinks = clientScope
-        ? [
-              {
-                  path: RoutePath.Clients,
-                  title: intl.getMessage('client_settings'),
-              },
-              clientForm.mode === 'edit'
-                  ? {
-                        path: RoutePath.ClientsEdit,
-                        title: intl.getMessage('clients_edit'),
-                        props: { clientName: encodeURIComponent(clientForm.originalName) },
-                    }
-                  : {
-                        path: RoutePath.ClientsAdd,
-                        title: intl.getMessage('clients_add'),
-                    },
+        ? buildClientBreadcrumbs(clientForm, [
               clientForm.mode === 'edit'
                   ? {
                         path: RoutePath.ClientsEditBlockedServices,
@@ -159,7 +146,7 @@ export const InactivitySchedule = ({ clientScope }: Props) => {
                         path: RoutePath.ClientsBlockedServices,
                         title: intl.getMessage('blocked_services'),
                     },
-          ]
+          ])
         : [
               {
                   path: RoutePath.BlockedServices,

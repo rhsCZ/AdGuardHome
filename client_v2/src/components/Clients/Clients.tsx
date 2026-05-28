@@ -8,7 +8,7 @@ import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import { Icon } from 'panel/common/ui/Icon';
 import { getClients } from 'panel/actions';
 import { deleteClient } from 'panel/actions/clients';
-import { initClientForm } from 'panel/actions/clientForm';
+import { initClientForm, buildFormPayload } from 'panel/actions/clientForm';
 import { getStats } from 'panel/actions/stats';
 import { getAllBlockedServices } from 'panel/actions/services';
 import { Client, RootState } from 'panel/initialState';
@@ -49,40 +49,11 @@ export const Clients = () => {
     const handleAddClient = useCallback(() => {
         dispatch(initClientForm(null));
         history.push('/clients/add');
-    }, [history]);
+    }, [dispatch, history]);
 
     const handleEditClient = useCallback(
         (client: Client) => {
-            dispatch(
-                initClientForm({
-                    name: client.name,
-                    ids: client.ids || [''],
-                    tags: client.tags || [],
-                    use_global_settings: client.use_global_settings || false,
-                    filtering_enabled: client.filtering_enabled || false,
-                    safebrowsing_enabled: client.safebrowsing_enabled || false,
-                    parental_enabled: client.parental_enabled || false,
-                    safe_search: client.safe_search || {
-                        enabled: false,
-                        google: false,
-                        youtube: false,
-                        bing: false,
-                        duckduckgo: false,
-                        yandex: false,
-                        pixabay: false,
-                    },
-                    ignore_querylog: client.ignore_querylog || false,
-                    ignore_statistics: client.ignore_statistics || false,
-                    blocked_services: client.blocked_services || [],
-                    use_global_blocked_services: client.use_global_blocked_services || false,
-                    blocked_services_schedule: client.blocked_services_schedule || {
-                        time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    },
-                    upstreams: (client.upstreams || []).join('\n'),
-                    upstreams_cache_enabled: client.upstreams_cache_enabled || false,
-                    upstreams_cache_size: client.upstreams_cache_size || 0,
-                }),
-            );
+            dispatch(initClientForm(buildFormPayload(client)));
             history.push(
                 linkPathBuilder(RoutePath.ClientsEdit, {
                     clientName: encodeURIComponent(client.name),

@@ -7,12 +7,14 @@ import theme from 'panel/lib/theme';
 
 import s from './styles.module.pcss';
 
+export type BreadcrumbLink = {
+    path: RoutePathKey;
+    title: string;
+    props?: Partial<Record<string, string | number>>;
+};
+
 type Props = {
-    parentLinks: {
-        path: RoutePathKey;
-        title: string;
-        props?: Partial<Record<string, string | number>>;
-    }[];
+    parentLinks: BreadcrumbLink[];
     currentTitle: string;
 };
 
@@ -22,8 +24,13 @@ export const Breadcrumbs = ({ parentLinks, currentTitle }: Props) => (
             <div key={path} className={s.link}>
                 <Link
                     to={path}
-                    className={cn(theme.link.link, theme.link.noDecoration, theme.common.textOverflow)}
-                    props={props}>
+                    className={cn(
+                        theme.link.link,
+                        theme.link.noDecoration,
+                        theme.common.textOverflow,
+                    )}
+                    props={props}
+                >
                     {title}
                 </Link>
                 <Icon icon="arrow_bottom" className={s.arrow} />

@@ -18,14 +18,14 @@ export const CustomMultiValue = <T extends Record<string, any> = any>(
                 <button
                     type="button"
                     className={s.removeBtn}
-                    onClick={
-                        removeProps.onClick as unknown as React.MouseEventHandler<HTMLButtonElement>
+                    onClick={(e) =>
+                        removeProps.onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
                     }
-                    onMouseDown={
-                        removeProps.onMouseDown as unknown as React.MouseEventHandler<HTMLButtonElement>
+                    onMouseDown={(e) =>
+                        removeProps.onMouseDown?.(e as unknown as React.MouseEvent<HTMLDivElement>)
                     }
-                    onTouchEnd={
-                        removeProps.onTouchEnd as unknown as React.TouchEventHandler<HTMLButtonElement>
+                    onTouchEnd={(e) =>
+                        removeProps.onTouchEnd?.(e as unknown as React.TouchEvent<HTMLDivElement>)
                     }
                     aria-label={intl.getMessage('remove_tag', { value: label })}
                 >

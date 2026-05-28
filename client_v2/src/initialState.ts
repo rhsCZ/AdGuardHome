@@ -113,11 +113,13 @@ export type Client = {
     use_global_settings: boolean;
 };
 
+export type WhoisInfo = Record<string, string>;
+
 export type AutoClient = {
     ip: string;
     name: string;
     source: string;
-    whois_info: any;
+    whois_info: WhoisInfo;
 };
 
 export type DashboardData = {

@@ -1,6 +1,6 @@
-import { handleActions } from 'redux-actions';
+import { handleActions, Action } from 'redux-actions';
 
-import { getInitialClientFormState } from '../initialState';
+import { ClientFormState, getInitialClientFormState } from '../initialState';
 import {
     initClientForm,
     updateClientFormField,
@@ -15,30 +15,38 @@ import {
     updateClientSuccess,
 } from '../actions/clientForm';
 
-const clientForm = handleActions<any>(
+type FieldUpdate = {
+    field: keyof ClientFormState;
+    value: ClientFormState[keyof ClientFormState];
+};
+
+type FormErrors = Record<string, string | string[]>;
+
+const clientForm = handleActions<ClientFormState, any>(
     {
-        [initClientForm.toString()]: (_state: any, { payload }: any) => {
+        [initClientForm.toString()]: (
+            _state: ClientFormState,
+            { payload }: Action<Partial<ClientFormState> | null>,
+        ) => {
             if (payload) {
                 return {
                     ...getInitialClientFormState(),
                     ...payload,
-                    mode: 'edit',
+                    mode: 'edit' as const,
                     originalName: payload.name || '',
                 };
             }
             return getInitialClientFormState();
         },
 
-        [updateClientFormField.toString()]: (state: any, { payload }: any) => {
+        [updateClientFormField.toString()]: (
+            state: ClientFormState,
+            { payload }: Action<FieldUpdate>,
+        ) => {
             const { field, value } = payload;
-            // Clear error for the field being edited
             const errors = { ...state.formErrors };
             if (errors[field]) {
-                if (Array.isArray(errors[field])) {
-                    delete errors[field];
-                } else {
-                    delete errors[field];
-                }
+                delete errors[field];
             }
             return {
                 ...state,
@@ -49,37 +57,38 @@ const clientForm = handleActions<any>(
 
         [clearClientForm.toString()]: () => getInitialClientFormState(),
 
-        [setFormErrors.toString()]: (state: any, { payload }: any) => ({
+        [setFormErrors.toString()]: (state: ClientFormState, { payload }: Action<FormErrors>) => ({
             ...state,
             formErrors: payload,
         }),
-        [clearFormErrors.toString()]: (state: any) => ({
+
+        [clearFormErrors.toString()]: (state: ClientFormState) => ({
             ...state,
             formErrors: {},
         }),
 
-        [addClientRequest.toString()]: (state: any) => ({
+        [addClientRequest.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: true,
         }),
-        [addClientFailure.toString()]: (state: any) => ({
+        [addClientFailure.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: false,
         }),
-        [addClientSuccess.toString()]: (state: any) => ({
+        [addClientSuccess.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: false,
         }),
 
-        [updateClientRequest.toString()]: (state: any) => ({
+        [updateClientRequest.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: true,
         }),
-        [updateClientFailure.toString()]: (state: any) => ({
+        [updateClientFailure.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: false,
         }),
-        [updateClientSuccess.toString()]: (state: any) => ({
+        [updateClientSuccess.toString()]: (state: ClientFormState) => ({
             ...state,
             processingSave: false,
         }),

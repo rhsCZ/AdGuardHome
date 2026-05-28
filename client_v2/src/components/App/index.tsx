@@ -162,26 +162,6 @@ const ROUTES: RouteConfig[] = [
         component: UserRules,
         exact: true,
     },
-    {
-        path: '/add_client',
-        component: AddClientRoute,
-        exact: true,
-    },
-    {
-        path: '/add_client/protection',
-        component: ProtectionRoute,
-        exact: true,
-    },
-    {
-        path: '/add_client/client_blocked_services',
-        component: ClientBlockedServicesRoute,
-        exact: true,
-    },
-    {
-        path: '/add_client/client_schedule',
-        component: ClientScheduleRoute,
-        exact: true,
-    },
 ];
 
 const App = () => {
