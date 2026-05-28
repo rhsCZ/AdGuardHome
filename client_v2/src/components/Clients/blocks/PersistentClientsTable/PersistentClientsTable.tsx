@@ -18,9 +18,6 @@ import { WebService } from './ServiceIcons';
 
 import s from './PersistentClientsTable.module.pcss';
 
-const DEFAULT_PAGE_SIZE = 10;
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
-
 type Props = {
     clients: Client[];
     normalizedTopClients?: NormalizedTopClients;
@@ -44,7 +41,7 @@ export const PersistentClientsTable = ({
 }: Props) => {
     const dispatch = useDispatch();
     const pageSize = useMemo(
-        () => LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.CLIENTS_PAGE_SIZE) || DEFAULT_PAGE_SIZE,
+        () => LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.CLIENTS_PAGE_SIZE) || undefined,
         [],
     );
 
@@ -172,7 +169,9 @@ export const PersistentClientsTable = ({
                             <span>
                                 {intl.getMessage(value ? 'settings_global' : 'settings_custom')}
                             </span>
-                            {!value && <Icon icon="user" color="gray" className={s.userIconRight} />}
+                            {!value && (
+                                <Icon icon="user" color="gray" className={s.userIconRight} />
+                            )}
                         </div>
                     </div>
                 ),
@@ -237,7 +236,9 @@ export const PersistentClientsTable = ({
                 sortable: true,
                 render: (_value: unknown, row: Client) => (
                     <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('requests_table_header')}</span>
+                        <span className={s.cellLabel}>
+                            {intl.getMessage('requests_table_header')}
+                        </span>
 
                         <div className={s.cellValue}>
                             <span>
@@ -323,7 +324,6 @@ export const PersistentClientsTable = ({
             emptyTable={emptyTableContent}
             loading={loading}
             pageSize={pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
             onPageSizeChange={handlePageSizeChange}
             getRowId={(row) => row.name}
         />

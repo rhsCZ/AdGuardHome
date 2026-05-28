@@ -39,7 +39,7 @@ export const AddClient = () => {
 
     useEffect(() => {
         dispatch(getClients());
-    }, [dispatch]);
+    }, []);
 
     // When on the edit route and clients are loaded, initialize the form
     // from the URL param. This handles page refreshes on the edit page.
@@ -97,38 +97,32 @@ export const AddClient = () => {
     const handleCancel = useCallback(() => {
         dispatch(clearClientForm());
         history.push(Paths.Clients);
-    }, [dispatch, history]);
+    }, [history]);
 
     const handleSave = useCallback(async () => {
         const result = await dispatch(saveClient());
         if (result) {
             history.push(Paths.Clients);
         }
-    }, [dispatch, history]);
+    }, [history]);
 
-    const handleUseGlobalSettings = useCallback(
-        (e: ChangeEvent<HTMLInputElement>) => {
-            dispatch(
-                updateClientFormField({
-                    field: 'use_global_settings',
-                    value: e.target.checked,
-                }),
-            );
-        },
-        [dispatch],
-    );
+    const handleUseGlobalSettings = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        dispatch(
+            updateClientFormField({
+                field: 'use_global_settings',
+                value: e.target.checked,
+            }),
+        );
+    }, []);
 
-    const handleUpstreamsCacheEnabled = useCallback(
-        (e: ChangeEvent<HTMLInputElement>) => {
-            dispatch(
-                updateClientFormField({
-                    field: 'upstreams_cache_enabled',
-                    value: e.target.checked,
-                }),
-            );
-        },
-        [dispatch],
-    );
+    const handleUpstreamsCacheEnabled = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        dispatch(
+            updateClientFormField({
+                field: 'upstreams_cache_enabled',
+                value: e.target.checked,
+            }),
+        );
+    }, []);
 
     const tagOptions = useMemo(
         () =>
@@ -143,13 +137,10 @@ export const AddClient = () => {
         [form.tags],
     );
 
-    const handleTagChange = useCallback(
-        (selected: IOption<string> | IOption<string>[] | null) => {
-            const tags = Array.isArray(selected) ? selected.map((s) => s.value) : [];
-            dispatch(updateClientFormField({ field: 'tags', value: tags }));
-        },
-        [dispatch],
-    );
+    const handleTagChange = useCallback((selected: IOption<string> | IOption<string>[] | null) => {
+        const tags = Array.isArray(selected) ? selected.map((s) => s.value) : [];
+        dispatch(updateClientFormField({ field: 'tags', value: tags }));
+    }, []);
 
     const protectionRoute = isEdit ? RoutePath.ClientsEditProtection : RoutePath.ClientsProtection;
     const blockedServicesRoute = isEdit

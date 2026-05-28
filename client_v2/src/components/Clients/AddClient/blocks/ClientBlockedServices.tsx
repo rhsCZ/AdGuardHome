@@ -32,10 +32,6 @@ export const ClientBlockedServices = () => {
     };
 
     return (
-        <BlockedServices
-            clientScope
-            breadcrumbs={breadcrumbs}
-            className={s.containerOverride}
-        />
+        <BlockedServices clientScope breadcrumbs={breadcrumbs} className={s.containerOverride} />
     );
 };

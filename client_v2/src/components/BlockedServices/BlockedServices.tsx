@@ -30,7 +30,7 @@ type WebService = {
     rules: string[];
 };
 
-interface BlockedServicesProps {
+type Props = {
     clientScope?: boolean;
     className?: string;
     breadcrumbs?: {
@@ -41,9 +41,9 @@ interface BlockedServicesProps {
         }[];
         currentTitle: string;
     };
-}
+};
 
-export const BlockedServices = ({ clientScope, className, breadcrumbs }: BlockedServicesProps) => {
+export const BlockedServices = ({ clientScope, className, breadcrumbs }: Props) => {
     const dispatch = useDispatch();
     const services = useSelector((state: RootState) => state.services);
     const clientForm = useSelector((state: RootState) => state.clientForm);

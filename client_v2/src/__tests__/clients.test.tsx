@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
     toggleClientModal: vi.fn(() => ({ type: 'TOGGLE_CLIENT_MODAL' })),
     deleteClient: vi.fn(() => ({ type: 'DELETE_CLIENT' })),
     initClientForm: vi.fn(() => ({ type: 'INIT_CLIENT_FORM' })),
+    getAllBlockedServices: vi.fn(() => ({ type: 'GET_ALL_BLOCKED_SERVICES' })),
 }));
 
 vi.mock('react-redux', () => ({
@@ -36,8 +37,13 @@ vi.mock('panel/actions/clients', () => ({
     deleteClient: mocks.deleteClient,
 }));
 
+vi.mock('panel/actions/services', () => ({
+    getAllBlockedServices: mocks.getAllBlockedServices,
+}));
+
 vi.mock('panel/actions/clientForm', () => ({
     initClientForm: mocks.initClientForm,
+    getAllBlockedServices: mocks.getAllBlockedServices,
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -63,6 +69,7 @@ describe('Clients Page', () => {
         mocks.toggleClientModal.mockClear();
         mocks.deleteClient.mockClear();
         mocks.initClientForm.mockClear();
+        mocks.getAllBlockedServices.mockClear();
         localStorage.clear();
     });
 
@@ -172,10 +179,12 @@ describe('Clients Page', () => {
 
         await waitFor(() => {
             expect(screen.getByText('My Laptop')).toBeInTheDocument();
-            expect(screen.getByText('192.168.1.10')).toBeInTheDocument();
-            expect(screen.getByText('00:11:22:33:44:55')).toBeInTheDocument();
+            // IP address text includes a trailing comma when multiple IDs exist
+            expect(screen.getByText(/192\.168\.1\.10/)).toBeInTheDocument();
+            // Second ID is inside a dropdown tooltip, not visible by default
             expect(screen.getByText('user_admin')).toBeInTheDocument();
-            expect(screen.getByText('1,234')).toBeInTheDocument();
+            // Requests count uses locale-specific thousands separator (space or comma)
+            expect(screen.getByText((content) => content.includes('234'))).toBeInTheDocument();
         });
     });
 

@@ -25,11 +25,11 @@ const TIMEZONE_OPTIONS = Object.entries(timezones).map(([tz, data]: [string, Tim
     value: tz,
 }));
 
-interface InactivityScheduleProps {
+type Props = {
     clientScope?: boolean;
-}
+};
 
-export const InactivitySchedule = ({ clientScope }: InactivityScheduleProps) => {
+export const InactivitySchedule = ({ clientScope }: Props) => {
     const dispatch = useDispatch();
     const services = useSelector((state: RootState) => state.services);
     const clientForm = useSelector((state: RootState) => state.clientForm);

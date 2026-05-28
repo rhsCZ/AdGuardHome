@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { batch, useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import cn from 'clsx';
 
@@ -15,8 +15,8 @@ import { Client, RootState } from 'panel/initialState';
 import { linkPathBuilder, RoutePath } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 
-import { PersistentClientsTable } from './blocks/PersistentClientsTable/PersistentClientsTable';
-import { RuntimeClientsTable } from './blocks/RuntimeClientsTable/RuntimeClientsTable';
+import { PersistentClientsTable } from './blocks/PersistentClientsTable';
+import { RuntimeClientsTable } from './blocks/RuntimeClientsTable';
 import s from './Clients.module.pcss';
 
 export const Clients = () => {
@@ -37,17 +37,19 @@ export const Clients = () => {
     const allServices = services?.allServices || [];
 
     useEffect(() => {
-        dispatch(getClients());
-        dispatch(getStats());
-        dispatch(getAllBlockedServices());
-    }, [dispatch]);
+        batch(() => {
+            dispatch(getClients());
+            dispatch(getStats());
+            dispatch(getAllBlockedServices());
+        });
+    }, []);
 
     const history = useHistory();
 
     const handleAddClient = useCallback(() => {
         dispatch(initClientForm(null));
         history.push('/clients/add');
-    }, [dispatch, history]);
+    }, [history]);
 
     const handleEditClient = useCallback(
         (client: Client) => {

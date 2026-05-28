@@ -10,6 +10,7 @@ import s from './Table.module.pcss';
 import { Icon } from '../Icon';
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
+export const DEFAULT_PAGE_SIZE = DEFAULT_PAGE_SIZE_OPTIONS[0];
 
 export interface TableColumn<T = any> {
     key: string;

@@ -10,9 +10,6 @@ import theme from 'panel/lib/theme';
 
 import s from './RuntimeClientsTable.module.pcss';
 
-const DEFAULT_PAGE_SIZE = 10;
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
-
 type Props = {
     autoClients: AutoClient[];
     normalizedTopClients?: NormalizedTopClients;
@@ -54,9 +51,7 @@ const renderWhoisCell = (whoisInfo: WhoisInfo, ip: string) => {
             </div>
 
             <div className={s.tooltip}>
-                <div className={s.tooltipTitle}>
-                    {intl.getMessage('client_details')}
-                </div>
+                <div className={s.tooltipTitle}>{intl.getMessage('client_details')}</div>
                 <div className={s.tooltipRow}>
                     {stripHtml(
                         intl.getMessage('query_log_detail_address', {
@@ -96,9 +91,7 @@ export const RuntimeClientsTable = ({
     loading = false,
 }: Props) => {
     const pageSize = useMemo(
-        () =>
-            LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.AUTO_CLIENTS_PAGE_SIZE) ||
-            DEFAULT_PAGE_SIZE,
+        () => LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.AUTO_CLIENTS_PAGE_SIZE) || undefined,
         [],
     );
 
@@ -188,7 +181,9 @@ export const RuntimeClientsTable = ({
                 sortable: true,
                 render: (_value: unknown, row: AutoClient) => (
                     <div className={s.cell}>
-                        <span className={s.cellLabel}>{intl.getMessage('requests_table_header')}</span>
+                        <span className={s.cellLabel}>
+                            {intl.getMessage('requests_table_header')}
+                        </span>
 
                         <div className={s.cellValue}>
                             <span>
@@ -224,7 +219,6 @@ export const RuntimeClientsTable = ({
             emptyTable={emptyTableContent}
             loading={loading}
             pageSize={pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
             onPageSizeChange={handlePageSizeChange}
             getRowId={(row) => row.ip}
         />
