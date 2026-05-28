@@ -210,7 +210,14 @@ export const AddClient = () => {
                             onChange={handleUseGlobalSettings}
                         />
 
-                        <Link to={protectionRoute} props={routeProps} className={s.navLink}>
+                        <Link
+                            to={protectionRoute}
+                            props={routeProps}
+                            className={cn(s.navLink, {
+                                [s.navLinkDisabled]: form.use_global_settings,
+                            })}
+                            disabled={form.use_global_settings}
+                        >
                             <div className={s.navItem}>
                                 <div className={s.navItemContent}>
                                     <div
@@ -230,7 +237,14 @@ export const AddClient = () => {
                             </div>
                         </Link>
 
-                        <Link to={blockedServicesRoute} props={routeProps} className={s.navLink}>
+                        <Link
+                            to={blockedServicesRoute}
+                            props={routeProps}
+                            className={cn(s.navLink, {
+                                [s.navLinkDisabled]: form.use_global_settings,
+                            })}
+                            disabled={form.use_global_settings}
+                        >
                             <div className={s.navItem}>
                                 <div className={s.navItemContent}>
                                     <div
@@ -255,6 +269,9 @@ export const AddClient = () => {
                                 theme.layout.subtitle,
                                 theme.title.h5,
                                 theme.title.h4_tablet,
+                                {
+                                    [s.disabledText]: form.use_global_settings,
+                                },
                             )}
                         >
                             {intl.getMessage('upstream_dns_servers_title')}
@@ -275,6 +292,7 @@ export const AddClient = () => {
                                 placeholder={intl.getMessage('upstream_dns_placeholder')}
                                 label={intl.getMessage('clients_upstreams_desc')}
                                 rows={4}
+                                disabled={form.use_global_settings}
                             />
                         </div>
 
@@ -283,6 +301,7 @@ export const AddClient = () => {
                             title={intl.getMessage('clients_use_dns_cache')}
                             checked={form.upstreams_cache_enabled}
                             onChange={handleUpstreamsCacheEnabled}
+                            disabled={form.use_global_settings}
                         >
                             {form.upstreams_cache_enabled && (
                                 <div className={s.section}>

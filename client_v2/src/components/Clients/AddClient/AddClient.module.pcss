@@ -41,6 +41,21 @@
     }
 }
 
+.navLinkDisabled {
+    cursor: default;
+    pointer-events: none;
+
+    .navTitle,
+    .navDesc {
+        color: var(--disabled-main-text);
+    }
+
+    &:hover,
+    &:focus {
+        background-color: transparent;
+    }
+}
+
 .navItem {
     display: flex;
     align-items: flex-start;
@@ -83,4 +98,8 @@
 
 .containerOverride {
     padding-top: 0;
+}
+
+.disabledText {
+    color: var(--disabled-main-text);
 }

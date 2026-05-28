@@ -32,7 +32,7 @@ export const SwitchGroup = ({ title, description, id, className, checked, onChan
         <div className={cn(s.switch, className)}>
             <div className={s.row} onClick={handleRowClick}>
                 <div className={s.text}>
-                    <div className={cn(theme.text.t2, theme.text.semibold, s.title)}>{title}</div>
+                    <div className={cn(theme.text.t2, theme.text.semibold, disabled ? s.titleDisabled : s.title)}>{title}</div>
                     {description && <div className={cn(theme.text.t3, s.desc)}>{description}</div>}
                 </div>
                 <div className={s.input} onClick={(e) => e.stopPropagation()}>
