@@ -136,33 +136,33 @@ export const InactivitySchedule = ({ clientScope }: Props) => {
     const parentLinks = clientScope
         ? [
               {
-                  path: RoutePath.Clients as RoutePathKey,
+                  path: RoutePath.Clients,
                   title: intl.getMessage('client_settings'),
               },
               clientForm.mode === 'edit'
                   ? {
-                        path: RoutePath.ClientsEdit as RoutePathKey,
+                        path: RoutePath.ClientsEdit,
                         title: intl.getMessage('clients_edit'),
                         props: { clientName: encodeURIComponent(clientForm.originalName) },
                     }
                   : {
-                        path: RoutePath.ClientsAdd as RoutePathKey,
+                        path: RoutePath.ClientsAdd,
                         title: intl.getMessage('clients_add'),
                     },
               clientForm.mode === 'edit'
                   ? {
-                        path: RoutePath.ClientsEditBlockedServices as RoutePathKey,
+                        path: RoutePath.ClientsEditBlockedServices,
                         title: intl.getMessage('blocked_services'),
                         props: { clientName: encodeURIComponent(clientForm.originalName) },
                     }
                   : {
-                        path: RoutePath.ClientsBlockedServices as RoutePathKey,
+                        path: RoutePath.ClientsBlockedServices,
                         title: intl.getMessage('blocked_services'),
                     },
           ]
         : [
               {
-                  path: RoutePath.BlockedServices as RoutePathKey,
+                  path: RoutePath.BlockedServices,
                   title: intl.getMessage('blocked_services'),
               },
           ];

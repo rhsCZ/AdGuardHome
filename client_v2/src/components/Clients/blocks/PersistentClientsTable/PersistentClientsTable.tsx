@@ -167,7 +167,9 @@ export const PersistentClientsTable = ({
 
                         <div className={s.cellValue}>
                             <span>
-                                {intl.getMessage(value ? 'settings_global' : 'settings_custom')}
+                                {value
+                                    ? intl.getMessage('settings_global')
+                                    : intl.getMessage('settings_custom')}
                             </span>
                             {!value && (
                                 <Icon icon="user" color="gray" className={s.userIconRight} />
@@ -206,11 +208,9 @@ export const PersistentClientsTable = ({
 
                         <div className={s.cellValue}>
                             <span>
-                                {intl.getMessage(
-                                    row.upstreams.length > 0
-                                        ? 'settings_custom'
-                                        : 'settings_global',
-                                )}
+                                {row.upstreams.length > 0
+                                    ? intl.getMessage('settings_custom')
+                                    : intl.getMessage('settings_global')}
                             </span>
                         </div>
                     </div>
