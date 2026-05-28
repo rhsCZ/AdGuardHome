@@ -21,6 +21,7 @@ export const ICONS = {
     theme_light: 'theme_light',
     cross: 'cross',
     arrow_bottom: 'arrow_bottom',
+    arrows_sort: 'arrows_sort',
     butter: 'butter',
     loader: 'loader',
     check: 'check',
@@ -43,13 +44,18 @@ export const ICONS = {
     android: 'android',
     ios: 'ios',
     dns_privacy: 'dns_privacy',
-    eye_close: 'eye_close',
-    eye_open: 'eye_open',
-    lock: 'lock',
-    tracking: 'tracking',
-    wifi: 'wifi',
     location: 'location',
+    connections: 'connections',
+    adblocking: 'adblocking',
+    tracking: 'tracking',
+    parental: 'parental',
+    wifi: 'wifi',
+    lock: 'lock',
     search: 'search',
+    time: 'time',
+    eye_open: 'eye_open',
+    eye_close: 'eye_close',
+    check_tiny: 'check_tiny',
     user: 'user',
 } as const;
 
@@ -429,6 +435,27 @@ export const Icons = memo(() => (
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+            />
+        </symbol>
+
+        <symbol
+            id="arrows_sort"
+            viewBox="0 0 24 24"
+            fill="none"
+            fillRule="evenodd"
+            clipRule="evenodd"
+        >
+            <path
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                d="m8.00009 8.86453 4.01891-3.86453 3.9811 4"
+            />
+            <path
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                d="m15.9999 15.1355-4.0189 3.8645-3.98108-4"
             />
         </symbol>
 
@@ -816,7 +843,99 @@ export const Icons = memo(() => (
             />
         </symbol>
 
-        <symbol id="eye_close" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <symbol
+            id="location"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+        >
+            <path
+                clipRule="evenodd"
+                d="m4 9.36842c0-4.06947 3.58172-7.36842 8-7.36842 4.4183 0 8 3.29895 8 7.36842 0 5.41278-8 12.63158-8 12.63158s-8-7.2188-8-12.63158z"
+                fillRule="evenodd"
+            />
+            <circle cx="12" cy="10" r="3" />
+        </symbol>
+
+        <symbol
+            id="connections"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+        >
+            <path d="m15.5 4 3 3" />
+            <path d="m15.5 10 3-3" />
+            <path d="m18.5 7h-13" />
+            <path d="m8.5 14-3 3" />
+            <path d="m8.5 20-3-3" />
+            <path d="m5.5 17h13" />
+        </symbol>
+
+        <symbol id="adblocking" viewBox="0 0 24 24" fill="none">
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M3 8C3 7.44772 3.44772 7 4 7H20C20.5523 7 21 7.44772 21 8V16C21 16.5523 20.5523 17 20 17H4C3.44772 17 3 16.5523 3 16V8Z"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+            />
+            <path d="M4 21L20 3" strokeWidth="1.5" strokeLinecap="round" />
+        </symbol>
+
+        <symbol id="parental" viewBox="0 0 24 24" fill="none">
+            <circle
+                cx="6.76196"
+                cy="17.2381"
+                r="2.66005"
+                transform="rotate(-135 6.76196 17.2381)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <ellipse
+                cx="15.0385"
+                cy="8.96143"
+                rx="3.2162"
+                ry="5.21453"
+                transform="rotate(-135 15.0385 8.96143)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <ellipse
+                cx="9.9898"
+                cy="14.0103"
+                rx="7.07525"
+                ry="1.91841"
+                transform="rotate(-135 9.9898 14.0103)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </symbol>
+
+        <symbol id="time" viewBox="0 0 24 24" fill="none">
+            <circle
+                cx="12"
+                cy="12"
+                r="9"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M16 9L12 13.5L8.5 11.5"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </symbol>
+
+        <symbol id="eye_close" viewBox="0 0 24 24" fill="none">
             <path
                 d="M4 10C4 10 8 14.772 12 14.772C16 14.772 20 10 20 10"
                 stroke="currentColor"
@@ -828,7 +947,7 @@ export const Icons = memo(() => (
             <path d="M6 13V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </symbol>
 
-        <symbol id="eye_open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="eye_open" viewBox="0 0 24 24" fill="none">
             <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -844,6 +963,15 @@ export const Icons = memo(() => (
                 d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z"
                 stroke="currentColor"
                 strokeWidth="1.5"
+            />
+        </symbol>
+
+        <symbol id="check_tiny" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M5 11.7665L10.5878 17L19 8"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
             />
         </symbol>
 
@@ -883,28 +1011,6 @@ export const Icons = memo(() => (
             />
             <path
                 d="M7.08984 11.7659C7.33317 11.3336 7.99984 11.3335 7.99984 11.3335C7.99984 11.3335 8.6665 11.3336 8.8669 11.7771"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </symbol>
-
-        <symbol id="location" viewBox="0 0 16 16" fill="none">
-            <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M2.66699 6.24578C2.66699 3.5328 5.05481 1.3335 8.00032 1.3335C10.9458 1.3335 13.3337 3.5328 13.3337 6.24578C13.3337 9.85433 8.00033 14.6668 8.00033 14.6668C8.00033 14.6668 2.66699 9.85433 2.66699 6.24578Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-            <ellipse
-                cx="8"
-                cy="6.66651"
-                rx="2"
-                ry="2"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
