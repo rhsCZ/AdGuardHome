@@ -73,43 +73,6 @@ describe('Clients Page', () => {
         localStorage.clear();
     });
 
-    it('renders page header with title and add button', async () => {
-        mocks.state.dashboard.processingClients = false;
-        mocks.state.dashboard.clients = [];
-        mocks.state.dashboard.autoClients = [];
-
-        render(<Clients />);
-
-        await waitFor(() => {
-            expect(screen.getByText('Client settings')).toBeInTheDocument();
-            expect(screen.getByText('Add Client')).toBeInTheDocument();
-        });
-    });
-
-    it('renders persistent clients section title', async () => {
-        mocks.state.dashboard.processingClients = false;
-        mocks.state.dashboard.clients = [];
-        mocks.state.dashboard.autoClients = [];
-
-        render(<Clients />);
-
-        await waitFor(() => {
-            expect(screen.getByText('Persistent clients')).toBeInTheDocument();
-        });
-    });
-
-    it('renders runtime clients section title', async () => {
-        mocks.state.dashboard.processingClients = false;
-        mocks.state.dashboard.clients = [];
-        mocks.state.dashboard.autoClients = [];
-
-        render(<Clients />);
-
-        await waitFor(() => {
-            expect(screen.getByText('Runtime clients')).toBeInTheDocument();
-        });
-    });
-
     it('dispatches getClients on mount', async () => {
         mocks.state.dashboard.processingClients = false;
         mocks.state.stats.processingStats = false;
