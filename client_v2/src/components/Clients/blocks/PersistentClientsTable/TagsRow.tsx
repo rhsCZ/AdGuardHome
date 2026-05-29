@@ -1,6 +1,9 @@
 import React from 'react';
+import cn from 'clsx';
 
+import intl from 'panel/common/intl';
 import { Dropdown } from 'panel/common/ui/Dropdown';
+import { Icon } from 'panel/common/ui/Icon';
 
 import s from './PersistentClientsTable.module.pcss';
 
@@ -9,9 +12,10 @@ const MAX_VISIBLE_TAGS = 1;
 type TagsRowProps = {
     tags: string[];
     maxVisible?: number;
+    onCopy?: (text: string) => void;
 };
 
-export const TagsRow = ({ tags, maxVisible = MAX_VISIBLE_TAGS }: TagsRowProps) => {
+export const TagsRow = ({ tags, maxVisible = MAX_VISIBLE_TAGS, onCopy }: TagsRowProps) => {
     const visible = tags.slice(0, maxVisible);
     const hiddenCount = tags.length - maxVisible;
 
@@ -33,6 +37,16 @@ export const TagsRow = ({ tags, maxVisible = MAX_VISIBLE_TAGS }: TagsRowProps) =
                                     {tag}
                                 </span>
                             ))}
+                            {onCopy && (
+                                <button
+                                    type="button"
+                                    className={cn(s.copyBtn, s.copyBtnGreen, s.copyBtnTopRight)}
+                                    onClick={() => onCopy(tags.join(', '))}
+                                    title={intl.getMessage('copy')}
+                                >
+                                    <Icon icon="copy" color="green" />
+                                </button>
+                            )}
                         </div>
                     }
                 >

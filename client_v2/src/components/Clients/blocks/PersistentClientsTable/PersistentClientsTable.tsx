@@ -100,6 +100,18 @@ export const PersistentClientsTable = ({
                                                             {id}
                                                         </span>
                                                     ))}
+                                                    <button
+                                                        type="button"
+                                                        className={cn(
+                                                            s.copyBtn,
+                                                            s.copyBtnGreen,
+                                                            s.copyBtnTopRight,
+                                                        )}
+                                                        onClick={() => handleCopy(ids.join(', '))}
+                                                        title={intl.getMessage('copy')}
+                                                    >
+                                                        <Icon icon="copy" color="green" />
+                                                    </button>
                                                 </div>
                                             }
                                         >
@@ -134,11 +146,11 @@ export const PersistentClientsTable = ({
                                         <span className={s.nameTooltipText}>{value}</span>
                                         <button
                                             type="button"
-                                            className={s.copyBtn}
+                                            className={cn(s.copyBtn, s.copyBtnGreen)}
                                             onClick={() => handleCopy(value)}
                                             title={intl.getMessage('copy')}
                                         >
-                                            <Icon icon="copy" color="gray" />
+                                            <Icon icon="copy" color="green" />
                                         </button>
                                     </div>
                                 }
@@ -224,7 +236,7 @@ export const PersistentClientsTable = ({
                 },
                 accessor: 'tags',
                 sortable: false,
-                render: (value: string[]) => <TagCell tags={value} />,
+                render: (value: string[]) => <TagCell tags={value} onCopy={handleCopy} />,
             },
             {
                 key: 'requests',

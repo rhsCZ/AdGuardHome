@@ -86,7 +86,7 @@ export const Clients = () => {
                         className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}
                         data-testid="clients-title"
                     >
-                        {intl.getMessage('client_settings')}
+                        {intl.getMessage('clients')}
                     </h1>
 
                     <button

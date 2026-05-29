@@ -104,6 +104,20 @@
     }
 }
 
+.copyBtnGreen {
+    color: var(--default-product-icon);
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.copyBtnTopRight {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
 .servicesIcons {
     display: flex;
     align-items: center;
@@ -160,8 +174,6 @@
     flex-shrink: 0;
 }
 
-/* --- Tags --- */
-
 .tagsRow {
     display: flex;
     align-items: center;
@@ -183,7 +195,9 @@
 }
 
 .tagsTooltip {
+    position: relative;
     padding: 8px 0;
+    padding-right: 36px;
     background: var(--page-background-additional);
     border-radius: 8px;
     max-height: 240px;
@@ -198,8 +212,6 @@
     color: var(--default-main-text);
     white-space: nowrap;
 }
-
-/* --- Misc --- */
 
 .userIcon {
     width: 16px;
@@ -292,7 +304,9 @@
 }
 
 .idsTooltip {
+    position: relative;
     padding: 8px 0;
+    padding-right: 36px;
     background: var(--page-background-additional);
     border-radius: 8px;
     max-height: 240px;

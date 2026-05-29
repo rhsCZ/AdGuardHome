@@ -8,9 +8,10 @@ import s from './PersistentClientsTable.module.pcss';
 
 type TagCellProps = {
     tags: string[];
+    onCopy?: (text: string) => void;
 };
 
-export const TagCell = ({ tags }: TagCellProps) => {
+export const TagCell = ({ tags, onCopy }: TagCellProps) => {
     if (tags.length === 0) {
         return (
             <div className={s.cell}>
@@ -26,7 +27,7 @@ export const TagCell = ({ tags }: TagCellProps) => {
         <div className={s.cell}>
             <span className={s.cellLabel}>{intl.getMessage('tags_title')}</span>
             <div className={s.cellValue}>
-                <TagsRow tags={tags} />
+                <TagsRow tags={tags} onCopy={onCopy} />
             </div>
         </div>
     );

@@ -189,6 +189,7 @@ export const AddClient = () => {
                                 isMulti
                                 size="responsive"
                                 height="big"
+                                closeMenuOnSelect={false}
                             />
                         </div>
 
@@ -334,6 +335,7 @@ export const AddClient = () => {
                                 onClick={handleSave}
                                 disabled={form.processingSave}
                                 data-testid="client-form-save"
+                                className={s.actionButton}
                             >
                                 {intl.getMessage('save_btn')}
                             </Button>
@@ -342,6 +344,7 @@ export const AddClient = () => {
                                 size="small"
                                 onClick={handleCancel}
                                 data-testid="client-form-cancel"
+                                className={s.actionButton}
                             >
                                 {intl.getMessage('cancel_btn')}
                             </Button>
