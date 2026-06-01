@@ -18,6 +18,10 @@ See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Changed
+
+- The H2C connection establishment via HTTP/1.1 request upgrade is no longer supported.  See [RFC 9113][rfc9113].
+
 ### Added
 
 - New `reason` query parameter in `GET /control/querylog`.  See `openapi/openapi.yaml` for the full description.
@@ -25,6 +29,8 @@ NOTE: Add new changes BELOW THIS COMMENT.
 ### Deprecated
 
 - Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
+
+[rfc9113]:      https://datatracker.ietf.org/doc/html/rfc9113
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
