@@ -64,7 +64,7 @@ describe('query-log block and unblock toasts', () => {
         expect(mocks.addSuccessToast).toHaveBeenCalledTimes(1);
         expect(mocks.addSuccessToast).toHaveBeenCalledWith(
             expect.objectContaining({
-                message: intl.getMessage('user_rules_rule_added_to_allowlist'),
+                message: intl.getMessage('user_rules_rule_added_to_custom_filtering_rules'),
                 actionLabel: intl.getMessage('notify_undo'),
                 undoId: 'mock-undo-id',
             }),

@@ -1219,7 +1219,6 @@
   "user_rules_reason_blocked_by": "Blocked by %source%",
   "user_rules_reason_filtered_by": "Filtered by %source%",
   "user_rules_reason_allowed_by": "Allowed by %source%",
-  "user_rules_rule_added_to_allowlist": "Rule added to allowlist",
   "notify_undo": "Undo",
   "user_rules_domain_is_allowed": "Domain is allowed",
   "user_rules_rule_added_to_custom_filtering_rules": "Rule added to custom filtering rules",

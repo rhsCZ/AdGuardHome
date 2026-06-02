@@ -789,10 +789,9 @@ export const toggleBlocking =
             (rule): rule is string => Boolean(rule) && rule !== desiredRule,
         );
         const hasRuleToReplace = rulesToReplace.some((rule) => currentRules.includes(rule));
-        const addedRuleMessageKey =
-            type === BLOCK_ACTIONS.BLOCK
-                ? intl.getMessage('user_rules_rule_added_to_custom_filtering_rules')
-                : intl.getMessage('user_rules_rule_added_to_allowlist');
+        const addedRuleMessageKey = intl.getMessage(
+            'user_rules_rule_added_to_custom_filtering_rules',
+        );
         const undoToastPayload = createUndoToast(
             addedRuleMessageKey,
             intl.getMessage('notify_undo'),
@@ -914,7 +913,7 @@ export const unblockDomain =
         dispatch(
             addSuccessToast(
                 createUndoToast(
-                    intl.getMessage('user_rules_rule_added_to_allowlist'),
+                    intl.getMessage('user_rules_rule_added_to_custom_filtering_rules'),
                     intl.getMessage('notify_undo'),
                     async () => {
                         const didUndo = (await dispatch(
