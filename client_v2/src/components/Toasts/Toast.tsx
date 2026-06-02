@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useDispatch } from 'react-redux';
 import { Icon } from 'panel/common/ui/Icon';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
+import { getUndoCallback, clearUndoCallback } from 'panel/actions/toasts';
 import { TOAST_TIMEOUTS } from '../../helpers/constants';
 
 import { removeToast } from '../../actions';
@@ -21,34 +22,50 @@ type ToastProps = {
     message: ReactNode;
     type: string;
     actionLabel?: string;
-    onAction?: () => void | Promise<void>;
+    undoId?: string;
     action?: ToastAction;
     code?: string;
 };
 
-const Toast = ({ id, message, type, actionLabel, onAction, action, code }: ToastProps) => {
+const Toast = ({ id, message, type, actionLabel, undoId, action, code }: ToastProps) => {
     const dispatch = useDispatch();
-    const [timerId, setTimerId] = useState(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const clearRemoveToastTimeout = () => clearTimeout(timerId);
     const removeCurrentToast = () => dispatch(removeToast(id));
     const setRemoveToastTimeout = () => {
         const timeout = TOAST_TIMEOUTS[type];
-        const timerId = setTimeout(removeCurrentToast, timeout);
-
-        setTimerId(timerId);
+        timerRef.current = setTimeout(removeCurrentToast, timeout);
     };
 
     useEffect(() => {
         setRemoveToastTimeout();
-        return clearRemoveToastTimeout;
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
     }, []);
+
+    const clearRemoveToastTimeout = () => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+    };
+
+    const resetRemoveToastTimeout = () => {
+        clearRemoveToastTimeout();
+        setRemoveToastTimeout();
+    };
 
     const handleAction = async () => {
         clearRemoveToastTimeout();
 
-        if (onAction) {
-            await onAction();
+        if (undoId) {
+            const onUndo = getUndoCallback(undoId);
+            if (onUndo) {
+                await onUndo();
+                clearUndoCallback(undoId);
+            }
         }
 
         removeCurrentToast();
@@ -73,7 +90,7 @@ const Toast = ({ id, message, type, actionLabel, onAction, action, code }: Toast
             data-toast-type={type}
             data-toast-code={code}
             onMouseOver={clearRemoveToastTimeout}
-            onMouseOut={setRemoveToastTimeout}
+            onMouseOut={resetRemoveToastTimeout}
         >
             <div className={s.messageRow}>
                 <Icon

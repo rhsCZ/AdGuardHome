@@ -89,6 +89,11 @@ vi.mock('panel/actions/services', () => ({
 
 vi.mock('panel/actions/toasts', () => ({
     addSuccessToast: mocks.addSuccessToast,
+    createUndoToast: (message: any, actionLabel: any) => ({
+        message,
+        actionLabel,
+        undoId: 'mock-undo-id',
+    }),
 }));
 
 vi.mock('panel/helpers/helpers', async (importOriginal) => {

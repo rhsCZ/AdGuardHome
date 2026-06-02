@@ -18,6 +18,11 @@ vi.mock('panel/api/Api', () => ({
 vi.mock('panel/actions/toasts', () => ({
     addSuccessToast: mocks.addSuccessToast,
     addErrorToast: mocks.addErrorToast,
+    createUndoToast: (message: any, actionLabel: any) => ({
+        message,
+        actionLabel,
+        undoId: 'mock-undo-id',
+    }),
 }));
 
 describe('setRules', () => {

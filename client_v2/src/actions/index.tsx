@@ -18,7 +18,7 @@ import {
 import { areEqualVersions } from '../helpers/version';
 import { getTlsStatus } from './encryption';
 import { apiClient } from '../api/Api';
-import { addErrorToast, addNoticeToast, addSuccessToast } from './toasts';
+import { addErrorToast, addNoticeToast, addSuccessToast, createUndoToast } from './toasts';
 import { getFilteringStatus, setRules } from './filtering';
 
 type SafeSearchConfig = Record<string, boolean> & { enabled: boolean };
@@ -793,10 +793,10 @@ export const toggleBlocking =
             type === BLOCK_ACTIONS.BLOCK
                 ? intl.getMessage('user_rules_rule_added_to_custom_filtering_rules')
                 : intl.getMessage('user_rules_rule_added_to_allowlist');
-        const undoToastPayload = {
-            message: addedRuleMessageKey,
-            actionLabel: intl.getMessage('notify_undo'),
-            onAction: async () => {
+        const undoToastPayload = createUndoToast(
+            addedRuleMessageKey,
+            intl.getMessage('notify_undo'),
+            async () => {
                 const didUndo = (await dispatch(
                     setRules(previousRules, { showToast: false }),
                 )) as boolean;
@@ -805,11 +805,9 @@ export const toggleBlocking =
                     await dispatch(getFilteringStatus());
                 }
             },
-        };
+        );
 
         if (hasDesiredRule && !hasRuleToReplace) {
-            dispatch(addSuccessToast(addedRuleMessageKey));
-
             return true;
         }
 
@@ -851,7 +849,7 @@ export const blockDomain =
     (domain: string) => async (dispatch: AppDispatch, getState: AppGetState) => {
         const previousRules = getState().filtering?.userRules || '';
         const rule = `||${domain}^$important`;
-        const desiredRule = `${rule}`;
+        const desiredRule = rule;
         const currentRules = splitByNewLine(previousRules);
 
         if (currentRules.includes(desiredRule)) {
@@ -871,10 +869,21 @@ export const blockDomain =
         }
 
         dispatch(
-            addSuccessToast({
-                code: 'notify_user_rule_added',
-                message: intl.getMessage('notify_user_rule_added', { rule: desiredRule }),
-            }),
+            addSuccessToast(
+                createUndoToast(
+                    intl.getMessage('user_rules_rule_added_to_custom_filtering_rules'),
+                    intl.getMessage('notify_undo'),
+                    async () => {
+                        const didUndo = (await dispatch(
+                            setRules(previousRules, { showToast: false }),
+                        )) as boolean;
+
+                        if (didUndo) {
+                            await dispatch(getFilteringStatus());
+                        }
+                    },
+                ),
+            ),
         );
 
         await dispatch(getFilteringStatus());
@@ -903,10 +912,21 @@ export const unblockDomain =
         }
 
         dispatch(
-            addSuccessToast({
-                code: 'notify_user_rule_added',
-                message: intl.getMessage('notify_user_rule_added', { rule: desiredRule }),
-            }),
+            addSuccessToast(
+                createUndoToast(
+                    intl.getMessage('user_rules_rule_added_to_allowlist'),
+                    intl.getMessage('notify_undo'),
+                    async () => {
+                        const didUndo = (await dispatch(
+                            setRules(previousRules, { showToast: false }),
+                        )) as boolean;
+
+                        if (didUndo) {
+                            await dispatch(getFilteringStatus());
+                        }
+                    },
+                ),
+            ),
         );
 
         await dispatch(getFilteringStatus());

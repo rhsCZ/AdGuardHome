@@ -19,7 +19,7 @@ import {
 } from 'panel/actions/filtering';
 import { updateRewrite, deleteRewrite, addRewrite, getRewritesList } from 'panel/actions/rewrites';
 import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
-import { addSuccessToast } from 'panel/actions/toasts';
+import { addSuccessToast, createUndoToast } from 'panel/actions/toasts';
 import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
 import { delay, splitByNewLine } from 'panel/helpers/helpers';
 import { Client, RootState } from 'panel/initialState';
@@ -162,17 +162,19 @@ export const useUserRulesActions = ({
             }
 
             dispatch(
-                addSuccessToast({
-                    message: params.message,
-                    actionLabel: intl.getMessage('notify_undo'),
-                    onAction: async () => {
-                        const didUndo = await params.undo();
+                addSuccessToast(
+                    createUndoToast(
+                        params.message,
+                        intl.getMessage('notify_undo'),
+                        async () => {
+                            const didUndo = await params.undo();
 
-                        if (didUndo) {
-                            await params.refresh();
-                        }
-                    },
-                }),
+                            if (didUndo) {
+                                await params.refresh();
+                            }
+                        },
+                    ),
+                ),
             );
             await recheckCurrentTarget();
 

@@ -11,7 +11,7 @@ type SuccessToastPayload =
     | {
           message: ReactNode;
           actionLabel?: string;
-          onAction?: () => void | Promise<void>;
+          undoId?: string;
           code?: string;
       };
 
@@ -45,7 +45,8 @@ const toasts = handleActions(
                 message,
                 actionLabel:
                     typeof successPayload === 'string' ? undefined : successPayload.actionLabel,
-                onAction: typeof successPayload === 'string' ? undefined : successPayload.onAction,
+                undoId:
+                    typeof successPayload === 'string' ? undefined : successPayload.undoId,
                 code: typeof successPayload === 'string' ? undefined : successPayload.code,
                 type: TOAST_TYPES.SUCCESS,
             };
