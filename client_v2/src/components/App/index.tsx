@@ -106,11 +106,6 @@ const ROUTES: RouteConfig[] = [
         component: BlockedServices,
         exact: true,
     },
-    {
-        path: '/user_rules',
-        component: UserRules,
-        exact: true,
-    },
 ];
 
 const App = () => {
