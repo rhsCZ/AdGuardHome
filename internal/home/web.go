@@ -273,6 +273,7 @@ func (web *webAPI) start(ctx context.Context) {
 
 		hdlr = web.auth.middleware().Wrap(hdlr)
 
+		// Enable unencrypted HTTP/2, e.g. for proxies.
 		protocols := &http.Protocols{}
 		protocols.SetUnencryptedHTTP2(true)
 		protocols.SetHTTP1(true)
