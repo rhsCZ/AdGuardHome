@@ -1,8 +1,7 @@
 import { createAction } from 'redux-actions';
 import type { AppDispatch } from 'panel/store/types';
-import intl from 'panel/common/intl';
 import { apiClient } from '../api/Api';
-import { addErrorToast, addSuccessToast } from './toasts';
+import { addErrorToast } from './toasts';
 
 type BlockedServicesUpdate = {
     ids: string[];
