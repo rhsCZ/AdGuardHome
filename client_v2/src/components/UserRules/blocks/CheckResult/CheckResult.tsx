@@ -149,7 +149,7 @@ export const CheckResult = ({
                     </div>
                 )}
 
-                {meta.rule && (
+                {meta.tone !== 'rewritten' && meta.rule && (
                     <div className={s.resultItem}>
                         {intl.getMessage('user_rules_rule', { rule: meta.rule })}
                     </div>
@@ -164,6 +164,12 @@ export const CheckResult = ({
                             : intl.getMessage('user_rules_rewritten_to', {
                                   value: redirectedValue,
                               })}
+                    </div>
+                )}
+
+                {meta.tone === 'rewritten' && meta.rule && (
+                    <div className={s.resultItem}>
+                        {intl.getMessage('user_rules_rule', { rule: meta.rule })}
                     </div>
                 )}
 
