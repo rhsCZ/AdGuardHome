@@ -42,17 +42,13 @@ describe('getCheckResultMeta', () => {
             whitelistFilters,
         });
 
-        expect(blockedMeta.reason).toBe(
-            intl.getMessage('user_rules_reason_filtered_by', { source: 'Example Blocklist' }),
-        );
-        expect(allowedMeta.reason).toBe(
-            intl.getMessage('user_rules_reason_allowed_by', { source: 'Example Allowlist' }),
-        );
+        expect(blockedMeta.reason).toBeUndefined();
+        expect(blockedMeta.source).toBe('Example Blocklist');
+        expect(blockedMeta.sourceListType).toBe('blocklist');
+        expect(allowedMeta.reason).toBeUndefined();
+        expect(allowedMeta.source).toBe('Example Allowlist');
+        expect(allowedMeta.sourceListType).toBe('allowlist');
         expect(allowedMeta.actions).toEqual([
-            {
-                kind: 'block',
-                label: intl.getMessage('block'),
-            },
             {
                 kind: 'disable-filter',
                 label: intl.getMessage('user_rules_disable_filter'),

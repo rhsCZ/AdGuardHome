@@ -13,6 +13,7 @@ type CheckResultMeta = {
     actions: ResultAction[];
     rule?: string;
     source?: string;
+    sourceListType?: 'blocklist' | 'allowlist';
 };
 
 const getActionLabel = (action: ResultActionKind) => {
@@ -71,11 +72,44 @@ const getSourceName = (
     );
 };
 
-const getMatchedFilterReason = (isCustomRule: boolean, sourceName?: string) => {
+const getSourceListType = (
+    filterListId: number | undefined,
+    filters: Filter[],
+    whitelistFilters: Filter[],
+): 'blocklist' | 'allowlist' | undefined => {
+    if (filterListId === undefined) {
+        return undefined;
+    }
+
+    const specialIds = Object.values(SPECIAL_FILTER_ID) as number[];
+    if (specialIds.includes(filterListId)) {
+        return undefined;
+    }
+
+    if (whitelistFilters.some((f) => f.id === filterListId)) {
+        return 'allowlist';
+    }
+
+    if (filters.some((f) => f.id === filterListId)) {
+        return 'blocklist';
+    }
+
+    return undefined;
+};
+
+const getBlockedReason = (
+    isCustomRule: boolean,
+    sourceName: string | undefined,
+    sourceListType: 'blocklist' | 'allowlist' | undefined,
+) => {
     if (isCustomRule) {
         return intl.getMessage('user_rules_reason_blocked_by', {
             source: intl.getMessage('custom_filtering_rules'),
         });
+    }
+
+    if (sourceListType) {
+        return undefined;
     }
 
     if (!sourceName) {
@@ -85,7 +119,15 @@ const getMatchedFilterReason = (isCustomRule: boolean, sourceName?: string) => {
     return intl.getMessage('user_rules_reason_filtered_by', { source: sourceName });
 };
 
-const getMatchedAllowlistReason = (sourceName?: string) => {
+const getAllowedReason = (
+    isCustomRule: boolean,
+    sourceName: string | undefined,
+    sourceListType: 'blocklist' | 'allowlist' | undefined,
+) => {
+    if (isCustomRule || sourceListType) {
+        return undefined;
+    }
+
     if (!sourceName) {
         return undefined;
     }
@@ -107,29 +149,32 @@ export const getCheckResultMeta = ({
     const primaryRule = getPrimaryRule(rules);
     const sourceName = getSourceName(rules, filters, whitelistFilters);
     const isCustomRule = primaryRule?.filter_list_id === SPECIAL_FILTER_ID.CUSTOM_FILTERING_RULES;
+    const sourceListType = getSourceListType(primaryRule?.filter_list_id, filters, whitelistFilters);
 
     switch (reason) {
         case FILTERED_STATUS.FILTERED_BLACK_LIST:
             return {
                 tone: 'blocked',
                 title: intl.getMessage('user_rules_domain_blocked'),
-                reason: getMatchedFilterReason(isCustomRule, sourceName),
+                reason: getBlockedReason(isCustomRule, sourceName, sourceListType),
                 actions: isCustomRule
                     ? [createAction('allow')]
                     : [createAction('allow'), createAction('disable-filter')],
                 rule: primaryRule?.text,
                 source: sourceName,
+                sourceListType,
             };
         case FILTERED_STATUS.NOT_FILTERED_WHITE_LIST:
             return {
                 tone: 'allowed',
                 title: intl.getMessage('user_rules_domain_is_allowed'),
-                reason: getMatchedAllowlistReason(sourceName),
+                reason: getAllowedReason(isCustomRule, sourceName, sourceListType),
                 actions: isCustomRule
                     ? [createAction('block')]
-                    : [createAction('block'), createAction('disable-filter')],
+                    : [createAction('disable-filter')],
                 rule: primaryRule?.text,
                 source: sourceName,
+                sourceListType,
             };
         case FILTERED_STATUS.NOT_FILTERED_NOT_FOUND:
         case FILTERED_STATUS.NOT_FILTERED_ERROR:
@@ -208,6 +253,7 @@ export const getCheckResultMeta = ({
                 actions: [],
                 rule: primaryRule?.text,
                 source: sourceName,
+                sourceListType,
             };
         }
     }

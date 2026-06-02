@@ -31,6 +31,18 @@ type Props = {
     hiddenActionKinds?: ResultActionKind[];
 };
 
+const renderSourceLabel = (source: string, sourceListType?: 'blocklist' | 'allowlist') => {
+    if (sourceListType === 'blocklist') {
+        return intl.getMessage('user_rules_source_blocklist', { value: source });
+    }
+
+    if (sourceListType === 'allowlist') {
+        return intl.getMessage('user_rules_source_allowlist', { value: source });
+    }
+
+    return intl.getMessage('user_rules_source', { value: source });
+};
+
 type CheckResultTone = ReturnType<typeof getCheckResultMeta>['tone'];
 
 const getStatusClassName = (tone: CheckResultTone) => {
@@ -72,7 +84,7 @@ export const CheckResult = ({
     const meta = getCheckResultMeta({ reason, rules, filters, whitelistFilters });
     const statusClassName = getStatusClassName(meta.tone);
     const showRewriteActions = reason === FILTERED_STATUS.REWRITE && hasMatchedRewrite;
-    const showSource = reason === FILTERED_STATUS.FILTERED_SAFE_BROWSING && Boolean(meta.source);
+    const showSource = Boolean(meta.source);
     const hasStandaloneResultMessage = reason ? STANDALONE_RESULT_REASONS.has(reason) : false;
     const redirectedValue = cname || (ip_addrs && ip_addrs.length > 0 ? ip_addrs.join(', ') : null);
     const normalizedServiceName = service_name
@@ -139,7 +151,7 @@ export const CheckResult = ({
 
                 {showSource && meta.source && (
                     <div className={s.resultItem}>
-                        {intl.getMessage('user_rules_source', { value: meta.source })}
+                        {renderSourceLabel(meta.source, meta.sourceListType)}
                     </div>
                 )}
 

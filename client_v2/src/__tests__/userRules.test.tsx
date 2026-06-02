@@ -423,7 +423,6 @@ const resultActionScenarios = [
         renderScenario: () => renderMatchedAllowlistResult(),
         title: 'Domain is allowed',
         actions: [
-            ['block', 'Block'],
             ['disable-filter', 'Disable filter'],
         ],
     },
@@ -861,7 +860,7 @@ describe('UserRules harness', () => {
         resolveToggle?.();
     });
 
-    it('shows Disable filter before Block for allowlist filter results', () => {
+    it('shows only Disable filter for allowlist filter results', () => {
         renderMatchedAllowlistResult();
 
         const actionOrder = Array.from(
@@ -871,7 +870,6 @@ describe('UserRules harness', () => {
         ).map((element) => element.getAttribute('data-testid'));
 
         expect(actionOrder).toEqual([
-            'user-rules-result-action-block',
             'user-rules-result-action-disable-filter',
         ]);
     });

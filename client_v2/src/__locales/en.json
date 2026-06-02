@@ -1216,6 +1216,8 @@
   "user_rules_redirected_to": "<strong>Redirected to:</strong> %value%",
   "user_rules_rewritten_to": "<strong>Rewritten to:</strong> %value%",
   "user_rules_source": "<strong>Source:</strong> %value%",
+  "user_rules_source_blocklist": "<strong>Blocklist:</strong> %value%",
+  "user_rules_source_allowlist": "<strong>Allowlist:</strong> %value%",
   "user_rules_reason_blocked_by": "Blocked by %source%",
   "user_rules_reason_filtered_by": "Filtered by %source%",
   "user_rules_reason_allowed_by": "Allowed by %source%",
