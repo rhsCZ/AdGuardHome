@@ -46,9 +46,14 @@ const createAction = (kind: ResultActionKind): ResultAction => ({
     label: getActionLabel(kind),
 });
 
-const getPrimaryRule = (rules?: CheckResultData['rules']): CheckResultRule | undefined => rules?.[0];
+const getPrimaryRule = (rules?: CheckResultData['rules']): CheckResultRule | undefined =>
+    rules?.[0];
 
-const getSourceName = (rules: CheckResultData['rules'], filters: Filter[], whitelistFilters: Filter[]) => {
+const getSourceName = (
+    rules: CheckResultData['rules'],
+    filters: Filter[],
+    whitelistFilters: Filter[],
+) => {
     const primaryRule = getPrimaryRule(rules);
     const filterListId = primaryRule?.filter_list_id;
 
@@ -179,7 +184,7 @@ export const getCheckResultMeta = ({
             return {
                 tone: 'rewritten',
                 title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
-                reason: intl.getMessage('rewrite_applied'),
+                reason: intl.getMessage('custom_filtering_rules'),
                 actions: isCustomRule ? [createAction('remove-rewrite-rule')] : [],
                 rule: primaryRule?.text,
             };

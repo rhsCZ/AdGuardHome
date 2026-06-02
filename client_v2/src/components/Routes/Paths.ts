@@ -15,7 +15,6 @@ export const RoutePath = {
     DnsBlocklists: 'DnsBlocklists',
     DnsAllowlists: 'DnsAllowlists',
     DnsRewrites: 'DnsRewrites',
-    CustomRules: 'CustomRules',
     BlockedServices: 'BlockedServices',
     InactivitySchedule: 'InactivitySchedule',
     UserRules: 'UserRules',
@@ -35,10 +34,9 @@ export const Paths: Record<RoutePathKey, string> = {
     DnsBlocklists: pathBuilder('blocklists'),
     DnsAllowlists: pathBuilder('allowlists'),
     DnsRewrites: pathBuilder('dns_rewrites'),
-    CustomRules: pathBuilder('custom_rules'),
+    UserRules: pathBuilder('user_rules'),
     BlockedServices: pathBuilder('blocked_services'),
     InactivitySchedule: pathBuilder('blocked_services/schedule'),
-    UserRules: pathBuilder('user_rules'),
 };
 
 export type LinkParams = Partial<Record<string, string | number>>;

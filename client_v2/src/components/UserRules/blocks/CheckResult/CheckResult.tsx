@@ -86,6 +86,10 @@ export const CheckResult = ({
         }
 
         if (meta.tone === 'rewritten') {
+            if (reason === FILTERED_STATUS.REWRITE_RULE) {
+                return intl.getMessage('user_rules_reason', { reason: meta.reason });
+            }
+
             return intl.getMessage('user_rules_status', { reason: meta.reason });
         }
 
@@ -153,7 +157,13 @@ export const CheckResult = ({
 
                 {meta.tone === 'rewritten' && redirectedValue && (
                     <div className={s.resultItem}>
-                        {intl.getMessage('user_rules_redirected_to', { value: redirectedValue })}
+                        {reason === FILTERED_STATUS.FILTERED_SAFE_SEARCH
+                            ? intl.getMessage('user_rules_redirected_to', {
+                                  value: redirectedValue,
+                              })
+                            : intl.getMessage('user_rules_rewritten_to', {
+                                  value: redirectedValue,
+                              })}
                     </div>
                 )}
 

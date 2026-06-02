@@ -11,8 +11,13 @@ import {
     toggleSetting,
 } from 'panel/actions';
 import { updateClient } from 'panel/actions/clients';
-import { checkHost, getFilteringStatus, setRules, toggleFilterStatus } from 'panel/actions/filtering';
-import { updateRewrite, deleteRewrite } from 'panel/actions/rewrites';
+import {
+    checkHost,
+    getFilteringStatus,
+    setRules,
+    toggleFilterStatus,
+} from 'panel/actions/filtering';
+import { updateRewrite, deleteRewrite, addRewrite, getRewritesList } from 'panel/actions/rewrites';
 import { getBlockedServices, updateBlockedServices } from 'panel/actions/services';
 import { addSuccessToast } from 'panel/actions/toasts';
 import { BLOCK_ACTIONS, MODAL_TYPE, SPECIAL_FILTER_ID } from 'panel/helpers/constants';
@@ -149,7 +154,7 @@ export const useUserRulesActions = ({
         undo: () => Promise<boolean | undefined>;
         refresh: () => Promise<void>;
     }) => {
-        await runWithClosedResult(async () => {
+        return runWithClosedResult(async () => {
             const ok = await params.perform();
 
             if (!ok) {
@@ -490,22 +495,31 @@ export const useUserRulesActions = ({
         });
     };
 
-    const handleRewriteDelete = async () => {
-        if (!currentRewrite.domain) {
+    const handleRewriteDelete = async (rewrite?: RewriteEntry) => {
+        const targetRewrite = rewrite || currentRewrite;
+
+        if (!targetRewrite.domain) {
             return false;
         }
 
-        return runWithClosedResult(async () => {
-            const ok = await dispatch(deleteRewrite(currentRewrite, { showToast: false }));
+        return performWithUndo({
+            perform: () =>
+                dispatch(deleteRewrite(targetRewrite, { showToast: false })) as Promise<boolean>,
+            message: intl.getMessage('user_rules_dns_rewrite_removed'),
+            undo: async () => {
+                await dispatch(
+                    addRewrite({
+                        domain: targetRewrite.domain,
+                        answer: targetRewrite.answer,
+                        enabled: targetRewrite.enabled,
+                    }),
+                );
 
-            if (!ok) {
-                return false;
-            }
-
-            dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
-            await recheckCurrentTarget();
-
-            return true;
+                return true;
+            },
+            refresh: async () => {
+                await dispatch(getRewritesList());
+            },
         });
     };
 
@@ -527,8 +541,7 @@ export const useUserRulesActions = ({
             return;
         }
 
-        setCurrentRewrite(matchedRewrite);
-        dispatch(openModal(MODAL_TYPE.DELETE_REWRITE));
+        handleRewriteDelete(matchedRewrite);
     };
 
     const handleRemoveRewriteRule = async () => {
@@ -539,26 +552,22 @@ export const useUserRulesActions = ({
         }
 
         const ruleToRemove = primaryRule.text;
+        const originalRules = userRules || '';
 
-        await runWithClosedResult(async () => {
-            const currentRules = splitByNewLine(userRules || '');
-            const updatedRules = currentRules.filter(
-                (rule: string) => rule !== ruleToRemove,
-            );
+        await performWithUndo({
+            perform: () => {
+                const currentRules = splitByNewLine(userRules || '');
+                const updatedRules = currentRules.filter((rule: string) => rule !== ruleToRemove);
 
-            const didSave = (await dispatch(
-                setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
-            )) as boolean;
-
-            if (!didSave) {
-                return false;
-            }
-
-            dispatch(addSuccessToast(intl.getMessage('user_rules_dns_rewrite_removed')));
-            await dispatch(getFilteringStatus());
-            await recheckCurrentTarget();
-
-            return true;
+                return dispatch(
+                    setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
+                ) as Promise<boolean>;
+            },
+            message: intl.getMessage('user_rules_rule_removed'),
+            undo: () => dispatch(setRules(originalRules, { showToast: false })) as Promise<boolean>,
+            refresh: async () => {
+                await dispatch(getFilteringStatus());
+            },
         });
     };
 
