@@ -37,7 +37,9 @@ export const UserRules = () => {
     const checkResult = useSelector((state: RootState) => state.filtering.check);
     const settingsList = useSelector((state: RootState) => state.settings.settingsList);
     const persistentClients = useSelector((state: RootState) => state.dashboard.clients || []);
-    const processingClientUpdate = useSelector((state: RootState) => state.clients?.processingUpdating || false);
+    const processingClientUpdate = useSelector(
+        (state: RootState) => state.clients?.processingUpdating || false,
+    );
     const rewrites = useSelector((state: RootState) => state.rewrites);
     const services = useSelector((state: RootState) => state.services);
 

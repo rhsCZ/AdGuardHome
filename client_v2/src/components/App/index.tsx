@@ -16,6 +16,9 @@ import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStora
 import { Allowlists } from 'panel/components/FilterLists/Allowlists';
 import { DNSRewrites } from 'panel/components/FilterLists/DNSRewrites';
 import { SetupGuide } from 'panel/components/SetupGuide';
+import { Dashboard } from 'panel/components/Dashboard';
+import { Dhcp } from 'panel/components/Dhcp';
+import { QueryLog } from 'panel/components/QueryLog';
 import Toasts from '../Toasts';
 import i18n from '../../i18n';
 import { THEMES } from '../../helpers/constants';
@@ -38,6 +41,11 @@ type RouteConfig = {
 const SetupGuideRoute = () => <SetupGuide />;
 
 const ROUTES: RouteConfig[] = [
+    {
+        path: '/dashboard',
+        component: Dashboard,
+        exact: true,
+    },
     {
         path: '/settings',
         component: Settings,
@@ -74,8 +82,18 @@ const ROUTES: RouteConfig[] = [
         exact: true,
     },
     {
+        path: '/dhcp',
+        component: Dhcp,
+        exact: true,
+    },
+    {
         path: '/guide',
         component: SetupGuideRoute,
+        exact: true,
+    },
+    {
+        path: '/logs',
+        component: QueryLog,
         exact: true,
     },
     {
@@ -88,14 +106,19 @@ const ROUTES: RouteConfig[] = [
         component: BlockedServices,
         exact: true,
     },
+    {
+        path: '/user_rules',
+        component: UserRules,
+        exact: true,
+    },
 ];
 
 const App = () => {
     const dispatch = useDispatch();
-    const { language, isCoreRunning, processing, theme } = useSelector<RootState, RootState['dashboard']>(
-        (state) => state.dashboard,
-        shallowEqual,
-    );
+    const { language, isCoreRunning, processing, theme } = useSelector<
+        RootState,
+        RootState['dashboard']
+    >((state) => state.dashboard, shallowEqual);
 
     useEffect(() => {
         dispatch(getDnsStatus());
@@ -176,7 +199,12 @@ const App = () => {
                     {!processing &&
                         isCoreRunning &&
                         ROUTES.map((route, index) => (
-                            <Route key={index} exact={route.exact} path={route.path} component={route.component} />
+                            <Route
+                                key={index}
+                                exact={route.exact}
+                                path={route.path}
+                                component={route.component}
+                            />
                         ))}
                 </div>
             </div>

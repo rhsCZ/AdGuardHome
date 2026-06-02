@@ -1,16 +1,15 @@
-import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
-    resolve: {
-        alias: {
-            panel: fileURLToPath(new URL('./src', import.meta.url)),
-        },
-    },
     test: {
         environment: 'jsdom',
-        globals: true,
+        include: ['src/__tests__/**/*.{test,spec}.{ts,tsx}'],
         setupFiles: ['src/__tests__/setup.ts'],
-        include: ['src/__tests__/**/*.test.{ts,tsx}'],
+    },
+    resolve: {
+        alias: {
+            panel: path.resolve(__dirname, './src'),
+        },
     },
 });

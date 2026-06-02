@@ -14,7 +14,7 @@ type Props = Omit<ComponentProps<'input'>, 'size'> & {
     suffixIcon?: ReactNode;
     borderless?: boolean;
     invalid?: boolean;
-    maxLength?: number | undefined;
+    maxLength?: number;
     error?: boolean;
     errorMessage?: string;
     isClearable?: boolean;

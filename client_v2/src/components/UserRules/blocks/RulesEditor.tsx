@@ -27,7 +27,9 @@ export const RulesEditor = ({ control, handleSubmit, onSubmit, processingRules }
     return (
         <div className={s.section}>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <p className={cn(s.description, theme.text.t2)}>{intl.getMessage('user_rules_desc')}</p>
+                <p className={cn(s.description, theme.text.t2)}>
+                    {intl.getMessage('user_rules_desc')}
+                </p>
 
                 <div className={s.textEditWrapper}>
                     <div className={s.textEditContainer}>
@@ -36,7 +38,10 @@ export const RulesEditor = ({ control, handleSubmit, onSubmit, processingRules }
                             control={control}
                             render={({ field }) => (
                                 <>
-                                    {getTextareaCommentsHighlight(highlightRef, field.value || '', ['!', '#'])}
+                                    {getTextareaCommentsHighlight(highlightRef, field.value || '', [
+                                        '!',
+                                        '#',
+                                    ])}
 
                                     <Textarea
                                         {...field}

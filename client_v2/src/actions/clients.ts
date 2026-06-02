@@ -1,6 +1,6 @@
 import { createAction } from 'redux-actions';
-import i18next from 'i18next';
 import type { AppDispatch } from 'panel/store/types';
+import intl from 'panel/common/intl';
 import { apiClient } from '../api/Api';
 import type { Client } from '../initialState';
 
@@ -26,7 +26,7 @@ export const addClient = (config: Client) => async (dispatch: AppDispatch) => {
         await apiClient.addClient(config);
         dispatch(addClientSuccess());
         dispatch(toggleClientModal());
-        dispatch(addSuccessToast(i18next.t('client_added', { key: config.name })));
+        dispatch(addSuccessToast(intl.getMessage('client_added', { key: config.name })));
         dispatch(getClients());
     } catch (error) {
         dispatch(addErrorToast({ error }));
@@ -43,7 +43,7 @@ export const deleteClient = (config: ClientDeleteConfig) => async (dispatch: App
     try {
         await apiClient.deleteClient(config);
         dispatch(deleteClientSuccess());
-        dispatch(addSuccessToast(i18next.t('client_deleted', { key: config.name })));
+        dispatch(addSuccessToast(intl.getMessage('client_deleted', { key: config.name })));
         dispatch(getClients());
     } catch (error) {
         dispatch(addErrorToast({ error }));
@@ -58,28 +58,28 @@ export const updateClientSuccess = createAction('UPDATE_CLIENT_SUCCESS');
 export const updateClient =
     (config: Client, name: string, options: ClientMutationOptions = {}) =>
     async (dispatch: AppDispatch): Promise<boolean> => {
-    dispatch(updateClientRequest());
-    try {
-        const data = { name, data: { ...config } };
+        dispatch(updateClientRequest());
+        try {
+            const data = { name, data: { ...config } };
 
-        await apiClient.updateClient(data);
-        dispatch(updateClientSuccess());
+            await apiClient.updateClient(data);
+            dispatch(updateClientSuccess());
 
-        if (options.toggleModal !== false) {
-            dispatch(toggleClientModal());
+            if (options.toggleModal !== false) {
+                dispatch(toggleClientModal());
+            }
+
+            if (options.showToast !== false) {
+                dispatch(addSuccessToast(intl.getMessage('client_updated', { key: name })));
+            }
+
+            dispatch(getClients());
+
+            return true;
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(updateClientFailure());
+
+            return false;
         }
-
-        if (options.showToast !== false) {
-            dispatch(addSuccessToast(i18next.t('client_updated', { key: name })));
-        }
-
-        dispatch(getClients());
-
-        return true;
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(updateClientFailure());
-
-        return false;
-    }
-};
+    };

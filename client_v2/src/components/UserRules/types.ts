@@ -34,7 +34,8 @@ export type ResultActionKind =
     | 'disable-filter'
     | 'edit-rewrite'
     | 'delete-rewrite'
-    | 'remove-rewrite-rule';
+    | 'remove-rewrite-rule'
+    | 'none';
 
 export type ResultAction = {
     kind: ResultActionKind;
@@ -45,6 +46,11 @@ export type RewriteEntry = {
     domain: string;
     answer: string;
     enabled: boolean;
+};
+
+export type RewriteDialogState = {
+    visible: boolean;
+    target: RewriteEntry;
 };
 
 export type DnsRecordTypeOption = {

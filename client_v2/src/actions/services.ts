@@ -1,7 +1,8 @@
 import { createAction } from 'redux-actions';
 import type { AppDispatch } from 'panel/store/types';
+import intl from 'panel/common/intl';
 import { apiClient } from '../api/Api';
-import { addErrorToast } from './toasts';
+import { addErrorToast, addSuccessToast } from './toasts';
 
 type BlockedServicesUpdate = {
     ids: string[];
@@ -43,19 +44,43 @@ export const updateBlockedServicesFailure = createAction('UPDATE_BLOCKED_SERVICE
 export const updateBlockedServicesSuccess = createAction('UPDATE_BLOCKED_SERVICES_SUCCESS');
 
 export const updateBlockedServices =
-    (values: BlockedServicesUpdate) =>
-    async (dispatch: AppDispatch): Promise<boolean> => {
+    (values: BlockedServicesUpdate) => async (dispatch: AppDispatch) => {
         dispatch(updateBlockedServicesRequest());
         try {
             await apiClient.updateBlockedServices(values);
             dispatch(updateBlockedServicesSuccess());
             dispatch(getBlockedServices());
-
-            return true;
+            dispatch(
+                addSuccessToast({
+                    message: intl.getMessage('settings_notify_changes_saved'),
+                    code: 'settings_notify_changes_saved',
+                }),
+            );
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(updateBlockedServicesFailure());
-
-            return false;
         }
+    };
+
+export const allowBlockedService =
+    (serviceId: string) => async (dispatch: AppDispatch, getState: any) => {
+        let list = getState().services?.list;
+
+        if (!Array.isArray(list?.ids)) {
+            await dispatch(getBlockedServices());
+            list = getState().services?.list;
+        }
+
+        const currentIds = Array.isArray(list?.ids) ? list.ids : [];
+
+        if (!currentIds.includes(serviceId)) {
+            return;
+        }
+
+        await dispatch(
+            updateBlockedServices({
+                ids: currentIds.filter((id: string) => id !== serviceId),
+                schedule: list?.schedule,
+            }),
+        );
     };

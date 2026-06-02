@@ -187,7 +187,7 @@ export const refreshFilters = (config: RefreshFiltersConfig) => async (dispatch:
         dispatch(refreshFiltersSuccess());
 
         if (updated > 0) {
-            dispatch(addSuccessToast(intl.getMessage('list_updated', { count: updated })));
+            dispatch(addSuccessToast(intl.getPlural('list_updated', updated)));
         } else {
             dispatch(addSuccessToast(intl.getMessage('all_lists_up_to_date_toast')));
         }
@@ -224,24 +224,26 @@ export const checkHostSuccess = createAction('CHECK_HOST_SUCCESS');
  * @param {string} host.name
  * @returns {undefined}
  */
-export const checkHost = (host: CheckHostRequest) => async (dispatch: AppDispatch): Promise<boolean> => {
-    dispatch(checkHostRequest());
-    try {
-        const data = await apiClient.checkHost(host);
-        const { name: hostname } = host;
+export const checkHost =
+    (host: CheckHostRequest) =>
+    async (dispatch: AppDispatch): Promise<boolean> => {
+        dispatch(checkHostRequest());
+        try {
+            const data = await apiClient.checkHost(host);
+            const { name: hostname } = host;
 
-        dispatch(
-            checkHostSuccess({
-                hostname,
-                ...data,
-            }),
-        );
+            dispatch(
+                checkHostSuccess({
+                    hostname,
+                    ...data,
+                }),
+            );
 
-        return true;
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(checkHostFailure());
+            return true;
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(checkHostFailure());
 
-        return false;
-    }
-};
+            return false;
+        }
+    };

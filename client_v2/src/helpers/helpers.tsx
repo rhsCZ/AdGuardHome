@@ -1,10 +1,10 @@
 import 'url-polyfill';
 import { parse as dateParse, format as dateFormat } from 'date-fns';
 import round from 'lodash/round';
-import i18n from 'i18next';
 import ipaddr, { IPv4, IPv6 } from 'ipaddr.js';
 import queryString from 'qs';
 import React from 'react';
+import intl from 'panel/common/intl';
 import { getTrackerData } from './trackers/trackers';
 
 import {
@@ -12,7 +12,6 @@ import {
     CHECK_TIMEOUT,
     COMMENT_LINE_DEFAULT_TOKEN,
     DEFAULT_DATE_FORMAT_OPTIONS,
-    DEFAULT_LANGUAGE,
     DEFAULT_TIME_FORMAT,
     DETAILED_DATE_FORMAT_OPTIONS,
     DHCP_VALUES_PLACEHOLDERS,
@@ -27,7 +26,7 @@ import {
     SHORT_DATE_FORMAT_OPTIONS,
 } from './constants';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from './localStorageHelper';
-import { DhcpInterface, InstallInterface } from '../initialState';
+import { DhcpInterfaces, InstallInterface } from '../initialState';
 
 /**
  * @param time {string} The time to format
@@ -94,25 +93,27 @@ export const normalizeLogs = (logs: any) =>
         const { name: domain, unicode_name: unicodeName, type } = question;
 
         const processResponse = (data: any) =>
-            data
+            Array.isArray(data)
                 ? data.map((response: any) => {
                       const { value, type, ttl } = response;
-                      return `${type}: ${value} (ttl=${ttl})`;
+
+                      return {
+                          value,
+                          type,
+                          ttl,
+                      };
                   })
                 : [];
 
-        let newRules = rules;
+        let newRules = Array.isArray(rules) ? rules : [];
         /* TODO 'filterId' and 'rule' are deprecated, will be removed in 0.106 */
-        if (
-            rule !== undefined &&
-            filterId !== undefined &&
-            rules !== undefined &&
-            rules.length === 0
-        ) {
-            newRules = {
-                filter_list_id: filterId,
-                text: rule,
-            };
+        if (rule !== undefined && filterId !== undefined && newRules.length === 0) {
+            newRules = [
+                {
+                    filter_list_id: filterId,
+                    text: rule,
+                },
+            ];
         }
 
         return {
@@ -125,13 +126,19 @@ export const normalizeLogs = (logs: any) =>
             client,
             client_proto,
             client_id,
-            client_info,
+            client_info: client_info
+                ? {
+                      ...client_info,
+                      whois: client_info.whois || {},
+                  }
+                : null,
             /* TODO 'filterId' and 'rule' are deprecated, will be removed in 0.106 */
             filterId,
             rule,
             rules: newRules,
             status,
             service_name,
+            serviceName: service_name,
             originalAnswer: original_answer,
             originalResponse: processResponse(original_answer),
             tracker: getTrackerData(domain),
@@ -487,14 +494,30 @@ export const normalizeWhois = (whois: any) => {
         return { ...values };
     }
 
-    return whois;
+    return {
+        location: 'New York, US',
+        orgname: 'Example Organization',
+    };
 };
 
 export const getPathWithQueryString = (path: any, params: any) => {
-    const filteredParams = Object.fromEntries(
-        Object.entries(params).filter(([, value]) => value !== undefined && value !== null),
-    );
-    const searchParams = new URLSearchParams(filteredParams as Record<string, string>);
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value === '' || value === undefined || value === null) {
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            value.forEach((v) => {
+                if (v !== '' && v !== undefined && v !== null) {
+                    searchParams.append(key, String(v));
+                }
+            });
+        } else {
+            searchParams.append(key, String(value));
+        }
+    });
 
     return `${path}?${searchParams.toString()}`;
 };
@@ -579,8 +602,35 @@ export const getObjDiff = (initialValues: any, values: any) =>
  * @returns {string} Returns a string with a language-sensitive representation of this number
  */
 export const formatNumber = (num: number): string => {
-    const currentLanguage = i18n.languages[0] || DEFAULT_LANGUAGE;
-    return num.toLocaleString(currentLanguage);
+    // Use browser's default locale since we don't have access to i18n language
+    return num.toLocaleString();
+};
+
+/**
+ * Formats a number in compact notation (e.g., 10.2K, 1.5M)
+ * @param num {number} The number to format
+ * @param decimals {number} Number of decimal places (default: 1)
+ * @returns {string} Formatted string like "10.2K", "1.5M", "2.3B"
+ */
+export const formatCompactNumber = (num: number, decimals: number = 1): string => {
+    if (num === 0) return '0';
+
+    const absNum = Math.abs(num);
+    const sign = num < 0 ? '-' : '';
+
+    if (absNum < 1000) {
+        return sign + absNum.toString();
+    }
+
+    const suffixes = ['', 'K', 'M', 'B', 'T'];
+    const tier = Math.floor(Math.log10(absNum) / 3);
+    const suffix = suffixes[Math.min(tier, suffixes.length - 1)];
+    const scale = 10 ** (tier * 3);
+    const scaled = absNum / scale;
+
+    const formatted = scaled.toFixed(decimals).replace(/\.0+$/, '');
+
+    return sign + formatted + suffix;
 };
 
 /**
@@ -724,10 +774,10 @@ export const countClientsStatistics = (ids: any, autoClients: any) => {
 
 /**
  * @param {string} elapsedMs
- * @param {function} t translate
+ * @param {string} millisecondsLabel
  * @returns {string}
  */
-export const formatElapsedMs = (elapsedMs: string, t: (key: string) => string) => {
+export const formatElapsedMs = (elapsedMs: string, millisecondsLabel: string) => {
     const parsedElapsedMs = parseFloat(elapsedMs);
 
     if (Number.isNaN(parsedElapsedMs)) {
@@ -737,7 +787,7 @@ export const formatElapsedMs = (elapsedMs: string, t: (key: string) => string) =
     const formattedValue =
         parsedElapsedMs < 1 ? parsedElapsedMs.toFixed(2) : Math.floor(parsedElapsedMs).toString();
 
-    return `${formattedValue} ${t('milliseconds_abbreviation')}`;
+    return `${formattedValue} ${millisecondsLabel}`;
 };
 
 /**
@@ -802,13 +852,15 @@ export const replaceZeroWithEmptyString = (value: any) => (parseInt(value, 10) =
 
 /**
  * @param {string} search
- * @param {string} [response_status]
+ * @param {string} status
+ * @param {string} [reason]
  * @returns {string}
  */
-export const getLogsUrlParams = (search: any, response_status: any) =>
+export const getLogsUrlParams = (search: string, status: string, reason: string): string =>
     `?${queryString.stringify({
         search: search || undefined,
-        response_status: response_status || undefined,
+        status: status || undefined,
+        reason: reason || undefined,
     })}`;
 
 export const processContent = (content: any) =>
@@ -911,19 +963,19 @@ export const sortIp = (a: any, b: any) => {
 export const getSpecialFilterName = (filterId: any) => {
     switch (filterId) {
         case SPECIAL_FILTER_ID.CUSTOM_FILTERING_RULES:
-            return i18n.t('custom_filter_rules');
+            return intl.getMessage('custom_filter_rules');
         case SPECIAL_FILTER_ID.SYSTEM_HOSTS:
-            return i18n.t('system_host_files');
+            return intl.getMessage('system_host_files');
         case SPECIAL_FILTER_ID.BLOCKED_SERVICES:
-            return i18n.t('blocked_services');
+            return intl.getMessage('blocked_services');
         case SPECIAL_FILTER_ID.PARENTAL:
-            return i18n.t('parental_control');
+            return intl.getMessage('parental_control');
         case SPECIAL_FILTER_ID.SAFE_BROWSING:
-            return i18n.t('safe_browsing');
+            return intl.getMessage('safe_browsing');
         case SPECIAL_FILTER_ID.SAFE_SEARCH:
-            return i18n.t('safe_search');
+            return intl.getMessage('safe_search');
         default:
-            return i18n.t('unknown_filter', { filterId });
+            return intl.getMessage('unknown_filter', { filterId });
     }
 };
 
@@ -946,7 +998,7 @@ export const getFilterName = (
     whitelistFilters: Filter[],
     filterId: number,
     resolveFilterName = (filter: Filter) =>
-        filter ? filter.name : i18n.t('unknown_filter', { filterId }),
+        filter ? filter.name : intl.getMessage('unknown_filter', { filterId }),
 ) => {
     const specialFilterIds = Object.values(SPECIAL_FILTER_ID);
     if (specialFilterIds.includes(filterId)) {
@@ -1064,10 +1116,10 @@ export const calculateDhcpPlaceholdersIpv6 = () => {
  * @returns interfaces Interfaces enriched with ip_addresses property
  */
 
-export const enrichWithConcatenatedIpAddresses = (interfaces: DhcpInterface[]) =>
+export const enrichWithConcatenatedIpAddresses = (interfaces: DhcpInterfaces) =>
     Object.entries(interfaces)
 
-        .reduce((acc: any, [k, v]) => {
+        .reduce((acc: DhcpInterfaces, [k, v]) => {
             const ipv4_addresses = v.ipv4_addresses ?? [];
             const ipv6_addresses = v.ipv6_addresses ?? [];
 

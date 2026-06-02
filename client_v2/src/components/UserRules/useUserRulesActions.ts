@@ -149,15 +149,15 @@ export const useUserRulesActions = ({
     };
 
     const performWithUndo = async (params: {
-        perform: () => Promise<boolean | undefined>;
+        perform: () => Promise<boolean | undefined | void>;
         message: string;
-        undo: () => Promise<boolean | undefined>;
+        undo: () => Promise<boolean | undefined | void>;
         refresh: () => Promise<void>;
     }) => {
         return runWithClosedResult(async () => {
             const ok = await params.perform();
 
-            if (!ok) {
+            if (ok === false) {
                 return false;
             }
 

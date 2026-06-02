@@ -18,12 +18,13 @@ export const RoutePath = {
     BlockedServices: 'BlockedServices',
     InactivitySchedule: 'InactivitySchedule',
     UserRules: 'UserRules',
+    QueryLog: 'QueryLog',
 } as const;
 
 export type RoutePathKey = keyof typeof RoutePath;
 
 export const Paths: Record<RoutePathKey, string> = {
-    Dashboard: pathBuilder(''),
+    Dashboard: pathBuilder('dashboard'),
     Logs: pathBuilder('logs'),
     Guide: pathBuilder('guide'),
     Encryption: pathBuilder('encryption'),
@@ -34,9 +35,10 @@ export const Paths: Record<RoutePathKey, string> = {
     DnsBlocklists: pathBuilder('blocklists'),
     DnsAllowlists: pathBuilder('allowlists'),
     DnsRewrites: pathBuilder('dns_rewrites'),
-    UserRules: pathBuilder('user_rules'),
     BlockedServices: pathBuilder('blocked_services'),
     InactivitySchedule: pathBuilder('blocked_services/schedule'),
+    UserRules: pathBuilder('user_rules'),
+    QueryLog: pathBuilder('query_log'),
 };
 
 export type LinkParams = Partial<Record<string, string | number>>;

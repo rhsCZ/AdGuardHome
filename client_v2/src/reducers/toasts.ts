@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { handleActions } from 'redux-actions';
 import { nanoid } from 'nanoid';
 
@@ -5,30 +6,47 @@ import { addErrorToast, addNoticeToast, addSuccessToast } from '../actions/toast
 import { removeToast } from '../actions';
 import { TOAST_TYPES } from '../helpers/constants';
 
+type SuccessToastPayload =
+    | string
+    | {
+          message: ReactNode;
+          actionLabel?: string;
+          onAction?: () => void | Promise<void>;
+          code?: string;
+      };
+
 const toasts = handleActions(
     {
         [addErrorToast.toString()]: (state: any, { payload }: any) => {
             const message = payload.error.toString();
             console.error(payload.error);
 
-            const errorToast = {
+            const errorToast: any = {
                 id: nanoid(),
                 message,
                 options: payload.options,
                 type: TOAST_TYPES.ERROR,
             };
 
+            if (payload.action) {
+                errorToast.action = payload.action;
+            }
+
             const newState = { ...state, notices: [...state.notices, errorToast] };
             return newState;
         },
         [addSuccessToast.toString()]: (state: any, { payload }: any) => {
-            const normalizedPayload =
-                payload && typeof payload === 'object' && 'message' in payload ? payload : { message: payload };
+            const successPayload = payload as SuccessToastPayload;
+            const message =
+                typeof successPayload === 'string' ? successPayload : successPayload.message;
+
             const successToast = {
                 id: nanoid(),
-                message: normalizedPayload.message,
-                actionLabel: normalizedPayload.actionLabel,
-                onAction: normalizedPayload.onAction,
+                message,
+                actionLabel:
+                    typeof successPayload === 'string' ? undefined : successPayload.actionLabel,
+                onAction: typeof successPayload === 'string' ? undefined : successPayload.onAction,
+                code: typeof successPayload === 'string' ? undefined : successPayload.code,
                 type: TOAST_TYPES.SUCCESS,
             };
 

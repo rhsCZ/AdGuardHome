@@ -432,7 +432,10 @@ const settingToggleScenarios = [
         reason: FILTERED_STATUS.FILTERED_SAFE_BROWSING,
         settingKey: SETTINGS_NAMES.safebrowsing,
         expectedSettingValue: true,
-        toast: expect.objectContaining({ message: 'Browsing security disabled', actionLabel: 'Undo' }),
+        toast: expect.objectContaining({
+            message: 'Browsing security disabled',
+            actionLabel: 'Undo',
+        }),
     },
     {
         name: 'parental control',
@@ -441,7 +444,10 @@ const settingToggleScenarios = [
         reason: FILTERED_STATUS.FILTERED_PARENTAL,
         settingKey: SETTINGS_NAMES.parental,
         expectedSettingValue: true,
-        toast: expect.objectContaining({ message: 'Parental control disabled', actionLabel: 'Undo' }),
+        toast: expect.objectContaining({
+            message: 'Parental control disabled',
+            actionLabel: 'Undo',
+        }),
     },
     {
         name: 'safe search',
@@ -813,7 +819,7 @@ describe('UserRules harness', () => {
         expect(within(resultCard).getByText('Domain:', { selector: 'strong' })).toBeInTheDocument();
         expect(within(resultCard).getByText('malware.example')).toBeInTheDocument();
         expect(within(resultCard).getByText('Reason:', { selector: 'strong' })).toBeInTheDocument();
-        expect(within(resultCard).getByText('Blocked Threats')).toBeInTheDocument();
+        expect(within(resultCard).getByText('Blocked threats')).toBeInTheDocument();
         expect(within(resultCard).getByText('Source:', { selector: 'strong' })).toBeInTheDocument();
         expect(within(resultCard).getByText('Safe Browsing')).toBeInTheDocument();
         expect(within(resultCard).getByText('Rule:', { selector: 'strong' })).toBeInTheDocument();
@@ -1135,10 +1141,14 @@ describe('UserRules harness', () => {
         );
 
         await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
-        await user.click(await screen.findByTestId('rewrite-delete-confirm'));
 
         expect(mocks.deleteRewrite).toHaveBeenCalledWith(MATCHED_REWRITE, { showToast: false });
-        expect(mocks.addSuccessToast).toHaveBeenCalledWith('Rule removed from DNS rewrite');
+        expect(mocks.addSuccessToast).toHaveBeenCalledWith(
+            expect.objectContaining({
+                message: 'Rule removed from DNS rewrite',
+                actionLabel: 'Undo',
+            }),
+        );
     });
 
     it('does not toast or recheck when removing a matched rewrite fails', async () => {
@@ -1148,7 +1158,6 @@ describe('UserRules harness', () => {
         renderMatchedRewriteResult();
 
         await user.click(screen.getByTestId('user-rules-result-action-delete-rewrite'));
-        await user.click(await screen.findByTestId('rewrite-delete-confirm'));
 
         expect(mocks.addSuccessToast).not.toHaveBeenCalled();
         expect(mocks.checkHost).not.toHaveBeenCalled();

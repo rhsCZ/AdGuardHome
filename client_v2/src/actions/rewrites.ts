@@ -1,6 +1,6 @@
 import { createAction } from 'redux-actions';
-import i18next from 'i18next';
 import type { AppDispatch } from 'panel/store/types';
+import intl from 'panel/common/intl';
 import { apiClient } from '../api/Api';
 import { addErrorToast, addSuccessToast } from './toasts';
 
@@ -48,7 +48,7 @@ export const addRewrite = (config: RewriteConfig) => async (dispatch: AppDispatc
         dispatch(addRewriteSuccess(config));
         dispatch(toggleRewritesModal());
         dispatch(getRewritesList());
-        dispatch(addSuccessToast(i18next.t('rewrite_added', { key: config.domain })));
+        dispatch(addSuccessToast(intl.getMessage('rewrite_added', { key: config.domain })));
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(addRewriteFailure());
@@ -79,7 +79,11 @@ export const updateRewrite =
             dispatch(getRewritesList());
 
             if (options.showToast !== false) {
-                dispatch(addSuccessToast(i18next.t('rewrite_updated', { key: config.update.domain })));
+                dispatch(
+                    addSuccessToast(
+                        intl.getMessage('rewrite_updated', { key: config.update.domain }),
+                    ),
+                );
             }
 
             return true;
@@ -105,7 +109,9 @@ export const deleteRewrite =
             dispatch(getRewritesList());
 
             if (options.showToast !== false) {
-                dispatch(addSuccessToast(i18next.t('rewrite_deleted', { key: config.domain })));
+                dispatch(
+                    addSuccessToast(intl.getMessage('rewrite_deleted', { key: config.domain })),
+                );
             }
 
             return true;
@@ -136,14 +142,15 @@ export const updateRewriteSettingsRequest = createAction('UPDATE_REWRITE_SETTING
 export const updateRewriteSettingsFailure = createAction('UPDATE_REWRITE_SETTINGS_FAILURE');
 export const updateRewriteSettingsSuccess = createAction('UPDATE_REWRITE_SETTINGS_SUCCESS');
 
-export const updateRewriteSettings = (config: { enabled: boolean }) => async (dispatch: AppDispatch) => {
-    dispatch(updateRewriteSettingsRequest());
-    try {
-        await apiClient.updateRewriteSettings(config);
-        dispatch(updateRewriteSettingsSuccess(config));
-        dispatch(addSuccessToast(i18next.t('rewrite_settings_updated')));
-    } catch (error) {
-        dispatch(addErrorToast({ error }));
-        dispatch(updateRewriteSettingsFailure());
-    }
-};
+export const updateRewriteSettings =
+    (config: { enabled: boolean }) => async (dispatch: AppDispatch) => {
+        dispatch(updateRewriteSettingsRequest());
+        try {
+            await apiClient.updateRewriteSettings(config);
+            dispatch(updateRewriteSettingsSuccess(config));
+            dispatch(addSuccessToast(intl.getMessage('rewrite_settings_updated')));
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(updateRewriteSettingsFailure());
+        }
+    };
