@@ -177,7 +177,7 @@ export const getCheckResultMeta = ({
             return {
                 tone: 'rewritten',
                 title: intl.getMessage('user_rules_rewrite_rule_is_applied'),
-                reason: intl.getMessage('rewrite_applied'),
+                reason: intl.getMessage('rewritten'),
                 actions: [],
             };
         case FILTERED_STATUS.REWRITE_RULE:
