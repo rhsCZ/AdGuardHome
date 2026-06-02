@@ -50,12 +50,6 @@ export const updateBlockedServices =
             await apiClient.updateBlockedServices(values);
             dispatch(updateBlockedServicesSuccess());
             dispatch(getBlockedServices());
-            dispatch(
-                addSuccessToast({
-                    message: intl.getMessage('settings_notify_changes_saved'),
-                    code: 'settings_notify_changes_saved',
-                }),
-            );
         } catch (error) {
             dispatch(addErrorToast({ error }));
             dispatch(updateBlockedServicesFailure());
