@@ -28,6 +28,7 @@ import (
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/timeutil"
+	"github.com/c2h5oh/datasize"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/renameio/v2/maybe"
 	yaml "go.yaml.in/yaml/v4"
@@ -564,6 +565,9 @@ var config = &configuration{
 		ParentalEnabled:     false,
 		SafeBrowsingEnabled: false,
 
+		// NOTE: To disable the limitation, simply set a large size, such as
+		// [datasize.TB].
+		MaxHTTPSize:           256 * datasize.MB,
 		SafeBrowsingCacheSize: 1 * 1024 * 1024,
 		SafeSearchCacheSize:   1 * 1024 * 1024,
 		ParentalCacheSize:     1 * 1024 * 1024,
