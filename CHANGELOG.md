@@ -9,18 +9,38 @@ The format is based on [*Keep a Changelog*](https://keepachangelog.com/en/1.0.0/
 <!--
 ## [v0.108.0] – TBA
 
-## [v0.107.77] - 2026-06-01 (APPROX.)
+## [v0.107.78] - 2026-06-15 (APPROX.)
 
-See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
+See also the [v0.107.78 GitHub milestone][ms-v0.107.78].
 
-[ms-v0.107.77]: https://github.com/AdguardTeam/AdGuardHome/milestone/112?closed=1
+[ms-v0.107.78]: https://github.com/AdguardTeam/AdGuardHome/milestone/113?closed=1
 
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
-### Changed
+### Security
 
 - The H2C connection establishment via HTTP/1.1 request upgrade is no longer supported.  See [RFC 9113][rfc9113].
+
+### Fixed
+
+- Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
+
+[rfc9113]:      https://datatracker.ietf.org/doc/html/rfc9113
+
+<!--
+NOTE: Add new changes ABOVE THIS COMMENT.
+-->
+
+## [v0.107.77] - 2026-06-01
+
+See also the [v0.107.77 GitHub milestone][ms-v0.107.77].
+
+### Security
+
+- Authorization in GLiNET mode is no longer vulnerable to path traversal attacks.
+
+    **NOTE:** This is CVE-2026-41448. We thank @djnnvx for reporting this security issue.
 
 ### Added
 
@@ -30,11 +50,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Query parameter `response_status` in `GET /control/querylog` is now deprecated.  Use new `reason` query parameter instead.
 
-[rfc9113]:      https://datatracker.ietf.org/doc/html/rfc9113
-
-<!--
-NOTE: Add new changes ABOVE THIS COMMENT.
--->
+[ms-v0.107.77]: https://github.com/AdguardTeam/AdGuardHome/milestone/112?closed=1
 
 ## [v0.107.76] - 2026-05-21
 
@@ -59,8 +75,6 @@ See also the [v0.107.76 GitHub milestone][ms-v0.107.76].
 See also the [v0.107.75 GitHub milestone][ms-v0.107.75].
 
 ### Security
-
-- Authorization in GLiNET mode is no longer vulnerable to path traversal attacks.
 
 - Go version has been updated to prevent the possibility of exploiting the Go vulnerabilities fixed in [1.26.3][go-1.26.3].
 
@@ -3632,11 +3646,12 @@ See also the [v0.104.2 GitHub milestone][ms-v0.104.2].
 [ms-v0.104.2]: https://github.com/AdguardTeam/AdGuardHome/milestone/28?closed=1
 
 <!--
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.77...HEAD
-[v0.107.77]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.76...v0.107.77
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.78...HEAD
+[v0.107.78]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.77...v0.107.78
 -->
 
-[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.76...HEAD
+[Unreleased]: https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.77...HEAD
+[v0.107.77]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.76...v0.107.77
 [v0.107.76]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.75...v0.107.76
 [v0.107.75]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.74...v0.107.75
 [v0.107.74]:  https://github.com/AdguardTeam/AdGuardHome/compare/v0.107.73...v0.107.74
