@@ -7,7 +7,7 @@
 
 .desc {
     width: 100%;
-    max-width: 556px;
+    max-width: 632px;
     padding: 12px 0 0;
 }
 
@@ -54,9 +54,17 @@
 .section {
     display: flex;
     flex-direction: column;
-    padding: 8px 16px;
+    padding: 0 16px;
+
+    &_table {
+        padding-top: 24px;
+    }
 }
 
 .sectionTitle {
-    padding: 16px 0 4px;
+    padding-top: 24px;
+
+    @media (min-width: 768px) {
+        padding-top: 40px;
+    }
 }

@@ -305,26 +305,24 @@ export const AddClient = () => {
                             disabled={form.use_global_settings}
                         >
                             {form.upstreams_cache_enabled && (
-                                <div className={s.section}>
-                                    <Input
-                                        id="dns-cache-size"
-                                        type="text"
-                                        value={String(form.upstreams_cache_size)}
-                                        onChange={(e) =>
-                                            dispatch(
-                                                updateClientFormField({
-                                                    field: 'upstreams_cache_size',
-                                                    value: Number(e.target.value) || 0,
-                                                }),
-                                            )
-                                        }
-                                        placeholder={intl.getMessage(
-                                            'clients_dns_cache_size_placeholder',
-                                        )}
-                                        label={intl.getMessage('clients_dns_cache_size')}
-                                        size="large"
-                                    />
-                                </div>
+                                <Input
+                                    id="dns-cache-size"
+                                    type="text"
+                                    value={String(form.upstreams_cache_size)}
+                                    onChange={(e) =>
+                                        dispatch(
+                                            updateClientFormField({
+                                                field: 'upstreams_cache_size',
+                                                value: Number(e.target.value) || 0,
+                                            }),
+                                        )
+                                    }
+                                    placeholder={intl.getMessage(
+                                        'clients_dns_cache_size_placeholder',
+                                    )}
+                                    label={intl.getMessage('clients_dns_cache_size')}
+                                    size="large"
+                                />
                             )}
                         </SwitchGroup>
 

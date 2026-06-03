@@ -101,13 +101,13 @@ export const Clients = () => {
                 </div>
 
                 <div className={s.section}>
-                    <h2 className={cn(theme.title.h5, s.sectionTitle)}>
+                    <h2 className={cn(theme.title.h5, theme.title.h4_tablet, s.sectionTitle)}>
                         {intl.getMessage('clients_title')}
                     </h2>
                     <div className={s.desc}>{intl.getMessage('clients_desc')}</div>
                 </div>
 
-                <div className={s.section}>
+                <div className={cn(s.section, s.section_table)}>
                     <PersistentClientsTable
                         clients={clients}
                         normalizedTopClients={normalizedTopClients}
@@ -120,13 +120,13 @@ export const Clients = () => {
                 </div>
 
                 <div className={s.section}>
-                    <h2 className={cn(theme.title.h5, s.sectionTitle)}>
+                    <h2 className={cn(theme.title.h5, theme.title.h4_tablet, s.sectionTitle)}>
                         {intl.getMessage('auto_clients_title')}
                     </h2>
                     <div className={s.desc}>{intl.getMessage('auto_clients_desc')}</div>
                 </div>
 
-                <div className={s.section}>
+                <div className={cn(s.section, s.section_table)}>
                     <RuntimeClientsTable
                         autoClients={autoClients}
                         normalizedTopClients={normalizedTopClients}

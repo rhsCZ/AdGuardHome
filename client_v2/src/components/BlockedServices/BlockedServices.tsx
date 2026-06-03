@@ -191,6 +191,7 @@ export const BlockedServices = ({ clientScope, className, breadcrumbs }: Props) 
                                 theme.layout.title,
                                 theme.title.h4,
                                 theme.title.h3_tablet,
+                                s.clientsTitle,
                             )}
                         >
                             {intl.getMessage('blocked_services')}
