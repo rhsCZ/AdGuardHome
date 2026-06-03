@@ -26,7 +26,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
 
-[rfc9113]:      https://datatracker.ietf.org/doc/html/rfc9113
+[rfc9113]: https://datatracker.ietf.org/doc/html/rfc9113
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
