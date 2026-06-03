@@ -515,16 +515,13 @@ func (d *DNSFilter) updateIntl(ctx context.Context, flt *FilterYAML) (ok bool, e
 		path := flt.URL
 
 		res, err = d.readFromFile(tmpFile, path)
-		if err != nil {
-			// Don't wrap the error because it's informative enough as is.
-			return false, err
-		}
 	} else {
 		res, err = d.readFromHTTP(tmpFile, flt.URL)
-		if err != nil {
-			// Don't wrap the error because it's informative enough as is.
-			return false, err
-		}
+	}
+
+	if err != nil {
+		// Don't wrap the error because it's informative enough as is.
+		return false, err
 	}
 
 	return res.Checksum != flt.checksum, nil

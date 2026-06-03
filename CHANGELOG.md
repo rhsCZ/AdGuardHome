@@ -22,7 +22,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
 
-- The size of the rulelist does not have a limit.
+- The size of rulelists not being limited.
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
