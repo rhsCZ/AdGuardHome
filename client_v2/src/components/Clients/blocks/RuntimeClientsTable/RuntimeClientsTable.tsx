@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
-import cn from 'clsx';
 
 import intl from 'panel/common/intl';
 import { AutoClient, NormalizedTopClients, WhoisInfo } from 'panel/initialState';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
 import { Table as ReactTable, TableColumn } from 'panel/common/ui/Table';
-import { Icon } from 'panel/common/ui/Icon';
 import theme from 'panel/lib/theme';
 
 import { WhoisCell } from './WhoisCell';
+import { TableEmptyState } from '../TableEmptyState/TableEmptyState';
 import s from './RuntimeClientsTable.module.pcss';
 
 type Props = {
@@ -135,15 +134,7 @@ export const RuntimeClientsTable = ({
         LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.AUTO_CLIENTS_PAGE_SIZE, newSize);
     };
 
-    const emptyTableContent = (
-        <div className={s.emptyTableContent}>
-            <Icon icon="not_found_search" color="gray" className={s.emptyTableIcon} />
-
-            <div className={cn(theme.text.t3, s.emptyTableDesc)}>
-                {intl.getMessage('clients_not_found')}
-            </div>
-        </div>
-    );
+    const emptyTableContent = <TableEmptyState />;
 
     return (
         <ReactTable<AutoClient>

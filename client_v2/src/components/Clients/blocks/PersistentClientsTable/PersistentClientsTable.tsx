@@ -16,6 +16,7 @@ import { ServiceCell } from './ServiceCell';
 import { TagCell } from './TagCell';
 import { WebService } from './ServiceIcons';
 
+import { TableEmptyState } from '../TableEmptyState/TableEmptyState';
 import s from './PersistentClientsTable.module.pcss';
 
 type Props = {
@@ -263,11 +264,11 @@ export const PersistentClientsTable = ({
             {
                 key: 'actions',
                 header: {
-                    text: intl.getMessage('actions_table_header'),
+                    text: '',
                     className: s.headerCell,
                 },
                 sortable: false,
-                fitContent: true,
+                width: 80,
                 render: (_value: unknown, row: Client) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>
@@ -318,15 +319,7 @@ export const PersistentClientsTable = ({
         LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.CLIENTS_PAGE_SIZE, newSize);
     };
 
-    const emptyTableContent = (
-        <div className={s.emptyTableContent}>
-            <Icon icon="not_found_search" color="gray" className={s.emptyTableIcon} />
-
-            <div className={cn(theme.text.t3, s.emptyTableDesc)}>
-                {intl.getMessage('clients_not_found')}
-            </div>
-        </div>
-    );
+    const emptyTableContent = <TableEmptyState />;
 
     return (
         <ReactTable<Client>

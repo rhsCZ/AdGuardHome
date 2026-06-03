@@ -29,7 +29,7 @@ export const ClientsHeader = ({ currentTitle, extraLinks = [] }: ClientsHeaderPr
     const clientPageLink = isEdit
         ? {
               path: RoutePath.ClientsEdit,
-              title: intl.getMessage('clients_edit'),
+              title: form.name || intl.getMessage('clients_edit'),
               props: { clientName: encodeURIComponent(form.originalName) },
           }
         : {
@@ -37,18 +37,18 @@ export const ClientsHeader = ({ currentTitle, extraLinks = [] }: ClientsHeaderPr
               title: intl.getMessage('clients_add'),
           };
 
-    const parentLinks = [
-        { path: RoutePath.Clients, title: intl.getMessage('client_settings') },
-        ...(isEdit || currentTitle !== clientPageLink.title ? [clientPageLink] : []),
-        ...extraLinks,
-    ];
-
     const isMainFormPage =
         matchPath(location.pathname, { path: Paths.ClientsAdd, exact: true }) !== null ||
         matchPath(location.pathname, { path: Paths.ClientsEdit, exact: true }) !== null;
 
     const pageTitle =
         isEdit && isMainFormPage ? form.name || intl.getMessage('clients_edit') : currentTitle;
+
+    const parentLinks = [
+        { path: RoutePath.Clients, title: intl.getMessage('client_settings') },
+        ...(pageTitle !== clientPageLink.title ? [clientPageLink] : []),
+        ...extraLinks,
+    ];
 
     return (
         <div className={s.headerWrapper}>

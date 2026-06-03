@@ -12,6 +12,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    padding: 4px 0;
+
+    @media (min-width: 768px) {
+        padding: 0;
+    }
 }
 
 .cellLabel {
@@ -39,11 +44,9 @@
 .cellActions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 8px;
+    justify-content: flex-end;
 }
-
-/* --- Name tooltip --- */
 
 .nameDropdown {
     min-width: 0;
@@ -246,22 +249,6 @@
     &_danger {
         color: var(--red);
     }
-}
-
-.emptyTableContent {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.emptyTableIcon {
-    width: 64px;
-    height: 64px;
-}
-
-.emptyTableDesc {
-    color: var(--default-description-text);
 }
 
 .table {

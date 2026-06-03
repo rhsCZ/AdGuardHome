@@ -1,3 +1,9 @@
+.table {
+    @media (min-width: 768px) {
+        grid-template-columns: 2fr 2fr 1fr 2fr 1fr;
+    }
+}
+
 .headerCell {
     @media (min-width: 768px) {
         width: 100%;
@@ -12,6 +18,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    padding: 4px 0;
+
+    @media (min-width: 768px) {
+        padding: 0;
+    }
 }
 
 .cellLabel {
@@ -33,28 +44,6 @@
     @media (min-width: 768px) {
         text-align: left;
         justify-content: initial;
-    }
-}
-
-.emptyTableContent {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.emptyTableIcon {
-    width: 64px;
-    height: 64px;
-}
-
-.emptyTableDesc {
-    color: var(--default-description-text);
-}
-
-.table {
-    @media (min-width: 768px) {
-        grid-template-columns: 2fr 2fr 1fr 2fr 1fr;
     }
 }
 

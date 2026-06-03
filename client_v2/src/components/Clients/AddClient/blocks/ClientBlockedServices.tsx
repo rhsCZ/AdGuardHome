@@ -15,7 +15,7 @@ export const ClientBlockedServices = () => {
     const clientPageLink = isEdit
         ? {
               path: RoutePath.ClientsEdit,
-              title: intl.getMessage('clients_edit'),
+              title: form.name || intl.getMessage('clients_edit'),
               props: { clientName: encodeURIComponent(form.originalName) },
           }
         : {
