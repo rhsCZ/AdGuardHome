@@ -107,6 +107,7 @@ interface SelectProps<
     components?: SelectComponentsConfig<IOption<T> & ExtendOption, Multi, Group>;
     isSearchable?: boolean;
     id?: string;
+    inputId?: string;
     borderless?: boolean;
     adaptiveHeight?: boolean;
     lazyList?: boolean;
@@ -118,6 +119,7 @@ interface SelectProps<
     isDropdownSelect?: boolean;
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
+    onBlur?: () => void;
     showIcons?: boolean;
     showOptionIcon?: boolean;
     optionTestIdPrefix?: string;
@@ -148,6 +150,7 @@ export const Select = <
     low,
     isSearchable,
     id,
+    inputId,
     borderless,
     adaptiveHeight,
     lazyList,
@@ -159,6 +162,7 @@ export const Select = <
     isDropdownSelect,
     onMenuOpen,
     onMenuClose,
+    onBlur,
     showIcons = false,
     showOptionIcon = true,
     optionTestIdPrefix,
@@ -226,6 +230,7 @@ export const Select = <
             components={customComponents}
             isSearchable={isSearchable || options.length > SEARCH_ENABLE_LIMIT}
             id={id}
+            inputId={inputId}
             closeMenuOnSelect={closeMenuOnSelect}
             menuPlacement={menuPlacement}
             isClearable={isClearable}
@@ -234,6 +239,7 @@ export const Select = <
             isLoading={isLoading}
             onMenuOpen={onMenuOpen}
             onMenuClose={onMenuClose}
+            onBlur={onBlur}
         />
     );
 };

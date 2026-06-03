@@ -28,10 +28,10 @@ import { RootState } from '../../initialState';
 
 import s from './styles.module.pcss';
 import { DnsSettings } from '../DnsSettings';
+import { UserRules } from '../UserRules';
 import { BlockedServices } from '../BlockedServices';
 import { Clients } from '../Clients/Clients';
 import { InactivitySchedule } from '../BlockedServices/InactivitySchedule';
-import { UserRules } from '../UserRules';
 import { AddClient } from '../Clients/AddClient';
 import { Protection } from '../Clients/AddClient/blocks/Protection/Protection';
 import { ClientBlockedServices } from '../Clients/AddClient/blocks/ClientBlockedServices';
@@ -80,6 +80,11 @@ const ROUTES: RouteConfig[] = [
     {
         path: '/allowlists',
         component: Allowlists,
+        exact: true,
+    },
+    {
+        path: '/user_rules',
+        component: UserRules,
         exact: true,
     },
     {
@@ -155,11 +160,6 @@ const ROUTES: RouteConfig[] = [
     {
         path: '/clients',
         component: Clients,
-        exact: true,
-    },
-    {
-        path: '/user_rules',
-        component: UserRules,
         exact: true,
     },
 ];

@@ -49,10 +49,10 @@
     "react-select": "^5.3.2",
     "react-table": "^7.8.0",
     "react-transition-group": "^4.4.5",
+    "recharts": "^2.12.7",
     "redux": "^4.0.5",
     "redux-actions": "^2.6.5",
     "redux-thunk": "^2.3.0",
-    "recharts": "^2.12.7",
     "url-polyfill": "^1.1.12"
   },
   "devDependencies": {
