@@ -355,7 +355,7 @@ export const Table = <T extends Record<string, any>>({
                 {!hasData && <div className={s.emptyTableWrapper}>{emptyTable}</div>}
             </div>
 
-            {pagination && sortedData.length > 0 && (
+            {pagination && sortedData.length >= DEFAULT_PAGE_SIZE && (
                 <div className={s.tablePagination}>
                     <Pagination
                         currentPage={state.currentPage}
