@@ -7,6 +7,6 @@ export const CustomNoOptionsMessage = <OptionType, IsMulti extends boolean>(
     props: NoticeProps<OptionType, IsMulti>,
 ) => (
     <components.NoOptionsMessage {...props}>
-        <span className={theme.select.empty}>{intl.getMessage('not_found')}</span>
+        <span className={theme.select.empty}>{intl.getMessage('nothing_found')}</span>
     </components.NoOptionsMessage>
 );

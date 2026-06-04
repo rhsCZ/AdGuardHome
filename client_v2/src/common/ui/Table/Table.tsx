@@ -149,36 +149,39 @@ export const Table = <T extends Record<string, any>>({
 
     const tableGridTemplate = useMemo(
         () =>
-            columns.map((column) => {
-                if (typeof column.width === 'number') {
-                    return `${column.width}px`;
-                }
+            columns
+                .map((column) => {
+                    if (typeof column.width === 'number') {
+                        return `${column.width}px`;
+                    }
 
-                if (typeof column.width === 'string') {
-                    return column.width;
-                }
+                    if (typeof column.width === 'string') {
+                        return column.width;
+                    }
 
-                if (column.fitContent) {
-                    return 'fit-content(100%)';
-                }
+                    if (column.fitContent) {
+                        return 'fit-content(100%)';
+                    }
 
-                if (column.minWidth && column.maxWidth) {
-                    return `minmax(${column.minWidth}px, ${column.maxWidth}px)`;
-                }
+                    if (column.minWidth && column.maxWidth) {
+                        return `minmax(${column.minWidth}px, ${column.maxWidth}px)`;
+                    }
 
-                if (column.minWidth) {
-                    return `minmax(${column.minWidth}px, 1fr)`;
-                }
+                    if (column.minWidth) {
+                        return `minmax(${column.minWidth}px, 1fr)`;
+                    }
 
-                return 'minmax(0, 1fr)';
-            }).join(' '),
+                    return 'minmax(0, 1fr)';
+                })
+                .join(' '),
         [columns],
     );
 
     const tableStyle = useMemo(
-        () => ({
-            '--table-columns': tableGridTemplate,
-        }) as CSSProperties,
+        () =>
+            ({
+                '--table-columns': tableGridTemplate,
+            }) as CSSProperties,
         [tableGridTemplate],
     );
 
@@ -263,28 +266,51 @@ export const Table = <T extends Record<string, any>>({
                         {columns.map((column) => (
                             <div
                                 key={column.key}
-                                className={cn(s.tableCell, s.tableHeaderCell, column.header.className, {
-                                    [s.sortable]: column.sortable,
-                                    [s.fitContent]: column.fitContent,
-                                })}
-                                onClick={() => sortable && column.sortable && handleSort(column.key)}
+                                className={cn(
+                                    s.tableCell,
+                                    s.tableHeaderCell,
+                                    column.header.className,
+                                    {
+                                        [s.sortable]: column.sortable,
+                                        [s.fitContent]: column.fitContent,
+                                    },
+                                )}
+                                onClick={() =>
+                                    sortable && column.sortable && handleSort(column.key)
+                                }
                             >
                                 {column.header.render ? (
                                     column.header.render()
                                 ) : (
-                                    <span className={cn(theme.text.t3, theme.text.condenced, theme.text.semibold)}>
+                                    <span
+                                        className={cn(
+                                            theme.text.t3,
+                                            theme.text.condenced,
+                                            theme.text.semibold,
+                                        )}
+                                    >
                                         {column.header.text}
                                     </span>
                                 )}
 
                                 {sortable && column.sortable && (
                                     <span>
-                                        {state.sortKey === column.key && state.sortDirection === 'asc' && (
-                                            <Icon icon="arrow" color="gray" className={s.sortAsc} />
-                                        )}
-                                        {state.sortKey === column.key && state.sortDirection === 'desc' && (
-                                            <Icon icon="arrow" color="gray" className={s.sortDesc} />
-                                        )}
+                                        {state.sortKey === column.key &&
+                                            state.sortDirection === 'asc' && (
+                                                <Icon
+                                                    icon="arrow"
+                                                    color="gray"
+                                                    className={s.sortAsc}
+                                                />
+                                            )}
+                                        {state.sortKey === column.key &&
+                                            state.sortDirection === 'desc' && (
+                                                <Icon
+                                                    icon="arrow"
+                                                    color="gray"
+                                                    className={s.sortDesc}
+                                                />
+                                            )}
                                     </span>
                                 )}
                             </div>
@@ -306,10 +332,15 @@ export const Table = <T extends Record<string, any>>({
                                         {columns.map((column) => (
                                             <div
                                                 key={column.key}
-                                                className={cn(s.tableCell, s.tableBodyCell, column.className, {
-                                                    [s.fitContent]: column.fitContent,
-                                                    [s.clickableCell]: !!onRowClick,
-                                                })}
+                                                className={cn(
+                                                    s.tableCell,
+                                                    s.tableBodyCell,
+                                                    column.className,
+                                                    {
+                                                        [s.fitContent]: column.fitContent,
+                                                        [s.clickableCell]: !!onRowClick,
+                                                    },
+                                                )}
                                             >
                                                 {renderCell(column, row, index)}
                                             </div>
@@ -324,7 +355,7 @@ export const Table = <T extends Record<string, any>>({
                 {!hasData && <div className={s.emptyTableWrapper}>{emptyTable}</div>}
             </div>
 
-            {pagination && totalPages > 1 && (
+            {pagination && sortedData.length > 0 && (
                 <div className={s.tablePagination}>
                     <Pagination
                         currentPage={state.currentPage}

@@ -199,6 +199,7 @@ export const PersistentClientsTable = ({
                 },
                 accessor: 'use_global_blocked_services',
                 sortable: true,
+                minWidth: 120,
                 render: (_value: boolean, row: Client) => (
                     <ServiceCell
                         serviceIds={row.blocked_services || []}

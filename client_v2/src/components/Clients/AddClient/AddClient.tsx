@@ -19,8 +19,10 @@ import {
     saveClient,
     initClientForm,
     buildFormPayload,
+    setFormErrors,
 } from 'panel/actions/clientForm';
 import { getClients } from 'panel/actions';
+import { validateUpstreams } from 'panel/helpers/validators';
 import { RoutePath, Paths } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 
@@ -49,7 +51,6 @@ export const AddClient = () => {
             return;
         }
 
-        // Only auto-initialize if the form is in its default add state
         if (form.mode !== 'add' || form.originalName) {
             return;
         }
@@ -72,11 +73,16 @@ export const AddClient = () => {
     }, [dispatch, history]);
 
     const handleSave = useCallback(async () => {
+        const err = validateUpstreams(form.upstreams);
+        if (err) {
+            dispatch(setFormErrors({ upstreams: err }));
+            return;
+        }
         const result = await dispatch(saveClient());
         if (result) {
             history.push(Paths.Clients);
         }
-    }, [dispatch, history]);
+    }, [dispatch, history, form.upstreams]);
 
     const handleUseGlobalSettings = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         dispatch(
@@ -95,6 +101,20 @@ export const AddClient = () => {
             }),
         );
     }, []);
+
+    const handleUpstreamsBlur = useCallback(() => {
+        const err = validateUpstreams(form.upstreams);
+        if (err) {
+            dispatch(setFormErrors({ upstreams: err }));
+        }
+    }, [dispatch, form.upstreams]);
+
+    const handleUpstreamsChange = useCallback(
+        (e: ChangeEvent<HTMLTextAreaElement>) => {
+            dispatch(updateClientFormField({ field: 'upstreams', value: e.target.value }));
+        },
+        [dispatch],
+    );
 
     const tagOptions = useMemo(
         () =>
@@ -282,18 +302,17 @@ export const AddClient = () => {
                             <Textarea
                                 id="client-upstreams"
                                 value={form.upstreams}
-                                onChange={(e) =>
-                                    dispatch(
-                                        updateClientFormField({
-                                            field: 'upstreams',
-                                            value: e.target.value,
-                                        }),
-                                    )
-                                }
+                                onChange={handleUpstreamsChange}
+                                onBlur={handleUpstreamsBlur}
                                 placeholder={intl.getMessage('upstream_dns_placeholder')}
                                 label={intl.getMessage('clients_upstreams_desc')}
                                 rows={4}
                                 disabled={form.use_global_settings}
+                                errorMessage={
+                                    typeof form.formErrors.upstreams === 'string'
+                                        ? form.formErrors.upstreams
+                                        : undefined
+                                }
                             />
                         </div>
 

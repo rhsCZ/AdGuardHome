@@ -138,6 +138,7 @@
   "enter_valid_allowlist": "Enter a valid URL to the allowlist.",
   "form_error_url_format": "Invalid URL format",
   "form_error_url_or_path_format": "Invalid URL or absolute path of the list",
+  "form_error_upstream_format": "Invalid upstream format on line %line%",
   "custom_filter_rules": "Custom filtering rules",
   "custom_filter_rules_hint": "Enter one rule on a line. You can use either adblock rules or hosts files syntax.",
   "system_host_files": "System hosts files",

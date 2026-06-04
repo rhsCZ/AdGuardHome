@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import type { ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
@@ -23,18 +24,25 @@ export const Protection = () => {
     const disabled = form.use_global_settings;
 
     const handleToggle = useCallback(
-        (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
             dispatch(updateClientFormField({ field, value: e.target.checked }));
         },
         [dispatch],
     );
 
     const handleSafeSearchEnabled = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
+        (e: ChangeEvent<HTMLInputElement>) => {
+            const enabled = e.target.checked;
+            const providersUpdate: Record<string, boolean> = {};
+            if (enabled) {
+                SAFE_SEARCH_PROVIDER_KEYS.forEach((key) => {
+                    providersUpdate[key] = true;
+                });
+            }
             dispatch(
                 updateClientFormField({
                     field: 'safe_search',
-                    value: { ...form.safe_search, enabled: e.target.checked },
+                    value: { ...form.safe_search, enabled, ...providersUpdate },
                 }),
             );
         },
@@ -42,7 +50,7 @@ export const Protection = () => {
     );
 
     const handleSafeSearchProvider = useCallback(
-        (provider: SafeSearchProviderKey) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        (provider: SafeSearchProviderKey) => (e: ChangeEvent<HTMLInputElement>) => {
             dispatch(
                 updateClientFormField({
                     field: 'safe_search',

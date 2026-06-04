@@ -414,11 +414,14 @@ export const validatePlainDns = (value: any, allValues: any) => {
  * @param value - The identifier string to validate
  * @param allValues - All identifier values in the form (for duplicate checking)
  * @param currentIndex - The index of this identifier in the array
+ * @param existingIds - Identifiers from all other persistent clients (for
+ *   cross-client duplicate checking, excluding the client being edited)
  */
 export const validateIdentifier = (
     value: string,
     allValues: string[],
     currentIndex: number,
+    existingIds?: string[],
 ): string | undefined => {
     const trimmed = (value || '').trim();
 
@@ -444,12 +447,32 @@ export const validateIdentifier = (
     if (duplicateIndex !== -1) {
         return intl.getMessage('clients_identifier_already_used');
     }
+
+    if (existingIds && existingIds.includes(trimmed)) {
+        return intl.getMessage('clients_identifier_already_used');
+    }
+
     return undefined;
 };
 
 export const validateHostname = (value: any) => {
     if (value && !R_HOSTNAME.test(value)) {
         return intl.getMessage('form_error_hostname_format');
+    }
+    return undefined;
+};
+
+// A valid upstream line contains at least one dot or colon.
+const R_COMMENT = /^\s*#/;
+const R_HAS_ADDRESS = /[.:]/;
+
+export const validateUpstreams = (value: string): string | undefined => {
+    const lines = value.split('\n');
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        if (line && !R_COMMENT.test(line) && !R_HAS_ADDRESS.test(line)) {
+            return intl.getMessage('form_error_upstream_format', { line: i + 1 });
+        }
     }
     return undefined;
 };

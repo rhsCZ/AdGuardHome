@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Input } from 'panel/common/controls/Input';
 import { Icon } from 'panel/common/ui/Icon';
-import { RootState } from 'panel/initialState';
+import { RootState, Client } from 'panel/initialState';
 import { updateClientFormField } from 'panel/actions/clientForm';
 import { validateIdentifier } from 'panel/helpers/validators';
 import theme from 'panel/lib/theme';
@@ -19,7 +19,18 @@ type FormValues = {
 export const Identifiers = () => {
     const dispatch = useDispatch();
     const formState = useSelector((state: RootState) => state.clientForm);
+    const dashboard = useSelector((state: RootState) => state.dashboard);
     const { formErrors } = formState;
+
+    // Collect all identifiers from existing persistent clients, excluding the
+    // client currently being edited (if any).
+    const existingClientIds = useMemo(() => {
+        const clients: Client[] = dashboard?.clients || [];
+        const isEdit = formState.mode === 'edit';
+        return clients
+            .filter((c) => !isEdit || c.name !== formState.originalName)
+            .flatMap((c) => c.ids);
+    }, [dashboard?.clients, formState.mode, formState.originalName]);
 
     const {
         control,
@@ -70,6 +81,14 @@ export const Identifiers = () => {
         dispatch(updateClientFormField({ field: 'ids', value: values }));
     };
 
+    const handleValidate = useCallback(
+        (value: string, index: number) => {
+            const allValues = getValues('ids').map((item) => item.value);
+            return validateIdentifier(value, allValues, index, existingClientIds) || true;
+        },
+        [getValues, existingClientIds],
+    );
+
     return (
         <div className={s.wrapper}>
             <div className={cn(theme.text.t2, theme.text.semibold, s.label)}>
@@ -113,12 +132,7 @@ export const Identifiers = () => {
                                 id={`client-identifier-${index}`}
                                 type="text"
                                 {...register(`ids.${index}.value`, {
-                                    validate: (value: string) => {
-                                        const allValues = getValues('ids').map(
-                                            (item) => item.value,
-                                        );
-                                        return validateIdentifier(value, allValues, index) || true;
-                                    },
+                                    validate: (value: string) => handleValidate(value, index),
                                     onBlur: () => syncToRedux(),
                                 })}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
