@@ -13,6 +13,7 @@ import { CustomDropdownIndicator } from './CustomDropdownIndicator';
 import { CustomLoadingIndicator } from './CustomLoadingIndicator';
 import { CustomLoadingMessage } from './CustomLoadingMessage';
 import { CustomMultiValue } from './CustomMultiValue';
+import { CustomNoOptionsMessage } from './CustomNoOptionsMessage';
 import { CustomOption } from './CustomOption';
 import { Icon } from '../../ui/Icon/Icon';
 
@@ -206,6 +207,7 @@ export const Select = <
         DropdownIndicator: CustomDropdownIndicator,
         LoadingIndicator: CustomLoadingIndicator,
         LoadingMessage: CustomLoadingMessage,
+        NoOptionsMessage: CustomNoOptionsMessage,
         ...components,
     };
 
