@@ -18,6 +18,10 @@ See also the [v0.107.78 GitHub milestone][ms-v0.107.78].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Security
+
+- The size of rulelists is limited. This is necessary to prevent a user's machine from becoming overloaded if the filter source misbehaves.
+
 ### Changed
 
 - The `filtering` section of the YAML configuration now includes a new variable, `max_http_size`, which defines the maximum size of the HTTP request for rulelists. To disable the limitation, simply set a large size, such as `1 TB`.
@@ -25,10 +29,6 @@ NOTE: Add new changes BELOW THIS COMMENT.
 ### Fixed
 
 - Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
-
-### Security
-
-- The size of rulelists is limited. This is necessary to prevent a user's machine from becoming overloaded if the filter source misbehaves.
 
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
