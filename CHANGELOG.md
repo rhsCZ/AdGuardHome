@@ -24,7 +24,9 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Changed
 
-- The `filtering` section of the YAML configuration now includes a new variable, `max_http_size`, which defines the maximum size of the HTTP request for rulelists. To disable the limitation, simply set a large size, such as `1 TB`.
+#### Configuration changes
+
+- The `filtering` object of the YAML configuration now includes a new property, `max_http_size`, which defines the maximum size of the HTTP request for rulelists. To disable the limitation, set a large size, such as `1 TB`.
 
 ### Fixed
 
