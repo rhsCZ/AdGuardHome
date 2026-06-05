@@ -105,7 +105,7 @@ func (u *Updater) parseVersionResponse(
 	}
 
 	for k, v := range versionJSON {
-		err = validate.NotEmpty(v, "version_json_value")
+		err = validate.NotEmpty("version_json_value", v)
 		if err != nil {
 			return info, fmt.Errorf("bad value for %q key: %w", k, err)
 		}
