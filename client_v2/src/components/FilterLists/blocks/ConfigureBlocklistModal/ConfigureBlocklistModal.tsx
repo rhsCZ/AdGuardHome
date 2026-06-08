@@ -198,6 +198,7 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
                         dispatch(addFilter(source, name));
                     });
                 }
+                dispatch(closeModal());
                 break;
             }
             case MODAL_TYPE.EDIT_BLOCKLIST: {

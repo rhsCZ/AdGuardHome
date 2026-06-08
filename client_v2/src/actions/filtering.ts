@@ -100,7 +100,11 @@ export const addFilter =
         try {
             await apiClient.addFilter({ url, name, whitelist });
             dispatch(addFilterSuccess(url));
-            dispatch(addSuccessToast({ message: intl.getMessage('filter_added_successfully', { value: name || url }) }));
+            dispatch(
+                addSuccessToast({
+                    message: intl.getMessage('filter_added_successfully', { value: name || url }),
+                }),
+            );
             dispatch(closeModal());
             dispatch(getFilteringStatus());
         } catch (error) {
@@ -121,7 +125,13 @@ export const removeFilter =
             await apiClient.removeFilter({ url: filter.url, whitelist });
             dispatch(removeFilterSuccess(filter.url));
             dispatch(closeModal());
-            dispatch(addSuccessToast({ message: intl.getMessage('filter_removed_successfully', { value: filter.name || filter.url }) }));
+            dispatch(
+                addSuccessToast({
+                    message: intl.getMessage('filter_removed_successfully', {
+                        value: filter.name || filter.url,
+                    }),
+                }),
+            );
             dispatch(getFilteringStatus());
         } catch (error) {
             dispatch(addErrorToast({ error }));

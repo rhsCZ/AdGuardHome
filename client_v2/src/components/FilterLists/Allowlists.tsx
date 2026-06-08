@@ -29,7 +29,12 @@ export const Allowlists = () => {
         name: '',
     });
 
-    const { whitelistFilters, processingRefreshFilters, processingConfigFilter, processingFilters } = filtering;
+    const {
+        whitelistFilters,
+        processingRefreshFilters,
+        processingConfigFilter,
+        processingFilters,
+    } = filtering;
 
     useEffect(() => {
         dispatch(getFilteringStatus());
@@ -69,7 +74,13 @@ export const Allowlists = () => {
                 ) : (
                     <>
                         <div className={s.header}>
-                            <h1 className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}>
+                            <h1
+                                className={cn(
+                                    theme.layout.title,
+                                    theme.title.h4,
+                                    theme.title.h3_tablet,
+                                )}
+                            >
                                 {intl.getMessage('allowlists_title')}
                             </h1>
 

@@ -29,7 +29,8 @@ export const Blocklists = () => {
         name: '',
     });
 
-    const { filters, processingRefreshFilters, processingConfigFilter, processingFilters } = filtering;
+    const { filters, processingRefreshFilters, processingConfigFilter, processingFilters } =
+        filtering;
 
     useEffect(() => {
         dispatch(getFilteringStatus());
@@ -69,7 +70,13 @@ export const Blocklists = () => {
                 ) : (
                     <>
                         <div className={s.header}>
-                            <h1 className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}>
+                            <h1
+                                className={cn(
+                                    theme.layout.title,
+                                    theme.title.h4,
+                                    theme.title.h3_tablet,
+                                )}
+                            >
                                 {intl.getMessage('blocklists_title')}
                             </h1>
 
