@@ -7,11 +7,8 @@ import { Button } from 'panel/common/ui/Button';
 import { Icons } from 'panel/common/ui/Icons';
 
 import s from 'panel/common/ui/Header/Header.module.pcss';
-import twosky from 'Twosky';
 
 import styles from './styles.module.pcss';
-
-const LANGUAGES = twosky[1].languages;
 
 export const ForgotPassword = () => {
     const handleBackToLogin = () => {
@@ -21,7 +18,6 @@ export const ForgotPassword = () => {
     return (
         <div className={styles.loginWrapper}>
             <PublicHeader
-                languages={LANGUAGES}
                 dropdownClassName={s.dropdown}
                 dropdownPosition="bottomRight"
                 useLocalLanguage={true}

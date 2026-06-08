@@ -5,7 +5,6 @@ import debounce from 'lodash/debounce';
 import { PublicHeader } from 'panel/common/ui/PublicHeader';
 import { InstallInterface, InstallState, RootState } from 'panel/initialState';
 import { SetupGuide } from 'panel/components/SetupGuide/SetupGuide';
-import twosky from 'Twosky';
 import * as actionCreators from '../../actions/install';
 
 import { getInterfaceIp, getWebAddress } from '../../helpers/helpers';
@@ -23,8 +22,6 @@ import Toasts from '../../components/Toasts';
 
 import styles from './styles.module.pcss';
 import { getDnsAddressWithPort } from './helpers/helpers';
-
-const LANGUAGES = twosky[1].languages;
 
 const getInstallDnsAddresses = (
     dns: { ip: string; port: number },
@@ -167,7 +164,6 @@ export const Setup = () => {
         <>
             <div className={styles.setup}>
                 <PublicHeader
-                    languages={LANGUAGES}
                     dropdownClassName={styles.dropdown}
                     dropdownPosition="bottomRight"
                     center={<Progress step={step} />}

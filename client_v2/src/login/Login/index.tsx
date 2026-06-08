@@ -7,15 +7,12 @@ import { PublicHeader } from 'panel/common/ui/PublicHeader';
 import { Icons } from 'panel/common/ui/Icons';
 
 import s from 'panel/common/ui/Header/Header.module.pcss';
-import twosky from 'Twosky';
 import * as actionCreators from '../../actions/login';
 import Toasts from '../../components/Toasts';
 import Form, { LoginFormValues } from './Form';
 import styles from './styles.module.pcss';
 
 import { LoginState } from '../../initialState';
-
-const LANGUAGES = twosky[1].languages;
 
 export const Login = () => {
     const dispatch = useDispatch();
@@ -28,7 +25,6 @@ export const Login = () => {
     return (
         <div className={styles.loginWrapper}>
             <PublicHeader
-                languages={LANGUAGES}
                 dropdownClassName={s.dropdown}
                 dropdownPosition="bottomRight"
                 useLocalLanguage={true}

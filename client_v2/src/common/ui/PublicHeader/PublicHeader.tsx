@@ -8,14 +8,10 @@ import { setHtmlLangAttr } from 'panel/helpers/helpers';
 import { changeLanguage as changeLanguageAction } from 'panel/actions';
 
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
-import twosky from 'Twosky';
+import { LANGUAGES, LANGUAGE_NAMES } from 'panel/helpers/twosky';
 import styles from './PublicHeader.module.pcss';
 
-const LANGUAGE_NAMES: Record<string, string> =
-    twosky.find((p) => p.project_id === 'home_v2')?.languages ?? {};
-
 type Props = {
-    languages: Record<string, string>;
     dropdownClassName?: string;
     dropdownPosition?: 'bottomRight' | 'bottomLeft' | 'topRight' | 'topLeft';
     center?: React.ReactNode;
@@ -23,7 +19,6 @@ type Props = {
 };
 
 export const PublicHeader = ({
-    languages,
     dropdownClassName,
     dropdownPosition = 'bottomRight',
     center,
@@ -63,7 +58,7 @@ export const PublicHeader = ({
                 <div className={styles.languageWrap}>
                     <LanguageDropdown
                         value={currentLanguage}
-                        languages={languages}
+                        languages={LANGUAGES}
                         languageNames={LANGUAGE_NAMES}
                         onChange={changeLanguage}
                         className={dropdownClassName}

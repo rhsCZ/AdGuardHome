@@ -8,18 +8,14 @@ import { Icon } from 'panel/common/ui/Icon';
 import intl, { LocalesType } from 'panel/common/intl';
 
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
-import twosky from 'Twosky';
 import { LanguageDropdown } from '../LanguageDropdown/LanguageDropdown';
 import { REPOSITORY, PRIVACY_POLICY_LINK, THEMES } from '../../../helpers/constants';
-import { LANGUAGES } from '../../../helpers/twosky';
+import { LANGUAGES, LANGUAGE_NAMES } from '../../../helpers/twosky';
 import { setHtmlLangAttr, setUITheme } from '../../../helpers/helpers';
 import { changeTheme, changeLanguage as changeLanguageAction } from '../../../actions';
 import { RootState } from '../../../initialState';
 
 import s from './styles.module.pcss';
-
-const LANGUAGE_NAMES: Record<string, string> =
-    twosky.find((p) => p.project_id === 'home_v2')?.languages ?? {};
 
 const linksData = [
     {
