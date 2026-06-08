@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import cn from 'clsx';
 
 import theme from 'panel/lib/theme';
+import intl from 'panel/common/intl';
 import { Dropdown } from 'panel/common/ui/Dropdown';
 import { Icon } from 'panel/common/ui/Icon';
 import s from './LanguageDropdown.module.pcss';
@@ -79,12 +80,14 @@ export const LanguageDropdown = ({
             overlayClassName={s.langOverlay}
             position={position}
         >
-            <div className={cn(className)}>
-                <div>
-                    <Icon icon="lang" />
-                    <span className={s.langLabel}>{currentLabel}</span>
-                </div>
-            </div>
+            <button
+                type="button"
+                className={cn(s.langButton, className)}
+                aria-label={intl.getMessage('language')}
+            >
+                <Icon icon="lang" />
+                <span className={s.langLabel}>{currentLabel}</span>
+            </button>
         </Dropdown>
     );
 };
