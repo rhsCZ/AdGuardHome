@@ -1,4 +1,5 @@
 {
+  "language": "Language",
   "client_settings": "Client settings",
   "bootstrap_dns": "Bootstrap DNS servers",
   "fallback_dns": "Fallback DNS servers",

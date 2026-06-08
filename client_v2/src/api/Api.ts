@@ -694,7 +694,7 @@ class Api {
 
     setProfile(data: any) {
         const theme = data.theme ? data.theme : THEMES.auto;
-        const defaultLanguage = intl.getUILanguage() ? intl.getUILanguage() : LANGUAGES.en;
+        const defaultLanguage = intl.getUILanguage() ? intl.getUILanguage() : 'en';
         const language = data.language ? data.language : defaultLanguage;
 
         const { path, method } = this.UPDATE_PROFILE;

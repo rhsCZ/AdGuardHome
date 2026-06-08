@@ -1,10 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { batch, useDispatch, useSelector } from 'react-redux';
-<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
-=======
-import { useHistory } from 'react-router-dom';
->>>>>>> ADG-10291
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
