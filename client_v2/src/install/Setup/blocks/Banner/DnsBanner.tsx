@@ -24,7 +24,6 @@ import type { SettingsFormValues } from '../../types';
 type SelectOption = {
     value: string;
     label: string;
-    isDisabled: boolean;
 };
 
 type Props = {

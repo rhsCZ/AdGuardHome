@@ -101,19 +101,17 @@ export const Blocklists = () => {
                     </button>
                 </div>
 
-                {filters.length > 0 && (
-                    <div className={cn(s.group, s.stretchSelf)}>
-                        <ListsTable
-                            tableId={TABLE_IDS.BLOCKLISTS_TABLE}
-                            filters={filters}
-                            processingConfigFilter={processingConfigFilter}
-                            toggleFilterList={toggleFilter}
-                            addFilterList={openAddBlocklistModal}
-                            editFilterList={openEditBlocklistModal}
-                            deleteFilterList={openDeleteBlocklistModal}
-                        />
-                    </div>
-                )}
+                <div className={cn(s.group, s.stretchSelf)}>
+                    <ListsTable
+                        tableId={TABLE_IDS.BLOCKLISTS_TABLE}
+                        filters={filters}
+                        processingConfigFilter={processingConfigFilter}
+                        toggleFilterList={toggleFilter}
+                        addFilterList={openAddBlocklistModal}
+                        editFilterList={openEditBlocklistModal}
+                        deleteFilterList={openDeleteBlocklistModal}
+                    />
+                </div>
 
                 <ConfigureBlocklistModal modalId={MODAL_TYPE.ADD_BLOCKLIST} />
 

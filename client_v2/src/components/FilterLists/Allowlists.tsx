@@ -101,19 +101,17 @@ export const Allowlists = () => {
                     </button>
                 </div>
 
-                {whitelistFilters.length > 0 && (
-                    <div className={cn(s.group, s.stretchSelf)}>
-                        <ListsTable
-                            tableId={TABLE_IDS.ALLOWLISTS_TABLE}
-                            filters={whitelistFilters}
-                            processingConfigFilter={processingConfigFilter}
-                            editFilterList={openEditAllowlistModal}
-                            addFilterList={openAddAllowlistModal}
-                            toggleFilterList={toggleFilter}
-                            deleteFilterList={openDeleteAllowlistModal}
-                        />
-                    </div>
-                )}
+                <div className={cn(s.group, s.stretchSelf)}>
+                    <ListsTable
+                        tableId={TABLE_IDS.ALLOWLISTS_TABLE}
+                        filters={whitelistFilters}
+                        processingConfigFilter={processingConfigFilter}
+                        editFilterList={openEditAllowlistModal}
+                        addFilterList={openAddAllowlistModal}
+                        toggleFilterList={toggleFilter}
+                        deleteFilterList={openDeleteAllowlistModal}
+                    />
+                </div>
 
                 <ConfigureAllowlistModal modalId={MODAL_TYPE.ADD_ALLOWLIST} />
 
