@@ -222,6 +222,9 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
                 <FormProvider {...methods}>
                     <form onSubmit={handleSubmit(handleFormSubmit)}>
                         <div>
+                            {modalId !== MODAL_TYPE.EDIT_BLOCKLIST && (
+                                <p className={s.desc}>{intl.getMessage('blocklists_add_desc')}</p>
+                            )}
                             {getFormContent({
                                 modalId,
                                 activeTab,
