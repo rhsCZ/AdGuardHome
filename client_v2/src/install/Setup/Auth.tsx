@@ -69,6 +69,13 @@ export const Auth = ({ onAuthSubmit }: Props) => {
         return undefined;
     };
 
+    const validatePasswordSpecial = (value: string) => {
+        if (value && !(hasAllowedAsciiOnly(value) && hasNumberOrSpecial(value))) {
+            return intl.getMessage('password_requirements_special');
+        }
+        return undefined;
+    };
+
     const requirements = useMemo(() => {
         return {
             minLength: password.length > 0 && hasMinLength(password),
@@ -123,6 +130,7 @@ export const Auth = ({ onAuthSubmit }: Props) => {
                                     passwordLength: validatePasswordLength,
                                     passwordLowercase: validatePasswordLowercase,
                                     passwordUppercase: validatePasswordUppercase,
+                                    passwordSpecial: validatePasswordSpecial,
                                 },
                             }}
                             render={({ field }) => (
