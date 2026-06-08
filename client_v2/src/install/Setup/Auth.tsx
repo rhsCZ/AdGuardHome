@@ -55,6 +55,20 @@ export const Auth = ({ onAuthSubmit }: Props) => {
         return undefined;
     };
 
+    const validatePasswordLowercase = (value: string) => {
+        if (value && !hasLowercase(value)) {
+            return intl.getMessage('password_requirements_lowercase');
+        }
+        return undefined;
+    };
+
+    const validatePasswordUppercase = (value: string) => {
+        if (value && !hasUppercase(value)) {
+            return intl.getMessage('password_requirements_uppercase');
+        }
+        return undefined;
+    };
+
     const requirements = useMemo(() => {
         return {
             minLength: password.length > 0 && hasMinLength(password),
@@ -107,6 +121,8 @@ export const Auth = ({ onAuthSubmit }: Props) => {
                                 validate: {
                                     required: validateRequiredValue,
                                     passwordLength: validatePasswordLength,
+                                    passwordLowercase: validatePasswordLowercase,
+                                    passwordUppercase: validatePasswordUppercase,
                                 },
                             }}
                             render={({ field }) => (
