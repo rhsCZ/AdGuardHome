@@ -110,7 +110,7 @@ export const Setup = () => {
             case 1:
                 return <Greeting />;
             case 2:
-                return <Auth onAuthSubmit={handleAuthSubmit} />;
+                return <Auth onAuthSubmit={handleAuthSubmit} initialValues={auth} />;
             case 3:
                 return (
                     <InterfaceSettings

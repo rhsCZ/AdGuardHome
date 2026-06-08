@@ -25,11 +25,18 @@ type AuthFormValues = {
     privacy_consent: boolean;
 };
 
-type Props = {
-    onAuthSubmit: (values: AuthFormValues) => void;
+type AuthInitialValues = {
+    username?: string;
+    password?: string;
+    privacy_consent?: boolean;
 };
 
-export const Auth = ({ onAuthSubmit }: Props) => {
+type Props = {
+    onAuthSubmit: (values: AuthFormValues) => void;
+    initialValues?: AuthInitialValues;
+};
+
+export const Auth = ({ onAuthSubmit, initialValues }: Props) => {
     const {
         handleSubmit,
         watch,
@@ -38,10 +45,10 @@ export const Auth = ({ onAuthSubmit }: Props) => {
     } = useForm<AuthFormValues>({
         mode: 'onChange',
         defaultValues: {
-            username: '',
-            password: '',
-            confirm_password: '',
-            privacy_consent: false,
+            username: initialValues?.username ?? '',
+            password: initialValues?.password ?? '',
+            confirm_password: initialValues?.password ?? '',
+            privacy_consent: initialValues?.privacy_consent ?? false,
         },
     });
 
