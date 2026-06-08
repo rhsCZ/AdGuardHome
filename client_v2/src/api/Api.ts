@@ -5,7 +5,6 @@ import { BASE_URL } from '../../constants';
 import { getPathWithQueryString } from '../helpers/helpers';
 import { QUERY_LOGS_PAGE_LIMIT, HTML_PAGES, R_PATH_LAST_PART, THEMES } from '../helpers/constants';
 import intl from '../common/intl';
-import { LANGUAGES } from '../helpers/twosky';
 
 type Theme = (typeof THEMES)[keyof typeof THEMES];
 
