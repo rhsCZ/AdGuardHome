@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
+import { HashRouter } from 'react-router-dom';
 
 import '../index.pcss';
 import configureStore from '../configureStore';
@@ -15,7 +16,9 @@ const store = configureStore<InstallState>(reducers, {});
 const root = createRoot(document.getElementById('root')!);
 root.render(
     <Provider store={store}>
-        <Setup />
-        <Icons />
+        <HashRouter>
+            <Setup />
+            <Icons />
+        </HashRouter>
     </Provider>,
 );
