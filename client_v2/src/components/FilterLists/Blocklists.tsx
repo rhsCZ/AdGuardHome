@@ -19,7 +19,11 @@ import s from './FilterLists.module.pcss';
 export const Blocklists = () => {
     const dispatch = useDispatch();
     const { filtering } = useSelector((state: RootState) => state);
-    const [currentFilter, setCurrentFilter] = useState<{ url: string; name: string; enabled?: boolean }>({
+    const [currentFilter, setCurrentFilter] = useState<{
+        url: string;
+        name: string;
+        enabled?: boolean;
+    }>({
         url: '',
         name: '',
     });
@@ -87,29 +91,41 @@ export const Blocklists = () => {
                 <div className={s.desc}>{intl.getMessage('blocklists_desc')}</div>
 
                 <div className={s.group}>
-                    <button type="button" className={cn(s.button, s.button_add)} onClick={openAddBlocklistModal}>
+                    <button
+                        type="button"
+                        className={cn(s.button, s.button_add)}
+                        onClick={openAddBlocklistModal}
+                    >
                         <Icon icon="plus" color="green" />
                         {intl.getMessage('add_blocklist')}
                     </button>
                 </div>
 
-                <div className={cn(s.group, s.stretchSelf)}>
-                    <ListsTable
-                        tableId={TABLE_IDS.BLOCKLISTS_TABLE}
-                        filters={filters}
-                        processingConfigFilter={processingConfigFilter}
-                        toggleFilterList={toggleFilter}
-                        addFilterList={openAddBlocklistModal}
-                        editFilterList={openEditBlocklistModal}
-                        deleteFilterList={openDeleteBlocklistModal}
-                    />
-                </div>
+                {filters.length > 0 && (
+                    <div className={cn(s.group, s.stretchSelf)}>
+                        <ListsTable
+                            tableId={TABLE_IDS.BLOCKLISTS_TABLE}
+                            filters={filters}
+                            processingConfigFilter={processingConfigFilter}
+                            toggleFilterList={toggleFilter}
+                            addFilterList={openAddBlocklistModal}
+                            editFilterList={openEditBlocklistModal}
+                            deleteFilterList={openDeleteBlocklistModal}
+                        />
+                    </div>
+                )}
 
                 <ConfigureBlocklistModal modalId={MODAL_TYPE.ADD_BLOCKLIST} />
 
-                <ConfigureBlocklistModal modalId={MODAL_TYPE.EDIT_BLOCKLIST} filterToEdit={currentFilter} />
+                <ConfigureBlocklistModal
+                    modalId={MODAL_TYPE.EDIT_BLOCKLIST}
+                    filterToEdit={currentFilter}
+                />
 
-                <DeleteBlocklistModal filterToDelete={currentFilter} setFilterToDelete={setCurrentFilter} />
+                <DeleteBlocklistModal
+                    filterToDelete={currentFilter}
+                    setFilterToDelete={setCurrentFilter}
+                />
 
                 <FilterUpdateModal />
             </div>

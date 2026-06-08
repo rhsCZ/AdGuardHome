@@ -28,9 +28,7 @@ export const Submit = ({ openDashboard, webConfig, onSubmit }: Props) => {
             <div className={styles.group}>
                 <h1 className={styles.titleStep}>{intl.getMessage('install_submit_title')}</h1>
 
-                <p className={styles.desc}>
-                    {intl.getMessage('setup_complete')}
-                </p>
+                <p className={styles.desc}>{intl.getMessage('setup_complete')}</p>
             </div>
 
             {!submitted ? (

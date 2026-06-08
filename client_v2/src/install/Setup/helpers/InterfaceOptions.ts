@@ -11,7 +11,9 @@ type SelectOption = {
 };
 
 const getInterfaceDisplayName = (iface: InstallInterface) => {
-    const zoneAddr = iface?.ip_addresses?.find((addr) => typeof addr === 'string' && addr.includes('%'));
+    const zoneAddr = iface?.ip_addresses?.find(
+        (addr) => typeof addr === 'string' && addr.includes('%'),
+    );
     const zone = zoneAddr?.split('%')[1];
 
     return zone || iface.name;

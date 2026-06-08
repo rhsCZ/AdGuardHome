@@ -163,17 +163,13 @@ export const useUserRulesActions = ({
 
             dispatch(
                 addSuccessToast(
-                    createUndoToast(
-                        params.message,
-                        intl.getMessage('notify_undo'),
-                        async () => {
-                            const didUndo = await params.undo();
+                    createUndoToast(params.message, intl.getMessage('notify_undo'), async () => {
+                        const didUndo = await params.undo();
 
-                            if (didUndo) {
-                                await params.refresh();
-                            }
-                        },
-                    ),
+                        if (didUndo) {
+                            await params.refresh();
+                        }
+                    }),
                 ),
             );
             await recheckCurrentTarget();

@@ -95,7 +95,9 @@ export const RewritesTable = ({
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>{intl.getMessage('enabled_table_header')}</span>
+                            <span className={s.cellLabel}>
+                                {intl.getMessage('enabled_table_header')}
+                            </span>
 
                             <div className={s.cellValue}>
                                 <Switch
@@ -149,10 +151,11 @@ export const RewritesTable = ({
             {
                 key: 'actions',
                 header: {
-                    text: intl.getMessage('actions_label'),
+                    text: '',
                     className: s.headerCell,
                 },
                 sortable: false,
+                width: 80,
                 render: (value: any, row: Rewrite) => {
                     const currentRewrite = {
                         answer: row.answer,
@@ -207,7 +210,11 @@ export const RewritesTable = ({
                 <div className={cn(theme.text.t3, s.emptyTableDesc)}>
                     {intl.getMessage('rewrites_empty', {
                         button: (text: string) => (
-                            <button className={cn(theme.text.t3, theme.link.link)} type="button" onClick={addRewritesList}>
+                            <button
+                                className={cn(theme.text.t3, theme.link.link)}
+                                type="button"
+                                onClick={addRewritesList}
+                            >
                                 {text}
                             </button>
                         ),

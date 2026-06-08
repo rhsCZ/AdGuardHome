@@ -29,8 +29,7 @@ const renderItem = ({ ip, port, isDns }: renderItemProps) => {
     const dnsAddress = getDnsAddressWithPort(ip, port);
 
     return (
-        <li className={styles.addressListItem}
-            key={ip}>
+        <li className={styles.addressListItem} key={ip}>
             {isDns ? <CopiedText text={dnsAddress} /> : <CopiedText text={webAddress} />}
         </li>
     );

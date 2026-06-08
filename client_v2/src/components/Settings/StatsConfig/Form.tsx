@@ -61,7 +61,8 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
         onSubmit(data);
     };
 
-    const disableSubmit = isSubmitting || processing || (intervalValue === RETENTION_CUSTOM && !customIntervalValue);
+    const disableSubmit =
+        isSubmitting || processing || (intervalValue === RETENTION_CUSTOM && !customIntervalValue);
 
     return (
         <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -92,7 +93,8 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
                         text: getIntervalTitle(interval),
                         value: interval,
                     })),
-                ]}>
+                ]}
+            >
                 <RetentionCustomInput
                     control={control}
                     processing={processing}
@@ -120,7 +122,8 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
                     variant="primary"
                     size="small"
                     disabled={disableSubmit}
-                    className={theme.form.button}>
+                    className={theme.form.button}
+                >
                     {intl.getMessage('save')}
                 </Button>
 
@@ -131,7 +134,8 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
                     variant="secondary"
                     size="small"
                     disabled={processingReset}
-                    className={theme.form.button}>
+                    className={theme.form.button}
+                >
                     {intl.getMessage('settings_statistics_clear')}
                 </Button>
             </div>

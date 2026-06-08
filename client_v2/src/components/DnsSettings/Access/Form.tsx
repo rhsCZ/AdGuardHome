@@ -112,7 +112,11 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
                             label={
                                 <>
                                     {title}
-                                    <FaqTooltip text={faq} menuSize="large" spacing={id === 'blocked_hosts'} />
+                                    <FaqTooltip
+                                        text={faq}
+                                        menuSize="large"
+                                        spacing={id === 'blocked_hosts'}
+                                    />
                                 </>
                             }
                             onBlur={(e) => {
@@ -138,7 +142,8 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
                     variant="primary"
                     size="small"
                     disabled={isSubmitting || processingSet}
-                    className={theme.form.button}>
+                    className={theme.form.button}
+                >
                     {intl.getMessage('save')}
                 </Button>
             </div>

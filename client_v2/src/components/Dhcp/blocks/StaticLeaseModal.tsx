@@ -78,9 +78,7 @@ export const StaticLeaseModal = ({
         return intl.getMessage('dhcp_new_static_lease');
     };
 
-    const submitLabel = isMakeStatic
-        ? intl.getMessage('make_static')
-        : intl.getMessage('save');
+    const submitLabel = isMakeStatic ? intl.getMessage('make_static') : intl.getMessage('save');
 
     return (
         <Dialog
@@ -91,9 +89,7 @@ export const StaticLeaseModal = ({
         >
             <form onSubmit={handleSubmit(onSubmit)}>
                 {isMakeStatic && (
-                    <div className={theme.dialog.body}>
-                        {intl.getMessage('make_static_desc')}
-                    </div>
+                    <div className={theme.dialog.body}>{intl.getMessage('make_static_desc')}</div>
                 )}
                 <div className={theme.form.group}>
                     <div className={theme.form.input}>

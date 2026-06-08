@@ -49,8 +49,9 @@ export const Settings = () => {
         });
     }, []);
 
-    const handleSettingToggle = (key: keyof typeof SETTINGS) => (e: React.ChangeEvent<HTMLInputElement>) =>
-        dispatch(toggleSetting(key, !e.target.checked));
+    const handleSettingToggle =
+        (key: keyof typeof SETTINGS) => (e: React.ChangeEvent<HTMLInputElement>) =>
+            dispatch(toggleSetting(key, !e.target.checked));
 
     const renderSettings = (settingsList?: SettingsData['settingsList']) =>
         settingsList
@@ -87,13 +88,14 @@ export const Settings = () => {
             dispatch(toggleSetting('safesearch', payload));
         };
 
-        const onProviderChange = (searchKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-            const payload = {
-                ...safesearch,
-                [searchKey]: e.target.checked,
-            } as SafeSearchConfigShape;
-            dispatch(toggleSetting('safesearch', payload));
-        };
+        const onProviderChange =
+            (searchKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+                const payload = {
+                    ...safesearch,
+                    [searchKey]: e.target.checked,
+                } as SafeSearchConfigShape;
+                dispatch(toggleSetting('safesearch', payload));
+            };
 
         return (
             <SwitchGroup
@@ -101,7 +103,8 @@ export const Settings = () => {
                 title={intl.getMessage('settings_safe_search')}
                 description={intl.getMessage('settings_safe_search_desc')}
                 checked={enabled}
-                onChange={onSafeSearchEnabledChange}>
+                onChange={onSafeSearchEnabledChange}
+            >
                 <div>
                     {Object.keys(searches).map((searchKey) => (
                         <div key={searchKey} className={theme.form.checkbox}>
@@ -109,7 +112,8 @@ export const Settings = () => {
                                 id={searchKey}
                                 checked={searches[searchKey]}
                                 disabled={!enabled}
-                                onChange={onProviderChange(searchKey)}>
+                                onChange={onProviderChange(searchKey)}
+                            >
                                 {getSafeSearchProviderTitle(searchKey)}
                             </Checkbox>
                         </div>
@@ -119,7 +123,8 @@ export const Settings = () => {
         );
     };
 
-    const isLoading = settings.processing || stats.processingGetConfig || queryLogs.processingGetConfig;
+    const isLoading =
+        settings.processing || stats.processingGetConfig || queryLogs.processingGetConfig;
 
     const location = useLocation();
 
@@ -143,7 +148,13 @@ export const Settings = () => {
 
                 {!isLoading && (
                     <>
-                        <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
+                        <h2
+                            className={cn(
+                                theme.layout.subtitle,
+                                theme.title.h5,
+                                theme.title.h4_tablet,
+                            )}
+                        >
                             {intl.getMessage('settings_filter_requests')}
                         </h2>
 
@@ -159,7 +170,13 @@ export const Settings = () => {
 
                         {renderSafeSearch()}
 
-                        <h2 className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
+                        <h2
+                            className={cn(
+                                theme.layout.subtitle,
+                                theme.title.h5,
+                                theme.title.h4_tablet,
+                            )}
+                        >
                             {intl.getMessage('query_log')}
                         </h2>
 
@@ -173,7 +190,14 @@ export const Settings = () => {
                             processingClear={queryLogs.processingClear}
                         />
 
-                        <h2 id="stats_config" className={cn(theme.layout.subtitle, theme.title.h5, theme.title.h4_tablet)}>
+                        <h2
+                            id="stats_config"
+                            className={cn(
+                                theme.layout.subtitle,
+                                theme.title.h5,
+                                theme.title.h4_tablet,
+                            )}
+                        >
                             {intl.getMessage('settings_statistics')}
                         </h2>
 

@@ -95,7 +95,9 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
 
         switch (modalId) {
             case MODAL_TYPE.ADD_REWRITE: {
-                dispatch(addRewrite({ answer: values.answer, domain: values.domain, enabled: true }));
+                dispatch(
+                    addRewrite({ answer: values.answer, domain: values.domain, enabled: true }),
+                );
                 dispatch(closeModal());
                 break;
             }
@@ -103,7 +105,11 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                 dispatch(
                     updateRewrite({
                         target: rewriteToEdit,
-                        update: { answer: values.answer, domain: values.domain, enabled: values.enabled },
+                        update: {
+                            answer: values.answer,
+                            domain: values.domain,
+                            enabled: values.enabled,
+                        },
                     }),
                 );
                 dispatch(closeModal());
@@ -148,22 +154,44 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                                                             menuClassName={s.tooltip}
                                                             text={
                                                                 <>
-                                                                    <div className={cn(theme.text.t3, s.tooltipTitle)}>
-                                                                        {intl.getMessage('upstream_examples_title')}
+                                                                    <div
+                                                                        className={cn(
+                                                                            theme.text.t3,
+                                                                            s.tooltipTitle,
+                                                                        )}
+                                                                    >
+                                                                        {intl.getMessage(
+                                                                            'upstream_examples_title',
+                                                                        )}
                                                                     </div>
 
                                                                     {[
                                                                         {
-                                                                            message: intl.getMessage('rewrites_tooltip_examples_item1'),
+                                                                            message:
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_examples_item1',
+                                                                                ),
                                                                             code: 'example.org',
                                                                         },
                                                                         {
-                                                                            message: intl.getMessage('rewrites_tooltip_examples_item2'),
+                                                                            message:
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_examples_item2',
+                                                                                ),
                                                                             code: '*.example.org',
                                                                         },
                                                                     ].map((item, index) => (
-                                                                        <div key={index} className={s.tooltipItem}>
-                                                                            <div className={s.tooltipItemDot}></div>
+                                                                        <div
+                                                                            key={index}
+                                                                            className={
+                                                                                s.tooltipItem
+                                                                            }
+                                                                        >
+                                                                            <div
+                                                                                className={
+                                                                                    s.tooltipItemDot
+                                                                                }
+                                                                            ></div>
                                                                             {item.message}
                                                                             <code>{item.code}</code>
                                                                         </div>
@@ -173,7 +201,9 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                                                         />
                                                     </>
                                                 }
-                                                placeholder={intl.getMessage('rewrite_domain_input_placeholder')}
+                                                placeholder={intl.getMessage(
+                                                    'rewrite_domain_input_placeholder',
+                                                )}
                                                 errorMessage={fieldState.error?.message}
                                             />
                                         )}
@@ -202,35 +232,63 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                                                             menuClassName={s.tooltip}
                                                             text={
                                                                 <>
-                                                                    <div className={cn(theme.text.t3, s.tooltipTitle)}>
-                                                                        {intl.getMessage('instructions')}
+                                                                    <div
+                                                                        className={cn(
+                                                                            theme.text.t3,
+                                                                            s.tooltipTitle,
+                                                                        )}
+                                                                    >
+                                                                        {intl.getMessage(
+                                                                            'instructions',
+                                                                        )}
                                                                     </div>
 
                                                                     {[
                                                                         {
                                                                             message:
-                                                                                intl.getMessage('rewrites_tooltip_instructions_item1'),
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_instructions_item1',
+                                                                                ),
                                                                         },
                                                                         {
                                                                             message:
-                                                                                intl.getMessage('rewrites_tooltip_instructions_item2'),
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_instructions_item2',
+                                                                                ),
                                                                         },
                                                                         {
                                                                             message:
-                                                                                intl.getMessage('rewrites_tooltip_instructions_item3'),
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_instructions_item3',
+                                                                                ),
                                                                             code: 'A',
                                                                         },
                                                                         {
                                                                             message:
-                                                                                intl.getMessage('rewrites_tooltip_instructions_item4'),
+                                                                                intl.getMessage(
+                                                                                    'rewrites_tooltip_instructions_item4',
+                                                                                ),
                                                                             code: 'AAAA',
                                                                         },
                                                                     ].map((item, index) => (
-                                                                        <div key={index} className={s.tooltipItem}>
-                                                                            <div className={s.tooltipItemDot}></div>
+                                                                        <div
+                                                                            key={index}
+                                                                            className={
+                                                                                s.tooltipItem
+                                                                            }
+                                                                        >
+                                                                            <div
+                                                                                className={
+                                                                                    s.tooltipItemDot
+                                                                                }
+                                                                            ></div>
                                                                             {item.message}
 
-                                                                            {item.code && <code>{item.code}</code>}
+                                                                            {item.code && (
+                                                                                <code>
+                                                                                    {item.code}
+                                                                                </code>
+                                                                            )}
                                                                         </div>
                                                                     ))}
                                                                 </>
@@ -238,7 +296,9 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                                                         />
                                                     </>
                                                 }
-                                                placeholder={intl.getMessage('rewrites_answer_input_placeholder')}
+                                                placeholder={intl.getMessage(
+                                                    'rewrites_answer_input_placeholder',
+                                                )}
                                                 errorMessage={fieldState.error?.message}
                                             />
                                         )}

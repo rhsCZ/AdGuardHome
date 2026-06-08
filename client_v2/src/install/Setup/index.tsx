@@ -5,6 +5,7 @@ import debounce from 'lodash/debounce';
 import { PublicHeader } from 'panel/common/ui/PublicHeader';
 import { InstallInterface, InstallState, RootState } from 'panel/initialState';
 import { SetupGuide } from 'panel/components/SetupGuide/SetupGuide';
+import twosky from 'Twosky';
 import * as actionCreators from '../../actions/install';
 
 import { getInterfaceIp, getWebAddress } from '../../helpers/helpers';
@@ -21,12 +22,14 @@ import { Auth } from './Auth';
 import Toasts from '../../components/Toasts';
 
 import styles from './styles.module.pcss';
-import twosky from '../../../../.twosky.json';
 import { getDnsAddressWithPort } from './helpers/helpers';
 
 const LANGUAGES = twosky[1].languages;
 
-const getInstallDnsAddresses = (dns: { ip: string; port: number }, interfaces: InstallInterface[]) => {
+const getInstallDnsAddresses = (
+    dns: { ip: string; port: number },
+    interfaces: InstallInterface[],
+) => {
     if (!dns?.ip || !dns?.port) {
         return [];
     }
@@ -136,7 +139,11 @@ export const Setup = () => {
             case 5:
                 return (
                     <>
-                        <SetupGuide dnsAddresses={resolvedDnsAddresses} isStep footer={<Controls />} />
+                        <SetupGuide
+                            dnsAddresses={resolvedDnsAddresses}
+                            isStep
+                            footer={<Controls />}
+                        />
                     </>
                 );
             case 6:
@@ -164,9 +171,12 @@ export const Setup = () => {
                     dropdownClassName={styles.dropdown}
                     dropdownPosition="bottomRight"
                     center={<Progress step={step} />}
+                    useLocalLanguage={true}
                 />
 
-                <div className={styles.container}>{renderPage(step, { web, dns, staticIp }, interfaces)}</div>
+                <div className={styles.container}>
+                    {renderPage(step, { web, dns, staticIp }, interfaces)}
+                </div>
             </div>
 
             <Toasts />

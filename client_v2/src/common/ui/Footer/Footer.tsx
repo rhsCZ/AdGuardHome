@@ -8,6 +8,7 @@ import { Icon } from 'panel/common/ui/Icon';
 import intl, { LocalesType } from 'panel/common/intl';
 
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
+import twosky from 'Twosky';
 import { LanguageDropdown } from '../LanguageDropdown/LanguageDropdown';
 import { REPOSITORY, PRIVACY_POLICY_LINK, THEMES } from '../../../helpers/constants';
 import { LANGUAGES } from '../../../helpers/twosky';
@@ -16,6 +17,9 @@ import { changeTheme, changeLanguage as changeLanguageAction } from '../../../ac
 import { RootState } from '../../../initialState';
 
 import s from './styles.module.pcss';
+
+const LANGUAGE_NAMES: Record<string, string> =
+    twosky.find((p) => p.project_id === 'home_v2')?.languages ?? {};
 
 const linksData = [
     {
@@ -41,10 +45,15 @@ const themeTranslations: Record<string, string> = {
 export const Footer = () => {
     const dispatch = useDispatch();
 
-    const currentTheme = useSelector((state: RootState) => (state.dashboard ? state.dashboard.theme : THEMES.auto));
-    const profileName = useSelector((state: RootState) => (state.dashboard ? state.dashboard.name : ''));
+    const currentTheme = useSelector((state: RootState) =>
+        state.dashboard ? state.dashboard.theme : THEMES.auto,
+    );
+    const profileName = useSelector((state: RootState) =>
+        state.dashboard ? state.dashboard.name : '',
+    );
     const currentLanguage =
-        useSelector((state: RootState) => (state.dashboard ? state.dashboard.language : '')) || intl.getUILanguage();
+        useSelector((state: RootState) => (state.dashboard ? state.dashboard.language : '')) ||
+        intl.getUILanguage();
     const isLoggedIn = profileName !== '';
     const [currentThemeLocal, setCurrentThemeLocal] = useState(THEMES.auto);
     const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
@@ -102,7 +111,8 @@ export const Footer = () => {
                             href={href}
                             className={cn(theme.link.link, theme.link.noDecoration)}
                             target="_blank"
-                            rel="noopener noreferrer">
+                            rel="noopener noreferrer"
+                        >
                             {name}
                         </a>
                     ))}
@@ -122,17 +132,24 @@ export const Footer = () => {
                                         className={cn(theme.dropdown.item, {
                                             [theme.dropdown.item_active]: currentTheme === v,
                                         })}
-                                        onClick={() => onThemeChange(v)}>
+                                        onClick={() => onThemeChange(v)}
+                                    >
                                         {themeTranslations[v]}
                                     </button>
                                 ))}
                             </div>
                         }
                         className={s.dropdown}
-                        position="bottomRight">
+                        position="bottomRight"
+                    >
                         <div className={s.dropdownTrigger}>
-                            <Icon icon={getThemeIcon(isLoggedIn, currentTheme, currentThemeLocal)} className={s.icon} />
-                            <span>{themeTranslations[isLoggedIn ? currentTheme : currentThemeLocal]}</span>
+                            <Icon
+                                icon={getThemeIcon(isLoggedIn, currentTheme, currentThemeLocal)}
+                                className={s.icon}
+                            />
+                            <span>
+                                {themeTranslations[isLoggedIn ? currentTheme : currentThemeLocal]}
+                            </span>
                         </div>
                     </Dropdown>
                 </div>
@@ -141,9 +158,11 @@ export const Footer = () => {
                     <LanguageDropdown
                         value={currentLanguage}
                         languages={LANGUAGES}
+                        languageNames={LANGUAGE_NAMES}
                         onChange={(lang) => changeLanguage(lang as LocalesType)}
                         className={s.dropdown}
-                        position="bottomRight" />
+                        position="bottomRight"
+                    />
                 </div>
             </div>
         </footer>

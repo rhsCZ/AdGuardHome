@@ -18,7 +18,9 @@ import { Cache } from './Cache';
 export const DnsSettings = () => {
     const dispatch = useDispatch();
     const processing = useSelector((state: RootState) => state.access.processing);
-    const processingGetConfig = useSelector((state: RootState) => state.dnsConfig.processingGetConfig);
+    const processingGetConfig = useSelector(
+        (state: RootState) => state.dnsConfig.processingGetConfig,
+    );
     const isDataLoading = processing || processingGetConfig;
 
     useEffect(() => {

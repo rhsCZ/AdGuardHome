@@ -4,11 +4,12 @@ import cn from 'clsx';
 import theme from 'panel/lib/theme';
 import { Dropdown } from 'panel/common/ui/Dropdown';
 import { Icon } from 'panel/common/ui/Icon';
-import s from './LanguageDropdown.module.pcss'
+import s from './LanguageDropdown.module.pcss';
 
 type LanguageDropdownProps = {
     value: string;
     languages: Record<string, string>;
+    languageNames?: Record<string, string>;
     onChange: (lang: string) => void | Promise<void>;
     position?: 'bottomRight' | 'bottomLeft' | 'topRight' | 'topLeft';
     className?: string;
@@ -30,13 +31,14 @@ const getLanguageShortLabel = (lang: string) => {
 };
 
 export const LanguageDropdown = ({
-      value,
-      languages,
-      onChange,
-      position = 'bottomRight',
-      className,
-      sort = true,
-  }: LanguageDropdownProps) => {
+    value,
+    languages,
+    languageNames,
+    onChange,
+    position = 'bottomRight',
+    className,
+    sort = true,
+}: LanguageDropdownProps) => {
     const [open, setOpen] = useState(false);
 
     const sortedKeys = useMemo(() => {
@@ -66,15 +68,17 @@ export const LanguageDropdown = ({
                             onClick={async () => {
                                 await onChange(lang);
                                 setOpen(false);
-                            }}>
-                            {getLanguageShortLabel(lang)}
+                            }}
+                        >
+                            {languageNames?.[lang] || getLanguageShortLabel(lang)}
                         </button>
                     ))}
                 </div>
             }
             className={className}
             overlayClassName={s.langOverlay}
-            position={position}>
+            position={position}
+        >
             <div className={cn(className)}>
                 <div>
                     <Icon icon="lang" />

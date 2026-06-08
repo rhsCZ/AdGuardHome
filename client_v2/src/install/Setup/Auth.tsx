@@ -9,7 +9,13 @@ import { PasswordRequirements } from 'panel/install/Setup/blocks';
 import { PasswordInput } from '../../common/controls/Input/PasswordInput';
 import Controls from './Controls';
 import { validatePasswordLength, validateRequiredValue } from '../../helpers/validators';
-import { hasMinLength, hasLowercase, hasUppercase, hasAllowedAsciiOnly, hasNumberOrSpecial } from './helpers/helpers';
+import {
+    hasMinLength,
+    hasLowercase,
+    hasUppercase,
+    hasAllowedAsciiOnly,
+    hasNumberOrSpecial,
+} from './helpers/helpers';
 import styles from './styles.module.pcss';
 
 type AuthFormValues = {
@@ -52,13 +58,14 @@ export const Auth = ({ onAuthSubmit }: Props) => {
     const requirements = useMemo(() => {
         return {
             minLength: password.length > 0 && hasMinLength(password),
-            allowedChars: password.length > 0 && hasAllowedAsciiOnly(password) && hasNumberOrSpecial(password),
+            allowedChars:
+                password.length > 0 &&
+                hasAllowedAsciiOnly(password) &&
+                hasNumberOrSpecial(password),
             lowercase: password.length > 0 && hasLowercase(password),
             uppercase: password.length > 0 && hasUppercase(password),
             match:
-                password.length > 0 &&
-                confirmPassword.length > 0 &&
-                password === confirmPassword,
+                password.length > 0 && confirmPassword.length > 0 && password === confirmPassword,
         };
     }, [password, confirmPassword]);
 
@@ -66,9 +73,13 @@ export const Auth = ({ onAuthSubmit }: Props) => {
         <div className={styles.configSetting}>
             <form className={styles.step} onSubmit={handleSubmit(onAuthSubmit)}>
                 <div className={styles.info}>
-                    <div className={styles.titleStep}>{intl.getMessage('setup_guide_auth_title')}</div>
+                    <div className={styles.titleStep}>
+                        {intl.getMessage('setup_guide_auth_title')}
+                    </div>
 
-                    <p className={styles.descStep}>{intl.getMessage('setup_guide_auth_subtitle')}</p>
+                    <p className={styles.descStep}>
+                        {intl.getMessage('setup_guide_auth_subtitle')}
+                    </p>
 
                     <div className={styles.input}>
                         <Controller
@@ -114,7 +125,10 @@ export const Auth = ({ onAuthSubmit }: Props) => {
                         />
                     </div>
 
-                    <PasswordRequirements requirements={requirements} className={styles.authRequirementsMobile} />
+                    <PasswordRequirements
+                        requirements={requirements}
+                        className={styles.authRequirementsMobile}
+                    />
 
                     <div className={styles.input}>
                         <Controller
@@ -157,14 +171,19 @@ export const Auth = ({ onAuthSubmit }: Props) => {
                                 >
                                     <div className={styles.consentContent}>
                                         {intl.getMessage('setup_guide_auth_privacy', {
-                                            a: (text: string) =>
-                                                <a className={styles.link} href={PRIVACY_POLICY_LINK}>
+                                            a: (text: string) => (
+                                                <a
+                                                    className={styles.link}
+                                                    href={PRIVACY_POLICY_LINK}
+                                                >
                                                     {text}
-                                                </a>,
-                                            b: (text: string) =>
+                                                </a>
+                                            ),
+                                            b: (text: string) => (
                                                 <a className={styles.link} href={TERMS_LINK}>
                                                     {text}
-                                                </a>,
+                                                </a>
+                                            ),
                                         })}
                                     </div>
                                 </Checkbox>

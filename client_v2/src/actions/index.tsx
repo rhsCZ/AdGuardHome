@@ -21,6 +21,19 @@ import { apiClient } from '../api/Api';
 import { addErrorToast, addNoticeToast, addSuccessToast, createUndoToast } from './toasts';
 import { getFilteringStatus, setRules } from './filtering';
 
+const getSectionMessage = (sectionKey: string) => {
+    switch (sectionKey) {
+        case 'upstream_dns':
+            return intl.getMessage('upstream_dns');
+        case 'bootstrap_dns':
+            return intl.getMessage('bootstrap_dns');
+        case 'fallback_dns':
+            return intl.getMessage('fallback_dns');
+        default:
+            return sectionKey;
+    }
+};
+
 type SafeSearchConfig = Record<string, boolean> & { enabled: boolean };
 type ToggleSettingKey = keyof typeof SETTINGS_NAMES;
 type Theme = (typeof THEMES)[keyof typeof THEMES];
@@ -179,7 +192,7 @@ export const getVersion =
                     dispatch(addSuccessToast(intl.getMessage('updates_version_equal')));
                 }
             }
-        } catch (error) {
+        } catch (_error) {
             dispatch(addErrorToast({ error: 'version_request_error' }));
             dispatch(getVersionFailure());
         }
@@ -214,7 +227,7 @@ const checkStatus = async (handleRequestSuccess: any, handleRequestError: any, a
                 );
             }
         }
-    } catch (error) {
+    } catch (_error) {
         rmTimeout(timeout);
         timeout = setTimeout(
             checkStatus,
@@ -254,7 +267,7 @@ export const getUpdate = () => async (dispatch: any, getState: any) => {
     try {
         await apiClient.getUpdate();
         checkStatus(handleRequestSuccess, handleRequestError);
-    } catch (error) {
+    } catch (_error) {
         handleRequestError();
     }
 };
@@ -332,7 +345,7 @@ export const getDnsStatus = () => async (dispatch: any) => {
 
     try {
         checkStatus(handleRequestSuccess, handleRequestError);
-    } catch (error) {
+    } catch (_error) {
         handleRequestError();
     }
 };
@@ -367,7 +380,7 @@ export const getTimerStatus = () => async (dispatch: any) => {
 
     try {
         checkStatus(handleRequestSuccess, handleRequestError);
-    } catch (error) {
+    } catch (_error) {
         handleRequestError();
     }
 };
@@ -409,7 +422,7 @@ export const testUpstream =
                 } else if (message.endsWith(': parsing error')) {
                     const info = message.substring(0, message.indexOf(':'));
                     const [sectionKey, line] = info.split(' ');
-                    const section = intl.getMessage(sectionKey);
+                    const section = getSectionMessage(sectionKey);
                     dispatch(
                         addErrorToast({
                             error: intl.getMessage('dns_test_parsing_error_toast', {

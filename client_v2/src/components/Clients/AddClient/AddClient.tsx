@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Input } from 'panel/common/controls/Input';
@@ -33,7 +33,7 @@ import s from './AddClient.module.pcss';
 
 export const AddClient = () => {
     const dispatch = useDispatch();
-    const history = useHistory();
+    const navigate = useNavigate();
     const { clientName: urlClientName } = useParams<{ clientName?: string }>();
     const form = useSelector((state: RootState) => state.clientForm);
     const dashboard = useSelector((state: RootState) => state.dashboard);
@@ -60,17 +60,17 @@ export const AddClient = () => {
 
         if (!client) {
             dispatch(clearClientForm());
-            history.replace(Paths.Clients);
+            navigate(Paths.Clients, { replace: true });
             return;
         }
 
         dispatch(initClientForm(buildFormPayload(client)));
-    }, [urlClientName, clients, form.mode, form.originalName, dispatch, history]);
+    }, [urlClientName, clients, form.mode, form.originalName, dispatch, navigate]);
 
     const handleCancel = useCallback(() => {
         dispatch(clearClientForm());
-        history.push(Paths.Clients);
-    }, [dispatch, history]);
+        navigate(Paths.Clients);
+    }, [dispatch, navigate]);
 
     const handleSave = useCallback(async () => {
         const err = validateUpstreams(form.upstreams);
@@ -80,9 +80,9 @@ export const AddClient = () => {
         }
         const result = await dispatch(saveClient());
         if (result) {
-            history.push(Paths.Clients);
+            navigate(Paths.Clients);
         }
-    }, [dispatch, history, form.upstreams]);
+    }, [dispatch, navigate, form.upstreams]);
 
     const handleUseGlobalSettings = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         dispatch(

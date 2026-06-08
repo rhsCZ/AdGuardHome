@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { batch, useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
@@ -12,7 +12,7 @@ import { initClientForm, buildFormPayload } from 'panel/actions/clientForm';
 import { getStats } from 'panel/actions/stats';
 import { getAllBlockedServices } from 'panel/actions/services';
 import { Client, RootState } from 'panel/initialState';
-import { linkPathBuilder, RoutePath } from 'panel/components/Routes/Paths';
+import { linkPathBuilder, RoutePath, Paths } from 'panel/components/Routes/Paths';
 import theme from 'panel/lib/theme';
 
 import { PersistentClientsTable } from './blocks/PersistentClientsTable';
@@ -44,23 +44,23 @@ export const Clients = () => {
         });
     }, []);
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const handleAddClient = useCallback(() => {
         dispatch(initClientForm(null));
-        history.push('/clients/add');
-    }, [dispatch, history]);
+        navigate(Paths.ClientsAdd);
+    }, [dispatch, navigate]);
 
     const handleEditClient = useCallback(
         (client: Client) => {
             dispatch(initClientForm(buildFormPayload(client)));
-            history.push(
+            navigate(
                 linkPathBuilder(RoutePath.ClientsEdit, {
                     clientName: encodeURIComponent(client.name),
                 }),
             );
         },
-        [dispatch, history],
+        [dispatch, navigate],
     );
 
     const handleDeleteClient = (name: string) => {

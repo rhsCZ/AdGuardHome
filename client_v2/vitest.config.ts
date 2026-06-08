@@ -8,6 +8,7 @@ export default defineConfig({
     resolve: {
         alias: {
             panel: path.resolve(rootDir, 'src'),
+            Twosky: path.resolve(rootDir, '../.twosky.json'),
         },
     },
     test: {

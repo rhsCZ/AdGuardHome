@@ -19,7 +19,11 @@ import s from './FilterLists.module.pcss';
 export const Allowlists = () => {
     const dispatch = useDispatch();
     const { filtering } = useSelector((state: RootState) => state);
-    const [currentFilter, setCurrentFilter] = useState<{ url: string; name: string; enabled?: boolean }>({
+    const [currentFilter, setCurrentFilter] = useState<{
+        url: string;
+        name: string;
+        enabled?: boolean;
+    }>({
         url: '',
         name: '',
     });
@@ -87,29 +91,41 @@ export const Allowlists = () => {
                 <div className={s.desc}>{intl.getMessage('allowlists_desc')}</div>
 
                 <div className={s.group}>
-                    <button type="button" className={cn(s.button, s.button_add)} onClick={openAddAllowlistModal}>
+                    <button
+                        type="button"
+                        className={cn(s.button, s.button_add)}
+                        onClick={openAddAllowlistModal}
+                    >
                         <Icon icon="plus" color="green" />
                         {intl.getMessage('add_allowlist')}
                     </button>
                 </div>
 
-                <div className={cn(s.group, s.stretchSelf)}>
-                    <ListsTable
-                        tableId={TABLE_IDS.ALLOWLISTS_TABLE}
-                        filters={whitelistFilters}
-                        processingConfigFilter={processingConfigFilter}
-                        editFilterList={openEditAllowlistModal}
-                        addFilterList={openAddAllowlistModal}
-                        toggleFilterList={toggleFilter}
-                        deleteFilterList={openDeleteAllowlistModal}
-                    />
-                </div>
+                {whitelistFilters.length > 0 && (
+                    <div className={cn(s.group, s.stretchSelf)}>
+                        <ListsTable
+                            tableId={TABLE_IDS.ALLOWLISTS_TABLE}
+                            filters={whitelistFilters}
+                            processingConfigFilter={processingConfigFilter}
+                            editFilterList={openEditAllowlistModal}
+                            addFilterList={openAddAllowlistModal}
+                            toggleFilterList={toggleFilter}
+                            deleteFilterList={openDeleteAllowlistModal}
+                        />
+                    </div>
+                )}
 
                 <ConfigureAllowlistModal modalId={MODAL_TYPE.ADD_ALLOWLIST} />
 
-                <ConfigureAllowlistModal modalId={MODAL_TYPE.EDIT_ALLOWLIST} filterToEdit={currentFilter} />
+                <ConfigureAllowlistModal
+                    modalId={MODAL_TYPE.EDIT_ALLOWLIST}
+                    filterToEdit={currentFilter}
+                />
 
-                <DeleteAllowlistModal filterToDelete={currentFilter} setFilterToDelete={setCurrentFilter} />
+                <DeleteAllowlistModal
+                    filterToDelete={currentFilter}
+                    setFilterToDelete={setCurrentFilter}
+                />
 
                 <FilterUpdateModal />
             </div>

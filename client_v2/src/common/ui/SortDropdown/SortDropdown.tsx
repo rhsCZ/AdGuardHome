@@ -55,7 +55,7 @@ export const SortDropdown = ({ value, onChange }: Props) => {
             wrapClassName={cn(theme.dropdown.dropdown, theme.pagination.dropdownShowOnPage)}
         >
             <span className={theme.pagination.dropdownText}>
-                {intl.getMessage(value === 'asc' ? 'sort_asc' : 'sort_desc')}
+                {value === 'asc' ? intl.getMessage('sort_asc') : intl.getMessage('sort_desc')}
             </span>
         </Dropdown>
     );

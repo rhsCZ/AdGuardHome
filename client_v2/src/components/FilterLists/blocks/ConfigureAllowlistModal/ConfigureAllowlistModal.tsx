@@ -110,7 +110,9 @@ export const ConfigureAllowlistModal = ({ modalId, filterToEdit }: Props) => {
                                                 type="text"
                                                 id="filters_name"
                                                 label={intl.getMessage('name_label')}
-                                                placeholder={intl.getMessage('allowlist_placeholder_example')}
+                                                placeholder={intl.getMessage(
+                                                    'allowlist_placeholder_example',
+                                                )}
                                                 errorMessage={fieldState.error?.message}
                                             />
                                         )}
@@ -130,7 +132,9 @@ export const ConfigureAllowlistModal = ({ modalId, filterToEdit }: Props) => {
                                                 type="text"
                                                 id="filters_url"
                                                 label={intl.getMessage('blocklist_url_file_path')}
-                                                placeholder={intl.getMessage('blocklist_url_file_path')}
+                                                placeholder={intl.getMessage(
+                                                    'blocklist_url_file_path',
+                                                )}
                                                 errorMessage={fieldState.error?.message}
                                             />
                                         )}

@@ -25,7 +25,13 @@ type Props = {
     onSave: (values: V4Config) => void;
 };
 
-export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConfig, onSave }: Props) => {
+export const Ipv4Settings = ({
+    v4,
+    interfaces,
+    selectedInterface,
+    processingConfig,
+    onSave,
+}: Props) => {
     const [gatewayIp, setGatewayIp] = useState(v4?.gateway_ip || '');
     const [subnetMask, setSubnetMask] = useState(v4?.subnet_mask || '');
     const [rangeStart, setRangeStart] = useState(v4?.range_start || '');
@@ -65,7 +71,9 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
                         label={intl.getMessage('dhcp_form_gateway_address')}
                         placeholder="192.168.1.1"
                         value={gatewayIp}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGatewayIp(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setGatewayIp(e.target.value)
+                        }
                         disabled={!hasIpv4}
                     />
                 </div>
@@ -79,14 +87,18 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
                             id="v4_range_start"
                             placeholder="192.168.1.2"
                             value={rangeStart}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRangeStart(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setRangeStart(e.target.value)
+                            }
                             disabled={!hasIpv4}
                         />
                         <Input
                             id="v4_range_end"
                             placeholder="192.168.1.254"
                             value={rangeEnd}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRangeEnd(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setRangeEnd(e.target.value)
+                            }
                             disabled={!hasIpv4}
                         />
                     </div>
@@ -98,7 +110,9 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
                         label={intl.getMessage('dhcp_form_subnet_input')}
                         placeholder="255.255.255.0"
                         value={subnetMask}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubnetMask(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSubnetMask(e.target.value)
+                        }
                         disabled={!hasIpv4}
                     />
                 </div>
@@ -110,7 +124,9 @@ export const Ipv4Settings = ({ v4, interfaces, selectedInterface, processingConf
                         label={intl.getMessage('dhcp_form_lease_title')}
                         placeholder="86400"
                         value={leaseDuration}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLeaseDuration(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setLeaseDuration(e.target.value)
+                        }
                         disabled={!hasIpv4}
                     />
                 </div>

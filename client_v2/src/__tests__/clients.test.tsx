@@ -55,9 +55,7 @@ vi.mock('react-router-dom', () => ({
     Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
         <a href={to}>{children}</a>
     ),
-    useHistory: () => ({
-        push: vi.fn(),
-    }),
+    useNavigate: () => vi.fn(),
 }));
 
 describe('Clients Page', () => {

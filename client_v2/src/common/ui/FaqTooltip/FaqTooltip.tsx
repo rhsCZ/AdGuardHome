@@ -15,7 +15,13 @@ type Props = {
     overlayClassName?: string;
 };
 
-export const FaqTooltip = ({ text, menuSize = 'small', spacing = false, menuClassName, overlayClassName }: Props) => {
+export const FaqTooltip = ({
+    text,
+    menuSize = 'small',
+    spacing = false,
+    menuClassName,
+    overlayClassName,
+}: Props) => {
     return (
         <Dropdown
             trigger="hover"
@@ -25,13 +31,15 @@ export const FaqTooltip = ({ text, menuSize = 'small', spacing = false, menuClas
                     className={cn(theme.dropdown.menu, s.menu, menuClassName, {
                         [s.menu_large]: menuSize === 'large',
                         [s.menu_spacing]: spacing,
-                    })}>
+                    })}
+                >
                     {text}
                 </div>
             }
             className={s.dropdown}
             position="bottomLeft"
-            noIcon>
+            noIcon
+        >
             <div className={s.trigger}>
                 <Icon icon="faq" className={s.icon} />
             </div>

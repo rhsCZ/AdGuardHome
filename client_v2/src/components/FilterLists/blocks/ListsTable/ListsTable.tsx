@@ -66,13 +66,17 @@ export const ListsTable = ({
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>{intl.getMessage('enabled_table_header')}</span>
+                            <span className={s.cellLabel}>
+                                {intl.getMessage('enabled_table_header')}
+                            </span>
 
                             <div className={s.cellValue}>
                                 <Switch
                                     id={id}
                                     checked={enabled}
-                                    onChange={() => toggleFilterList(url, { name, url, enabled: !enabled })}
+                                    onChange={() =>
+                                        toggleFilterList(url, { name, url, enabled: !enabled })
+                                    }
                                     disabled={processingConfigFilter}
                                 />
                             </div>
@@ -88,18 +92,12 @@ export const ListsTable = ({
                 },
                 accessor: 'name',
                 sortable: true,
-                render: (value: string, row: Filter) => (
+                render: (value: string) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('name_label')}</span>
 
                         <div className={s.cellValue}>
                             <span className={theme.common.textOverflow}>{value}</span>
-
-                            {(row as any).checksum && (
-                                <div title={(row as any).checksum}>
-                                    {intl.getMessage('checksum_table_header')}: {(row as any).checksum}
-                                </div>
-                            )}
                         </div>
                     </div>
                 ),
@@ -160,7 +158,9 @@ export const ListsTable = ({
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>{intl.getMessage('last_updated_label')}</span>
+                            <span className={s.cellLabel}>
+                                {intl.getMessage('last_updated_label')}
+                            </span>
 
                             <div className={s.cellValue}>
                                 <span>{result}</span>
@@ -172,11 +172,12 @@ export const ListsTable = ({
             {
                 key: 'actions',
                 header: {
-                    text: intl.getMessage('actions_label'),
+                    text: '',
                     className: s.headerCell,
                 },
                 accessor: 'url',
                 sortable: false,
+                width: 80,
                 render: (value: string, row: Filter) => {
                     const { name, url, enabled } = row;
 
@@ -220,7 +221,11 @@ export const ListsTable = ({
     const emptyTableContent = (id: TableIdsType) => {
         const renderButton = (text: string) => {
             return (
-                <button className={cn(theme.text.t3, theme.link.link)} type="button" onClick={() => addFilterList()}>
+                <button
+                    className={cn(theme.text.t3, theme.link.link)}
+                    type="button"
+                    onClick={() => addFilterList()}
+                >
                     {text}
                 </button>
             );

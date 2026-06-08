@@ -422,9 +422,7 @@ const resultActionScenarios = [
         name: 'allowlist filter allowed results',
         renderScenario: () => renderMatchedAllowlistResult(),
         title: 'Domain is allowed',
-        actions: [
-            ['disable-filter', 'Disable filter'],
-        ],
+        actions: [['disable-filter', 'Disable filter']],
     },
 ];
 
@@ -869,9 +867,7 @@ describe('UserRules harness', () => {
                 .querySelectorAll('[data-testid^="user-rules-result-action-"]'),
         ).map((element) => element.getAttribute('data-testid'));
 
-        expect(actionOrder).toEqual([
-            'user-rules-result-action-disable-filter',
-        ]);
+        expect(actionOrder).toEqual(['user-rules-result-action-disable-filter']);
     });
 
     settingToggleScenarios.forEach(

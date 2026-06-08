@@ -24,14 +24,17 @@ type Props = {
     initialValues?: object;
 };
 
-export const DnsSettings = ({ handleSubmit, handleFix, validateForm, config, interfaces }: Props) => {
-
-    const {
-        control,
-        reactHookFormSubmit,
-        isValid,
-        watchFields,
-    } = useInstallSettingsForm(config, validateForm);
+export const DnsSettings = ({
+    handleSubmit,
+    handleFix,
+    validateForm,
+    config,
+    interfaces,
+}: Props) => {
+    const { control, reactHookFormSubmit, isValid, watchFields } = useInstallSettingsForm(
+        config,
+        validateForm,
+    );
 
     const { status: dnsStatus, can_autofix: isDnsFixAvailable } = config.dns;
 
@@ -76,7 +79,7 @@ export const DnsSettings = ({ handleSubmit, handleFix, validateForm, config, int
                             {intl.getMessage('setup_dns_quote_title')}
                         </div>
                         <div className={styles.quoteDesc}>
-                            {intl.getMessage(("setup_dns_quote_desc"))}
+                            {intl.getMessage('setup_dns_quote_desc')}
                         </div>
                     </div>
 

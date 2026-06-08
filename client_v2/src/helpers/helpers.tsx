@@ -1,5 +1,4 @@
-import 'url-polyfill';
-import { parse as dateParse, format as dateFormat } from 'date-fns';
+import { parseISO, format as dateFormat } from 'date-fns';
 import round from 'lodash/round';
 import ipaddr, { IPv4, IPv6 } from 'ipaddr.js';
 import queryString from 'qs';
@@ -34,7 +33,7 @@ import { DhcpInterfaces, InstallInterface } from '../initialState';
  * @returns {string} Returns the time in the format HH:mm:ss
  */
 export const formatTime = (time: any, options = DEFAULT_TIME_FORMAT) => {
-    const parsedTime = dateParse(time);
+    const parsedTime = parseISO(time);
     return dateFormat(parsedTime, options);
 };
 
@@ -656,7 +655,7 @@ const isIpMatchCidr = (parsedIp: any, parsedCidr: any) => {
         const ipVersion = parsedIp.kind();
 
         return ipVersion === cidrIpVersion && parsedIp.match(parsedCidr);
-    } catch (e) {
+    } catch (_e) {
         return false;
     }
 };
@@ -716,7 +715,7 @@ export const findAddressType = (address: any) => {
         }
 
         return ADDRESS_TYPES.UNKNOWN;
-    } catch (e) {
+    } catch (_e) {
         return ADDRESS_TYPES.UNKNOWN;
     }
 };

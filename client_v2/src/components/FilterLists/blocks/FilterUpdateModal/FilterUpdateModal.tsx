@@ -71,7 +71,8 @@ export const FilterUpdateModal = () => {
     };
 
     const onSubmit = (data: FormValues) => {
-        const finalInterval = data.interval === FILTER_INTERVALS.CUSTOM ? data.customInterval : data.interval;
+        const finalInterval =
+            data.interval === FILTER_INTERVALS.CUSTOM ? data.customInterval : data.interval;
 
         if (finalInterval !== null && finalInterval !== undefined) {
             dispatch(
@@ -88,7 +89,9 @@ export const FilterUpdateModal = () => {
         <ModalWrapper id={MODAL_TYPE.FILTER_UPDATE}>
             <Dialog visible onClose={onClose} title={intl.getMessage('update_filters_title')}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className={theme.dialog.description}>{intl.getMessage('update_filters_desc')}</div>
+                    <div className={theme.dialog.description}>
+                        {intl.getMessage('update_filters_desc')}
+                    </div>
 
                     <div className={theme.form.group}>
                         <Radio

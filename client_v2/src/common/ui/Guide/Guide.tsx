@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import intl from 'panel/common/intl';
 import { useSelector } from 'react-redux';
 import cn from 'clsx';
@@ -11,29 +12,28 @@ import { IconType } from '../Icons';
 import { CopiedText } from '../CopiedText';
 import s from './Guide.module.pcss';
 
+const ROUTE_DHCP = '/dhcp';
+const ROUTE_ENCRYPTION = '/encryption';
+
 type PlatformLayoutProps = {
     serverName?: string;
     portHttps?: number;
     dnsAddresses?: string[];
-}
+};
 
 type PlatformLayout = {
     title: string;
     icon: IconType;
     component: React.ReactElement;
-}
+};
 
 type PlatformLayouts = Record<string, PlatformLayout>;
 
 const RouterLayout = () => (
     <div className={s.guideContent}>
-        <div className={s.title}>
-            {intl.getMessage('setup_devices_router_title')}
-        </div>
+        <div className={s.title}>{intl.getMessage('setup_devices_router_title')}</div>
         <div className={s.guideText}>
-            <div className={s.guideParagraph}>
-                {intl.getMessage('setup_devices_router_desc_1')}
-            </div>
+            <div className={s.guideParagraph}>{intl.getMessage('setup_devices_router_desc_1')}</div>
             <ol className={cn({ [s.strongNumbers]: true })}>
                 <li className={s.guideItem}>
                     <strong className={s.guideItemTitle}>
@@ -54,13 +54,9 @@ const RouterLayout = () => (
             <div className={s.guideParagraph}>
                 {intl.getMessage('setup_devices_router_desc_2', {
                     a: (text: string) => (
-                        <a
-                            href="#dhcp"
-                            target="_blank"
-                            className={s.dnsLink}
-                        >
+                        <Link to={ROUTE_DHCP} className={s.dnsLink}>
                             {text}
-                        </a>
+                        </Link>
                     ),
                 })}
             </div>
@@ -70,9 +66,7 @@ const RouterLayout = () => (
 
 const WindowsLayout = () => (
     <div title="Windows">
-        <div className={s.title}>
-            {intl.getMessage('setup_devices_windows_title')}
-        </div>
+        <div className={s.title}>{intl.getMessage('setup_devices_windows_title')}</div>
         <div className={s.text}>
             <ol className={s.guideList}>
                 <li className={s.guideItem}>{intl.getMessage('setup_devices_windows_list_1')}</li>
@@ -134,7 +128,9 @@ const renderDnsDevicesList = () => (
                 <strong>Android</strong>
             </div>
             <ul className={s.guideList}>
-                <li className={s.guideBulletItem}>{intl.getMessage('setup_devices_dns_android_list_1')}</li>
+                <li className={s.guideBulletItem}>
+                    {intl.getMessage('setup_devices_dns_android_list_1')}
+                </li>
                 <li className={s.guideBulletItem}>
                     {intl.getMessage('setup_devices_dns_android_list_2', {
                         a: (text: string) => (
@@ -291,94 +287,91 @@ const renderDnsDevicesList = () => (
     </div>
 );
 
-const getDnsSettingsContent = (dnsAddresses: string[] | undefined, serverName?: string, portHttps?: number) => {
+const getDnsSettingsContent = (
+    dnsAddresses: string[] | undefined,
+    serverName?: string,
+    portHttps?: number,
+) => {
     const tlsAddress = dnsAddresses?.filter((addr: string) => addr.includes('tls://')) ?? [];
     const httpsAddress = dnsAddresses?.filter((addr: string) => addr.includes('https://')) ?? [];
     const quicAddress = dnsAddresses?.find((addr: string) => addr.includes('quic://'));
 
     const showDnsPrivacyNotice = httpsAddress.length < 1 && tlsAddress.length < 1;
 
-    return (
-        showDnsPrivacyNotice ? (
+    return showDnsPrivacyNotice ? (
+        <div className={s.guideParagraph}>
+            {intl.getMessage('setup_dns_notice_new', {
+                a: (text: string) => (
+                    <Link to={ROUTE_ENCRYPTION} className={s.dnsLink}>
+                        {text}
+                    </Link>
+                ),
+            })}
+        </div>
+    ) : (
+        <div className={s.dnsSettingsContent}>
+            <ul className={s.deviceDnsList}>
+                {tlsAddress.length > 0 && (
+                    <li className={s.deviceDnsListItem}>
+                        {intl.getMessage('setup_devices_dns_list_1', {
+                            code: <CopiedText text={tlsAddress[0]} />,
+                        })}
+                    </li>
+                )}
+                {httpsAddress.length > 0 && (
+                    <li className={s.deviceDnsListItem}>
+                        {intl.getMessage('setup_devices_dns_list_2', {
+                            code: () => <CopiedText text={httpsAddress[0]} />,
+                        })}
+                    </li>
+                )}
+                {quicAddress && (
+                    <li className={s.deviceDnsListItem}>
+                        {intl.getMessage('setup_devices_dns_list_3', {
+                            code: () => <CopiedText text={quicAddress} />,
+                        })}
+                    </li>
+                )}
+            </ul>
+
             <div className={s.guideParagraph}>
-                {intl.getMessage('setup_dns_notice_new', {
-                    a: (text: string) => (
-                        <a
-                            href="#encryption"
-                            rel="noopener noreferrer"
-                            key="a"
-                            className={s.dnsLink}
-                        >
-                            {text}
-                        </a>
-                    ),
-                })}
+                {intl.getMessage('setup_devices_dns_list_devices')}
             </div>
-        ) : (
-            <div className={s.dnsSettingsContent}>
-                <ul className={s.deviceDnsList}>
-                    {tlsAddress.length > 0 && (
-                        <li className={s.deviceDnsListItem}>
-                            {intl.getMessage('setup_devices_dns_list_1', {
-                                code: <CopiedText text={tlsAddress[0]} />
-                            })}
-                        </li>
-                    )}
-                    {httpsAddress.length > 0 && (
-                        <li className={s.deviceDnsListItem}>
-                            {intl.getMessage('setup_devices_dns_list_2', {
-                                code: () => <CopiedText text={httpsAddress[0]} />
-                            })}
-                        </li>
-                    )}
-                    {quicAddress && (
-                        <li className={s.deviceDnsListItem}>
-                            {intl.getMessage('setup_devices_dns_list_3', {
-                                code: () => <CopiedText text={quicAddress} />
-                            })}
-                        </li>
-                    )}
-                </ul>
 
-                <div className={s.guideParagraph}>
-                    {intl.getMessage('setup_devices_dns_list_devices')}
+            {renderDnsDevicesList()}
+
+            <div className={s.guideParagraph}>
+                <div className={s.guideTitle}>
+                    <strong>{intl.getMessage('setup_dns_privacy_ioc_mac')}</strong>
                 </div>
-
-                {renderDnsDevicesList()}
-
-                <div className={s.guideParagraph}>
-                    <div className={s.guideTitle}>
-                        <strong>{intl.getMessage('setup_dns_privacy_ioc_mac')}</strong>
-                    </div>
-                    <div>
-                        {intl.getMessage('setup_devices_dns_macos_desc')}
-                    </div>
-                    <div className={s.mobileConfigContainer}>
-                        <MobileConfigForm
-                            initialValues={{
-                                host: serverName || '',
-                                clientId: '',
-                                protocol: MOBILE_CONFIG_LINKS.DOH,
-                                port: portHttps,
-                            }}
-                        />
-                    </div>
+                <div>{intl.getMessage('setup_devices_dns_macos_desc')}</div>
+                <div className={s.mobileConfigContainer}>
+                    <MobileConfigForm
+                        initialValues={{
+                            host: serverName || '',
+                            clientId: '',
+                            protocol: MOBILE_CONFIG_LINKS.DOH,
+                            port: portHttps,
+                        }}
+                    />
                 </div>
             </div>
-        )
+        </div>
     );
 };
 
 const DnsPrivacyLayout = ({ serverName, portHttps, dnsAddresses }: PlatformLayoutProps) => (
     <div title={intl.getMessage('dns_privacy')}>
         <div className={s.title}>{intl.getMessage('dns_privacy')}</div>
-        <div className={s.text}>
-            {getDnsSettingsContent(dnsAddresses, serverName, portHttps)}
-        </div>
+        <div className={s.text}>{getDnsSettingsContent(dnsAddresses, serverName, portHttps)}</div>
     </div>
 );
 
-const getPlatformLayouts = ({ serverName, portHttps, dnsAddresses }: PlatformLayoutProps): PlatformLayouts => ({
+const getPlatformLayouts = ({
+    serverName,
+    portHttps,
+    dnsAddresses,
+}: PlatformLayoutProps): PlatformLayouts => ({
     Router: {
         title: intl.getMessage('setup_devices_router_title'),
         icon: 'router',
@@ -417,13 +410,11 @@ const getPlatformLayouts = ({ serverName, portHttps, dnsAddresses }: PlatformLay
     },
 });
 
-
 interface GuideProps {
     dnsAddresses?: string[];
 }
 
 export const Guide = ({ dnsAddresses }: GuideProps) => {
-
     const serverName = useSelector((state: RootState) => state.encryption?.server_name);
     const portHttps = useSelector((state: RootState) => state.encryption?.port_https);
 
@@ -435,13 +426,15 @@ export const Guide = ({ dnsAddresses }: GuideProps) => {
         dnsAddresses,
     });
 
-    const selectOptions = Object.entries(platformLayouts).map(([key, value]: [string, PlatformLayout]) => ({
-        value: key,
-        label: value.title,
-        icon: value.icon,
-    }));
+    const selectOptions = Object.entries(platformLayouts).map(
+        ([key, value]: [string, PlatformLayout]) => ({
+            value: key,
+            label: value.title,
+            icon: value.icon,
+        }),
+    );
 
-    const selectedOption = selectOptions.find(option => option.value === activeTabLabel);
+    const selectedOption = selectOptions.find((option) => option.value === activeTabLabel);
     const activeLayout = platformLayouts[activeTabLabel as keyof typeof platformLayouts];
 
     return (
@@ -457,11 +450,7 @@ export const Guide = ({ dnsAddresses }: GuideProps) => {
                     height="big"
                 />
             </div>
-            {activeLayout && (
-                <div className={s.deviceContent}>
-                    {activeLayout.component}
-                </div>
-            )}
+            {activeLayout && <div className={s.deviceContent}>{activeLayout.component}</div>}
         </div>
     );
 };

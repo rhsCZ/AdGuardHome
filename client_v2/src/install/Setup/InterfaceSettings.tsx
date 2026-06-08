@@ -26,11 +26,15 @@ type Props = {
     initialValues?: object;
 };
 
-export const InterfaceSettings = ({ handleSubmit, handleFix, validateForm, config, interfaces }: Props) => {
-    const { control, reactHookFormSubmit, isValid, watchFields, webIpVal, webPortVal } = useInstallSettingsForm(
-        config,
-        validateForm,
-    );
+export const InterfaceSettings = ({
+    handleSubmit,
+    handleFix,
+    validateForm,
+    config,
+    interfaces,
+}: Props) => {
+    const { control, reactHookFormSubmit, isValid, watchFields, webIpVal, webPortVal } =
+        useInstallSettingsForm(config, validateForm);
 
     const { status: webStatus, can_autofix: isWebFixAvailable } = config.web;
 
@@ -82,9 +86,17 @@ export const InterfaceSettings = ({ handleSubmit, handleFix, validateForm, confi
                         </>
                     );
                 case STATUS_RESPONSE.ERROR:
-                    return <div className={styles.errorText}>{intl.getMessage('install_static_error')}</div>;
+                    return (
+                        <div className={styles.errorText}>
+                            {intl.getMessage('install_static_error')}
+                        </div>
+                    );
                 case STATUS_RESPONSE.YES:
-                    return <div className={styles.successText}>{intl.getMessage('install_static_ok')}</div>;
+                    return (
+                        <div className={styles.successText}>
+                            {intl.getMessage('install_static_ok')}
+                        </div>
+                    );
                 default:
                     return null;
             }

@@ -230,7 +230,13 @@ export const THEMES = {
     light: 'light',
 };
 
-export type SafeSearchProviderKey = 'google' | 'youtube' | 'bing' | 'duckduckgo' | 'yandex' | 'pixabay';
+export type SafeSearchProviderKey =
+    | 'google'
+    | 'youtube'
+    | 'bing'
+    | 'duckduckgo'
+    | 'yandex'
+    | 'pixabay';
 
 export const SAFE_SEARCH_PROVIDER_KEYS: SafeSearchProviderKey[] = [
     'google',
