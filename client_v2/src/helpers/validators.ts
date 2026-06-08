@@ -313,7 +313,7 @@ export const validateAnswer = (value: any) => {
  */
 export const validatePath = (value: any) => {
     if (value && !isValidAbsolutePath(value) && !R_URL_REQUIRES_PROTOCOL.test(value)) {
-        return intl.getMessage('form_error_url_or_path_format');
+        return intl.getMessage('form_error_url_format');
     }
     return undefined;
 };

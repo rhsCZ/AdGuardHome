@@ -6,6 +6,7 @@ import type { Filter } from 'panel/helpers/helpers';
 import { normalizeFilteringStatus, normalizeRulesTextarea } from '../helpers/helpers';
 import { apiClient } from '../api/Api';
 import { addErrorToast, addSuccessToast } from './toasts';
+import { closeModal } from '../reducers/modals';
 
 type RulesMutationOptions = {
     showToast?: boolean;
@@ -29,7 +30,7 @@ type FilterEditConfig = FilterIdentity & {
     enabled?: boolean;
 };
 
-type FilterRemovalConfig = Pick<Filter, 'url'>;
+type FilterRemovalConfig = Pick<Filter, 'url' | 'name'>;
 
 type RefreshFiltersConfig = {
     whitelist: boolean;
@@ -94,14 +95,13 @@ export const addFilterSuccess = createAction('ADD_FILTER_SUCCESS');
 
 export const addFilter =
     (url: FilterIdentity['url'], name: FilterIdentity['name'], whitelist = false) =>
-    async (dispatch: AppDispatch, getState: AppGetState) => {
+    async (dispatch: AppDispatch) => {
         dispatch(addFilterRequest());
         try {
             await apiClient.addFilter({ url, name, whitelist });
             dispatch(addFilterSuccess(url));
-            if (getState().filtering.isModalOpen) {
-                dispatch(toggleFilteringModal());
-            }
+            dispatch(addSuccessToast({ message: intl.getMessage('filter_added_successfully', { value: name || url }) }));
+            dispatch(closeModal());
             dispatch(getFilteringStatus());
         } catch (error) {
             dispatch(addErrorToast({ error }));
@@ -114,16 +114,14 @@ export const removeFilterFailure = createAction('REMOVE_FILTER_FAILURE');
 export const removeFilterSuccess = createAction('REMOVE_FILTER_SUCCESS');
 
 export const removeFilter =
-    (url: FilterRemovalConfig['url'], whitelist = false) =>
-    async (dispatch: AppDispatch, getState: AppGetState) => {
+    (filter: FilterRemovalConfig, whitelist = false) =>
+    async (dispatch: AppDispatch) => {
         dispatch(removeFilterRequest());
         try {
-            await apiClient.removeFilter({ url, whitelist });
-            dispatch(removeFilterSuccess(url));
-            if (getState().filtering.isModalOpen) {
-                dispatch(toggleFilteringModal());
-            }
-            dispatch(addSuccessToast(intl.getMessage('filter_removed_successfully')));
+            await apiClient.removeFilter({ url: filter.url, whitelist });
+            dispatch(removeFilterSuccess(filter.url));
+            dispatch(closeModal());
+            dispatch(addSuccessToast({ message: intl.getMessage('filter_removed_successfully', { value: filter.name || filter.url }) }));
             dispatch(getFilteringStatus());
         } catch (error) {
             dispatch(addErrorToast({ error }));
