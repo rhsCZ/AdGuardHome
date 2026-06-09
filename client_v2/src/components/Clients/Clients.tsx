@@ -107,7 +107,7 @@ export const Clients = () => {
                     <div className={s.desc}>{intl.getMessage('clients_desc')}</div>
                 </div>
 
-                {clients.length > 0 && (
+                {clients?.length > 0 && (
                     <div className={cn(s.section, s.section_table)}>
                         <PersistentClientsTable
                             clients={clients}
@@ -128,7 +128,7 @@ export const Clients = () => {
                     <div className={s.desc}>{intl.getMessage('auto_clients_desc')}</div>
                 </div>
 
-                {autoClients.length > 0 && (
+                {autoClients?.length > 0 && (
                     <div className={cn(s.section, s.section_table)}>
                         <RuntimeClientsTable
                             autoClients={autoClients}
