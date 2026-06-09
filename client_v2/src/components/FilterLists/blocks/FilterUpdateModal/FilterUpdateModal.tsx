@@ -57,27 +57,23 @@ export const FilterUpdateModal = () => {
     const { filtering } = useSelector((state: RootState) => state);
     const { processingSetConfig, interval: currentInterval } = filtering;
 
+    const defaultFormValues: FormValues = {
+        interval: currentInterval || 24,
+        customInterval: null,
+    };
+
     const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
-        defaultValues: {
-            interval: currentInterval || 24,
-            customInterval: null,
-        },
+        defaultValues: defaultFormValues,
     });
 
     useEffect(() => {
-        reset({
-            interval: currentInterval || 24,
-            customInterval: null,
-        });
+        reset(defaultFormValues);
     }, [currentInterval, reset]);
 
     const intervalValue = watch('interval');
 
     const onClose = () => {
-        reset({
-            interval: currentInterval || 24,
-            customInterval: null,
-        });
+        reset(defaultFormValues);
         dispatch(closeModal());
     };
 
