@@ -32,9 +32,17 @@ export const Blocklists = () => {
     const { filters, processingRefreshFilters, processingConfigFilter, processingFilters } =
         filtering;
 
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
     useEffect(() => {
         dispatch(getFilteringStatus());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (!processingFilters && isInitialLoad) {
+            setIsInitialLoad(false);
+        }
+    }, [processingFilters, isInitialLoad]);
 
     const toggleFilter = (url: string, data: { name: string; url: string; enabled: boolean }) => {
         dispatch(toggleFilterStatus(url, data));
@@ -65,7 +73,7 @@ export const Blocklists = () => {
     return (
         <div className={theme.layout.container}>
             <div className={theme.layout.containerIn}>
-                {processingFilters ? (
+                {processingFilters && isInitialLoad ? (
                     <PageLoader />
                 ) : (
                     <>

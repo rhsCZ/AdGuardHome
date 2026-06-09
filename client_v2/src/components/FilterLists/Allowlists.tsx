@@ -36,9 +36,17 @@ export const Allowlists = () => {
         processingFilters,
     } = filtering;
 
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
     useEffect(() => {
         dispatch(getFilteringStatus());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (!processingFilters && isInitialLoad) {
+            setIsInitialLoad(false);
+        }
+    }, [processingFilters, isInitialLoad]);
 
     const handleRefresh = () => {
         dispatch(refreshFilters({ whitelist: true }));
@@ -69,7 +77,7 @@ export const Allowlists = () => {
     return (
         <div className={theme.layout.container}>
             <div className={theme.layout.containerIn}>
-                {processingFilters ? (
+                {processingFilters && isInitialLoad ? (
                     <PageLoader />
                 ) : (
                     <>
