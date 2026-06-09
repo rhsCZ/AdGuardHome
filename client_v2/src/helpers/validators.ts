@@ -487,13 +487,25 @@ const R_HAS_ADDRESS = /[.:]/;
 
 export const validateUpstreams = (value: string): string | undefined => {
     const lines = value.split('\n');
+    const invalidLines: number[] = [];
     for (let i = 0; i < lines.length; i += 1) {
         const line = lines[i].trim();
         if (line && !R_COMMENT.test(line) && !R_HAS_ADDRESS.test(line)) {
-            return intl.getMessage('form_error_upstream_format', { line: i + 1 });
+            invalidLines.push(i + 1);
         }
     }
-    return undefined;
+
+    if (invalidLines.length === 0) {
+        return undefined;
+    }
+
+    if (invalidLines.length === 1) {
+        return intl.getMessage('form_error_upstream_format', { line: invalidLines[0] });
+    }
+
+    return intl.getMessage('form_error_upstream_format_multi', {
+        lines: invalidLines.join(', '),
+    });
 };
 
 export const validateIpNotDuplicate =

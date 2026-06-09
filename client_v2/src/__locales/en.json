@@ -49,6 +49,7 @@
   "check_updates_btn": "Check for updates",
   "form_error_url_format": "Invalid URL",
   "form_error_upstream_format": "Invalid upstream format on line %line%",
+  "form_error_upstream_format_multi": "Invalid upstream format on lines %lines%",
   "custom_filter_rules": "Custom filtering rules",
   "system_host_files": "System hosts files",
   "all_lists_up_to_date_toast": "All lists are already up-to-date",
