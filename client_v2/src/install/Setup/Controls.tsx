@@ -7,16 +7,16 @@ import { InstallState } from 'panel/initialState';
 import * as actionCreators from '../../actions/install';
 import styles from './styles.module.pcss';
 
-interface ControlsProps {
+type Props = {
     invalid?: boolean;
     ip?: string;
     port?: number;
     isDirty?: boolean;
     isValid?: boolean;
     openDashboard?: (ip: string, port: number) => void;
-}
+};
 
-const Controls = ({ invalid, isValid, ip, port, openDashboard }: ControlsProps) => {
+export const Controls = ({ invalid, isValid, ip, port, openDashboard }: Props) => {
     const dispatch = useDispatch();
     const install = useSelector((state: InstallState) => state.install);
 
@@ -128,5 +128,3 @@ const Controls = ({ invalid, isValid, ip, port, openDashboard }: ControlsProps) 
         </div>
     );
 };
-
-export default Controls;

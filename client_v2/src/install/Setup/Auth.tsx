@@ -7,7 +7,7 @@ import { PRIVACY_POLICY_LINK, TERMS_LINK } from 'panel/helpers/constants';
 import cn from 'clsx';
 import { PasswordRequirements } from 'panel/install/Setup/blocks';
 import { PasswordInput } from '../../common/controls/Input/PasswordInput';
-import Controls from './Controls';
+import { Controls } from './Controls';
 import { validatePasswordLength, validateRequiredValue } from '../../helpers/validators';
 import {
     hasMinLength,
