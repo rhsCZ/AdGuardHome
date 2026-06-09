@@ -14,6 +14,7 @@ type Props = {
     spacing?: boolean;
     menuClassName?: string;
     overlayClassName?: string;
+    position?: 'bottomLeft' | 'bottomRight' | 'bottom';
 };
 
 export const FaqTooltip = ({
@@ -22,13 +23,17 @@ export const FaqTooltip = ({
     spacing = false,
     menuClassName,
     overlayClassName,
+    position: positionProp,
 }: Props) => {
     const isMobile = useIsMobile();
+
+    const currentPosition = isMobile ? 'bottom' : 'bottomLeft';
+    const position = positionProp ?? currentPosition;
 
     return (
         <Dropdown
             trigger={isMobile ? 'click' : 'hover'}
-            overlayClassName={overlayClassName}
+            overlayClassName={cn(s.overlay_mobile, overlayClassName)}
             menu={
                 <div
                     className={cn(theme.dropdown.menu, s.menu, menuClassName, {
@@ -40,10 +45,10 @@ export const FaqTooltip = ({
                 </div>
             }
             className={s.dropdown}
-            position="bottomLeft"
+            position={position}
             noIcon
         >
-            <div className={s.trigger}>
+            <div className={s.trigger} onPointerDown={(e) => e.stopPropagation()}>
                 <Icon icon="faq" className={s.icon} />
             </div>
         </Dropdown>
