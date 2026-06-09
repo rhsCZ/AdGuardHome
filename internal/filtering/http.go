@@ -760,7 +760,10 @@ func (d *DNSFilter) RegisterFilteringHandlers() {
 	registerHTTP(http.MethodGet, "/control/filtering/check_host", d.handleCheckHost)
 }
 
+// maxUpdateIvlHours is the maximum allowed filter update interval in hours.
+const maxUpdateIvlHours = 365 * 24
+
 // ValidateUpdateIvl returns false if i is not a valid filters update interval.
 func ValidateUpdateIvl(i uint32) (ok bool) {
-	return i <= 365*24
+	return i <= maxUpdateIvlHours
 }
