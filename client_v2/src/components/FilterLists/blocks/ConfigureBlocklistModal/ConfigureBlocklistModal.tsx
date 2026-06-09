@@ -208,6 +208,8 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
                 break;
             }
         }
+
+        dispatch(closeModal());
     };
 
     const handleCancel = () => {

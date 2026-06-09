@@ -84,6 +84,8 @@ export const ConfigureAllowlistModal = ({ modalId, filterToEdit }: Props) => {
                 break;
             }
         }
+
+        dispatch(closeModal());
     };
 
     const handleCancel = () => {

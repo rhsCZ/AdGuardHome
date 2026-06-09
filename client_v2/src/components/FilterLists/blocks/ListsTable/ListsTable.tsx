@@ -84,17 +84,16 @@ export const ListsTable = ({
                 accessor: 'enabled',
                 sortable: false,
                 fitContent: true,
+                className: s.cellNameToggleOuter,
                 render: (value: boolean, row: Filter) => {
                     const { name, url, enabled } = row;
                     const id = `filter_${url}`;
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>
-                                {intl.getMessage('enabled_table_header')}
-                            </span>
+                            <span className={s.cellNameLabel}>{name}</span>
 
-                            <div className={s.cellValue}>
+                            <div className={s.cellValueToggle}>
                                 <Switch
                                     id={id}
                                     checked={enabled}
@@ -116,6 +115,7 @@ export const ListsTable = ({
                 },
                 accessor: 'name',
                 sortable: true,
+                className: s.nameDesktopOnly,
                 render: (value: string) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('name_label')}</span>
@@ -147,6 +147,15 @@ export const ListsTable = ({
                             >
                                 {value}
                             </a>
+
+                            <button
+                                type="button"
+                                className={s.copyButton}
+                                onClick={() => navigator.clipboard.writeText(value)}
+                                aria-label={intl.getMessage('copy')}
+                            >
+                                <Icon icon="copy" color="green" />
+                            </button>
                         </div>
                     </div>
                 ),
@@ -207,28 +216,29 @@ export const ListsTable = ({
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>{intl.getMessage('actions_label')}</span>
-
-                            <div className={s.cellValue}>
-                                <div className={s.cellActions}>
-                                    <button
-                                        type="button"
-                                        onClick={() => editFilterList(url, name, enabled)}
-                                        disabled={processingConfigFilter}
-                                        className={s.action}
-                                    >
+                            <div className={s.cellActions}>
+                                <button
+                                    type="button"
+                                    onClick={() => editFilterList(url, name, enabled)}
+                                    disabled={processingConfigFilter}
+                                    className={s.editAction}
+                                >
+                                    <span className={cn(s.editActionLabel, theme.text.t2)}>
+                                        {intl.getMessage('edit_table_action')}
+                                    </span>
+                                    <span className={s.editActionIcon}>
                                         <Icon icon="edit" color="gray" />
-                                    </button>
+                                    </span>
+                                </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => deleteFilterList(url, name)}
-                                        disabled={processingConfigFilter}
-                                        className={s.action}
-                                    >
-                                        <Icon icon="delete" color="red" />
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => deleteFilterList(url, name)}
+                                    disabled={processingConfigFilter}
+                                    className={s.action}
+                                >
+                                    <Icon icon="delete" color="red" />
+                                </button>
                             </div>
                         </div>
                     );

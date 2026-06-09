@@ -89,17 +89,16 @@ export const RewritesTable = ({
                 accessor: 'enabled',
                 sortable: false,
                 fitContent: true,
+                className: s.cellNameToggleOuter,
                 render: (value: boolean, row: Rewrite) => {
                     const { domain, enabled } = row;
                     const id = `rewrite_${domain}`;
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>
-                                {intl.getMessage('enabled_table_header')}
-                            </span>
+                            <span className={s.cellNameLabel}>{domain}</span>
 
-                            <div className={s.cellValue}>
+                            <div className={s.cellValueToggle}>
                                 <Switch
                                     id={id}
                                     data-testid={`rewrite-toggle-${domain}`}
@@ -120,6 +119,7 @@ export const RewritesTable = ({
                 },
                 accessor: 'domain',
                 sortable: true,
+                className: s.nameDesktopOnly,
                 render: (value: string) => (
                     <div className={s.cell}>
                         <span className={s.cellLabel}>{intl.getMessage('name_label')}</span>
@@ -130,6 +130,7 @@ export const RewritesTable = ({
                     </div>
                 ),
             },
+
             {
                 key: 'answer',
                 header: {
@@ -165,30 +166,31 @@ export const RewritesTable = ({
 
                     return (
                         <div className={s.cell}>
-                            <span className={s.cellLabel}>{intl.getMessage('actions_label')}</span>
-
-                            <div className={s.cellValue}>
-                                <div className={s.cellActions}>
-                                    <button
-                                        type="button"
-                                        onClick={() => editRewrite(currentRewrite)}
-                                        disabled={processingUpdate}
-                                        className={s.action}
-                                        data-testid={`edit-rewrite-${row.domain}`}
-                                    >
+                            <div className={s.cellActions}>
+                                <button
+                                    type="button"
+                                    onClick={() => editRewrite(currentRewrite)}
+                                    disabled={processingUpdate}
+                                    className={s.editAction}
+                                    data-testid={`edit-rewrite-${row.domain}`}
+                                >
+                                    <span className={cn(s.editActionLabel, theme.text.t2)}>
+                                        {intl.getMessage('edit_table_action')}
+                                    </span>
+                                    <span className={s.editActionIcon}>
                                         <Icon icon="edit" color="gray" />
-                                    </button>
+                                    </span>
+                                </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => deleteRewrite(currentRewrite)}
-                                        disabled={processingDelete}
-                                        className={s.action}
-                                        data-testid={`delete-rewrite-${row.domain}`}
-                                    >
-                                        <Icon icon="delete" color="red" />
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => deleteRewrite(currentRewrite)}
+                                    disabled={processingDelete}
+                                    className={s.action}
+                                    data-testid={`delete-rewrite-${row.domain}`}
+                                >
+                                    <Icon icon="delete" color="red" />
+                                </button>
                             </div>
                         </div>
                     );
@@ -226,7 +228,13 @@ export const RewritesTable = ({
 
     return (
         <>
-            <div className={cn(theme.pagination.wrapper, s.sortDropdownMobile)}>
+            <div
+                className={cn(
+                    theme.pagination.wrapper,
+                    s.sortDropdownMobile,
+                    s.sortDropdownMobileRewrites,
+                )}
+            >
                 <SortSelect value={sortDirection} onChange={setSortDirection} />
             </div>
 
