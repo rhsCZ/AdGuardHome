@@ -214,7 +214,18 @@ const renderDnsDevicesList = () => (
             </div>
             <ul className={s.guideList}>
                 <li className={s.guideBulletItem}>
-                    {intl.getMessage('setup_devices_dns_other_list_1')}
+                    {intl.getMessage('setup_devices_dns_other_list_1', {
+                        a: (text: string) => (
+                            <a
+                                href="https://github.com/AdguardTeam/AdGuardHome"
+                                target="_blank"
+                                className={s.dnsLink}
+                                rel="noopener noreferrer"
+                            >
+                                {text}
+                            </a>
+                        ),
+                    })}
                 </li>
                 <li className={s.guideBulletItem}>
                     {intl.getMessage('setup_devices_dns_other_list_2', {
@@ -314,7 +325,7 @@ const getDnsSettingsContent = (
                 {tlsAddress.length > 0 && (
                     <li className={s.deviceDnsListItem}>
                         {intl.getMessage('setup_devices_dns_list_1', {
-                            code: <CopiedText text={tlsAddress[0]} />,
+                            code: () => <CopiedText text={tlsAddress[0]} />,
                         })}
                     </li>
                 )}
