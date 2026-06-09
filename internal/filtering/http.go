@@ -761,6 +761,6 @@ func (d *DNSFilter) RegisterFilteringHandlers() {
 }
 
 // ValidateUpdateIvl returns false if i is not a valid filters update interval.
-func ValidateUpdateIvl(i uint32) bool {
-	return i == 0 || i == 1 || i == 12 || i == 1*24 || i == 3*24 || i == 7*24
+func ValidateUpdateIvl(i uint32) (ok bool) {
+	return i <= 365*24
 }
