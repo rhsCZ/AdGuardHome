@@ -12,7 +12,6 @@ import { RootState } from 'panel/initialState';
 import { ModalWrapper } from 'panel/common/ui/ModalWrapper';
 import { MODAL_TYPE } from 'panel/helpers/constants';
 import { closeModal } from 'panel/reducers/modals';
-import { FilterIntervalInput } from './FilterIntervalInput';
 
 export const FILTER_INTERVALS = {
     DISABLE: 0,
@@ -32,8 +31,6 @@ const getIntervalTitle = (interval: number) => {
             return intl.getMessage('update_filters_interval_daily');
         case FILTER_INTERVALS.WEEKLY:
             return intl.getMessage('update_filters_interval_weekly');
-        case FILTER_INTERVALS.CUSTOM:
-            return intl.getMessage('update_filters_interval_custom');
         default:
             return intl.getMessage('update_filters_custom_hours', { hours: interval });
     }
@@ -44,7 +41,6 @@ const RADIO_OPTIONS = [
     { text: getIntervalTitle(FILTER_INTERVALS.HOURLY), value: FILTER_INTERVALS.HOURLY },
     { text: getIntervalTitle(FILTER_INTERVALS.DAILY), value: FILTER_INTERVALS.DAILY },
     { text: getIntervalTitle(FILTER_INTERVALS.WEEKLY), value: FILTER_INTERVALS.WEEKLY },
-    { text: getIntervalTitle(FILTER_INTERVALS.CUSTOM), value: FILTER_INTERVALS.CUSTOM },
 ];
 
 type FormValues = {
@@ -57,7 +53,7 @@ export const FilterUpdateModal = () => {
     const { filtering } = useSelector((state: RootState) => state);
     const { processingSetConfig, interval: currentInterval } = filtering;
 
-    const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
+    const { handleSubmit, watch, setValue, reset } = useForm<FormValues>({
         defaultValues: {
             interval: currentInterval || 24,
             customInterval: null,
@@ -109,12 +105,6 @@ export const FilterUpdateModal = () => {
                             options={RADIO_OPTIONS}
                             handleChange={(value) => setValue('interval', value)}
                             disabled={processingSetConfig}
-                        />
-
-                        <FilterIntervalInput
-                            control={control}
-                            processing={processingSetConfig}
-                            intervalValue={intervalValue}
                         />
                     </div>
 

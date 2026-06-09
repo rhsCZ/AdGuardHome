@@ -87,7 +87,9 @@ export const Blocklists = () => {
                                 className={cn(s.button, s.button_checkUpdates)}
                             >
                                 <Icon icon="refresh" color="green" />
-                                {intl.getMessage('check_updates_btn')}
+                                <span className={s.labelDesktop}>
+                                    {intl.getMessage('check_updates_btn')}
+                                </span>
                             </button>
 
                             <button
@@ -113,17 +115,19 @@ export const Blocklists = () => {
                             </button>
                         </div>
 
-                        <div className={cn(s.group, s.stretchSelf)}>
-                            <ListsTable
-                                tableId={TABLE_IDS.BLOCKLISTS_TABLE}
-                                filters={filters}
-                                processingConfigFilter={processingConfigFilter}
-                                toggleFilterList={toggleFilter}
-                                addFilterList={openAddBlocklistModal}
-                                editFilterList={openEditBlocklistModal}
-                                deleteFilterList={openDeleteBlocklistModal}
-                            />
-                        </div>
+                        {filters.length > 0 && (
+                            <div className={cn(s.group, s.stretchSelf)}>
+                                <ListsTable
+                                    tableId={TABLE_IDS.BLOCKLISTS_TABLE}
+                                    filters={filters}
+                                    processingConfigFilter={processingConfigFilter}
+                                    toggleFilterList={toggleFilter}
+                                    addFilterList={openAddBlocklistModal}
+                                    editFilterList={openEditBlocklistModal}
+                                    deleteFilterList={openDeleteBlocklistModal}
+                                />
+                            </div>
+                        )}
 
                         <ConfigureBlocklistModal modalId={MODAL_TYPE.ADD_BLOCKLIST} />
 

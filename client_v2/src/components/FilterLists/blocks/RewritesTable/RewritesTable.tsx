@@ -5,7 +5,7 @@ import intl from 'panel/common/intl';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
 import { Table as ReactTable, TableColumn } from 'panel/common/ui/Table';
 import { Icon } from 'panel/common/ui/Icon';
-import { SortDropdown } from 'panel/common/ui/SortDropdown';
+import { SortSelect } from 'panel/common/ui/SortSelect';
 import theme from 'panel/lib/theme';
 import { Switch } from 'panel/common/controls/Switch';
 
@@ -227,7 +227,7 @@ export const RewritesTable = ({
     return (
         <>
             <div className={cn(theme.pagination.wrapper, s.sortDropdownMobile)}>
-                <SortDropdown value={sortDirection} onChange={setSortDirection} />
+                <SortSelect value={sortDirection} onChange={setSortDirection} />
             </div>
 
             <div className={s.allDomainsMobile}>

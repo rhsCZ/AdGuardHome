@@ -32,16 +32,19 @@ export const getPeriodLabel = (interval: number) => {
         return intl.getPlural('last_hours', 24);
     }
     const days = hours / 24;
-    if (days === 7) {
-        return intl.getPlural('last_days', 7);
+    if (Number.isInteger(days)) {
+        if (days === 7) {
+            return intl.getPlural('last_days', 7);
+        }
+        if (days === 30) {
+            return intl.getPlural('last_days', 30);
+        }
+        if (days === 90) {
+            return intl.getPlural('last_days', 90);
+        }
+        return intl.getPlural('last_days', days);
     }
-    if (days === 30) {
-        return intl.getPlural('last_days', 30);
-    }
-    if (days === 90) {
-        return intl.getPlural('last_days', 90);
-    }
-    return intl.getPlural('last_days', days);
+    return intl.getPlural('last_hours', Math.floor(hours));
 };
 
 const getDisableText = (key: string, time: number) => {

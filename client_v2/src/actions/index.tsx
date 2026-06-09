@@ -12,7 +12,6 @@ import {
     STATUS_RESPONSE,
     SETTINGS_NAMES,
     MANUAL_UPDATE_LINK,
-    DISABLE_PROTECTION_TIMINGS,
     THEMES,
 } from '../helpers/constants';
 import { areEqualVersions } from '../helpers/version';

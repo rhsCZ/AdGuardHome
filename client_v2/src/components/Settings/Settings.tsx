@@ -141,7 +141,7 @@ export const Settings = () => {
         <div className={theme.layout.container}>
             <div className={cn(theme.layout.containerIn, theme.layout.containerIn_one_col)}>
                 <h1 className={cn(theme.layout.title, theme.title.h4, theme.title.h3_tablet)}>
-                    {intl.getMessage('general_settings')}
+                    {intl.getMessage('settings_general_short')}
                 </h1>
 
                 {isLoading && <PageLoader />}

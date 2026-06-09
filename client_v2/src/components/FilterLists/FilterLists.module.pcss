@@ -44,12 +44,16 @@
     }
 
     &_add {
-        padding: 8px 0;
+        padding: 8px;
         color: var(--default-link);
+    }
+}
 
-        @media (min-width: 768px) {
-            padding: 8px;
-        }
+.labelDesktop {
+    display: none;
+
+    @media (min-width: 768px) {
+        display: inline;
     }
 }
 

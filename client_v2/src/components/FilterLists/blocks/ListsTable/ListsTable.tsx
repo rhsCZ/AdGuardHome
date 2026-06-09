@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Filter, formatShortDateTime } from 'panel/helpers/helpers';
 import intl from 'panel/common/intl';
@@ -6,6 +6,7 @@ import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStora
 import { Table as ReactTable, TableColumn } from 'panel/common/ui/Table';
 import { Switch } from 'panel/common/controls/Switch';
 import { Icon } from 'panel/common/ui/Icon';
+import { SortSelect } from 'panel/common/ui/SortSelect';
 import theme from 'panel/lib/theme';
 
 import cn from 'clsx';
@@ -44,10 +45,33 @@ export const ListsTable = ({
     deleteFilterList,
     toggleFilterList,
 }: Props) => {
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
     const pageSize = useMemo(
         () => LocalStorageHelper.getItem(LOCAL_STORAGE_KEYS.BLOCKLIST_PAGE_SIZE) || undefined,
         [],
     );
+
+    const sortedFilters = useMemo(() => {
+        const items = [...(filters || [])];
+
+        items.sort((a, b) => {
+            const aName = (a.name || '').toLowerCase();
+            const bName = (b.name || '').toLowerCase();
+
+            if (aName < bName) {
+                return sortDirection === 'asc' ? -1 : 1;
+            }
+
+            if (aName > bName) {
+                return sortDirection === 'asc' ? 1 : -1;
+            }
+
+            return 0;
+        });
+
+        return items;
+    }, [filters, sortDirection]);
 
     const columns: TableColumn<Filter>[] = useMemo(
         () => [
@@ -252,13 +276,19 @@ export const ListsTable = ({
     };
 
     return (
-        <ReactTable<Filter>
-            data={filters}
-            className={s.table}
-            columns={columns}
-            emptyTable={emptyTableContent(tableId)}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-        />
+        <>
+            <div className={cn(theme.pagination.wrapper, s.sortDropdownMobile)}>
+                <SortSelect value={sortDirection} onChange={setSortDirection} />
+            </div>
+
+            <ReactTable<Filter>
+                data={sortedFilters}
+                className={s.table}
+                columns={columns}
+                emptyTable={emptyTableContent(tableId)}
+                pageSize={pageSize}
+                onPageSizeChange={handlePageSizeChange}
+            />
+        </>
     );
 };
