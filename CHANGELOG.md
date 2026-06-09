@@ -22,6 +22,14 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - The H2C connection establishment via HTTP/1.1 request upgrade is no longer supported.  See [RFC 9113][rfc9113].
 
+- The size of rulelists is limited. This is necessary to prevent a user's machine from becoming overloaded if the filter source misbehaves.
+
+### Changed
+
+#### Configuration changes
+
+- The `filtering` object of the YAML configuration now includes a new property, `max_http_size`, which defines the maximum size of the HTTP request for rulelists. To disable the limitation, set a large size, such as `1 TB`.
+
 ### Fixed
 
 - Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
