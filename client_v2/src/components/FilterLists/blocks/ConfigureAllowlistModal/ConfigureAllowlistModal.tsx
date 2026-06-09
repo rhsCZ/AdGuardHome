@@ -85,6 +85,7 @@ export const ConfigureAllowlistModal = ({ modalId, filterToEdit }: Props) => {
             }
         }
 
+        reset(defaultValues);
         dispatch(closeModal());
     };
 

@@ -209,6 +209,7 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
             }
         }
 
+        reset(defaultValues);
         dispatch(closeModal());
     };
 
