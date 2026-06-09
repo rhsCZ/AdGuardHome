@@ -3,7 +3,7 @@ import React from 'react';
 import intl from 'panel/common/intl';
 import styles from 'panel/install/Setup/styles.module.pcss';
 import cn from 'clsx';
-import Controls from './Controls';
+import { Controls } from './Controls';
 
 import { AddressList } from './blocks';
 import { DnsBanner } from './blocks/Banner';

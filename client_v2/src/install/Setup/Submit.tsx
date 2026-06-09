@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import intl from 'panel/common/intl';
 import { Button } from 'panel/common/ui/Button';
 import { RootState } from 'panel/initialState';
-import Controls from './Controls';
+import { Controls } from './Controls';
 import type { WebConfig } from './types';
 import styles from './styles.module.pcss';
 

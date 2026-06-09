@@ -4,7 +4,7 @@ import intl from 'panel/common/intl';
 import { Button } from 'panel/common/ui/Button';
 import styles from 'panel/install/Setup/styles.module.pcss';
 import cn from 'clsx';
-import Controls from './Controls';
+import { Controls } from './Controls';
 import { WebBanner } from './blocks/Banner';
 import { AddressList } from './blocks';
 import { buildInterfaceOptions } from './helpers/InterfaceOptions';

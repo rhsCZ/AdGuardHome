@@ -14,7 +14,7 @@ import Greeting from './Greeting';
 import type { ConfigType, DnsConfig, WebConfig } from './types';
 import { InterfaceSettings } from './InterfaceSettings';
 import { DnsSettings } from './DnsSettings';
-import Controls from './Controls';
+import { Controls } from './Controls';
 import { Submit } from './Submit';
 import { Progress } from './blocks/Progress';
 import { Auth } from './Auth';
