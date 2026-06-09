@@ -124,39 +124,12 @@ export const toggleProtectionRequest = createAction('TOGGLE_PROTECTION_REQUEST')
 export const toggleProtectionFailure = createAction('TOGGLE_PROTECTION_FAILURE');
 export const toggleProtectionSuccess = createAction('TOGGLE_PROTECTION_SUCCESS');
 
-const getDisabledMessage = (time: any) => {
-    switch (time) {
-        case DISABLE_PROTECTION_TIMINGS.HALF_MINUTE:
-            return intl.getPlural(
-                'disable_notify_for_seconds',
-                DISABLE_PROTECTION_TIMINGS.HALF_MINUTE,
-            );
-        case DISABLE_PROTECTION_TIMINGS.MINUTE:
-            return intl.getPlural('disable_notify_for_minutes', DISABLE_PROTECTION_TIMINGS.MINUTE);
-        case DISABLE_PROTECTION_TIMINGS.TEN_MINUTES:
-            return intl.getPlural(
-                'disable_notify_for_minutes',
-                DISABLE_PROTECTION_TIMINGS.TEN_MINUTES,
-            );
-        case DISABLE_PROTECTION_TIMINGS.HOUR:
-            return intl.getPlural('disable_notify_for_hours', DISABLE_PROTECTION_TIMINGS.HOUR);
-        case DISABLE_PROTECTION_TIMINGS.TOMORROW:
-            return intl.getMessage('disable_notify_until_tomorrow');
-        default:
-            return intl.getMessage('disabled_protection');
-    }
-};
-
 export const toggleProtection =
     (status: any, time: number | null = null) =>
     async (dispatch: any) => {
         dispatch(toggleProtectionRequest());
         try {
-            const successMessage = status
-                ? getDisabledMessage(time)
-                : intl.getMessage('enabled_protection');
             await apiClient.setProtection({ enabled: !status, duration: time });
-            dispatch(addSuccessToast(successMessage));
             dispatch(toggleProtectionSuccess({ disabledDuration: time }));
         } catch (error) {
             dispatch(addErrorToast({ error }));
