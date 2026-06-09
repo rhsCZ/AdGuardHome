@@ -163,8 +163,8 @@ export const DNSRewrites = () => {
                         onClose={closeGlobalToggleConfirm}
                         title={
                             targetEnabled
-                                ? intl.getMessage('disable_dns_rewrites')
-                                : intl.getMessage('enable_dns_rewrites')
+                                ? intl.getMessage('enable_dns_rewrites')
+                                : intl.getMessage('disable_dns_rewrites')
                         }
                         text={
                             targetEnabled
@@ -172,7 +172,7 @@ export const DNSRewrites = () => {
                                 : intl.getMessage('all_rewrites_disabled')
                         }
                         buttonText={
-                            targetEnabled ? intl.getMessage('disable') : intl.getMessage('enable')
+                            targetEnabled ? intl.getMessage('enable') : intl.getMessage('disable')
                         }
                         cancelText={intl.getMessage('cancel')}
                         buttonVariant={targetEnabled ? 'primary' : 'danger'}

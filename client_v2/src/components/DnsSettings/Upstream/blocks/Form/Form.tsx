@@ -12,6 +12,7 @@ import { FaqTooltip } from 'panel/common/ui/FaqTooltip';
 import { toNumber } from 'panel/helpers/form';
 import intl from 'panel/common/intl';
 import { DNS_REQUEST_OPTIONS, UINT32_RANGE } from 'panel/helpers/constants';
+import { validateUpstreams } from 'panel/helpers/validators';
 import theme from 'panel/lib/theme';
 import { RootState } from 'panel/initialState';
 
@@ -120,7 +121,8 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                     <Controller
                         name="upstream_dns"
                         control={control}
-                        render={({ field }) => (
+                        rules={{ validate: (v) => (!v ? undefined : validateUpstreams(v)) }}
+                        render={({ field, fieldState }) => (
                             <>
                                 <Textarea
                                     {...field}
@@ -161,6 +163,7 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                     placeholder={intl.getMessage('upstream_dns_placeholder')}
                                     disabled={!!upstreamDnsFile || processingTestUpstream}
                                     size="medium"
+                                    errorMessage={fieldState.error?.message}
                                 />
                             </>
                         )}
@@ -192,7 +195,8 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                     <Controller
                         name="fallback_dns"
                         control={control}
-                        render={({ field }) => (
+                        rules={{ validate: (v) => (!v ? undefined : validateUpstreams(v)) }}
+                        render={({ field, fieldState }) => (
                             <Textarea
                                 {...field}
                                 id="fallback_dns"
@@ -207,6 +211,7 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                 }
                                 placeholder={intl.getMessage('ip_addresses_placeholder')}
                                 size="medium"
+                                errorMessage={fieldState.error?.message}
                             />
                         )}
                     />
@@ -216,7 +221,8 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                     <Controller
                         name="bootstrap_dns"
                         control={control}
-                        render={({ field }) => (
+                        rules={{ validate: (v) => (!v ? undefined : validateUpstreams(v)) }}
+                        render={({ field, fieldState }) => (
                             <Textarea
                                 {...field}
                                 id="bootstrap_dns"
@@ -232,6 +238,7 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                 }
                                 placeholder={intl.getMessage('ip_addresses_placeholder')}
                                 size="medium"
+                                errorMessage={fieldState.error?.message}
                             />
                         )}
                     />
@@ -241,7 +248,8 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                     <Controller
                         name="local_ptr_upstreams"
                         control={control}
-                        render={({ field }) => (
+                        rules={{ validate: (v) => (!v ? undefined : validateUpstreams(v)) }}
+                        render={({ field, fieldState }) => (
                             <Textarea
                                 {...field}
                                 id="local_ptr_upstreams"
@@ -260,14 +268,13 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                                     <div>
                                                         {intl.getMessage('upstream_ptr_faq_2')}
                                                     </div>
-                                                    {defaultLocalPtrUpstreams?.length > 0 && (
+                                                    {defaultLocalPtrUpstreams && (
                                                         <div>
                                                             {intl.getMessage('upstream_ptr_faq_3', {
                                                                 value_1:
                                                                     defaultLocalPtrUpstreams[0],
                                                                 value_2:
-                                                                    defaultLocalPtrUpstreams[1] ||
-                                                                    '',
+                                                                    defaultLocalPtrUpstreams[1],
                                                             })}
                                                         </div>
                                                     )}
@@ -280,6 +287,7 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                 }
                                 placeholder={intl.getMessage('ip_addresses_placeholder')}
                                 size="medium"
+                                errorMessage={fieldState.error?.message}
                             />
                         )}
                     />

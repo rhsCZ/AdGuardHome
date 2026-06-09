@@ -102,7 +102,11 @@ export const addFilter =
             dispatch(addFilterSuccess(url));
             dispatch(
                 addSuccessToast({
-                    message: intl.getMessage('filter_added_successfully', { value: name || url }),
+                    message: whitelist
+                        ? intl.getMessage('filter_added_successfully_allowlist', {
+                              value: name || url,
+                          })
+                        : intl.getMessage('filter_added_successfully', { value: name || url }),
                 }),
             );
             dispatch(closeModal());
@@ -127,9 +131,13 @@ export const removeFilter =
             dispatch(closeModal());
             dispatch(
                 addSuccessToast({
-                    message: intl.getMessage('filter_removed_successfully', {
-                        value: filter.name || filter.url,
-                    }),
+                    message: whitelist
+                        ? intl.getMessage('filter_removed_successfully_allowlist', {
+                              value: filter.name || filter.url,
+                          })
+                        : intl.getMessage('filter_removed_successfully', {
+                              value: filter.name || filter.url,
+                          }),
                 }),
             );
             dispatch(getFilteringStatus());

@@ -155,7 +155,7 @@ export const Settings = () => {
                                 theme.title.h4_tablet,
                             )}
                         >
-                            {intl.getMessage('settings_filter_requests')}
+                            {intl.getMessage('settings_filtering_and_security')}
                         </h2>
 
                         <FiltersConfig

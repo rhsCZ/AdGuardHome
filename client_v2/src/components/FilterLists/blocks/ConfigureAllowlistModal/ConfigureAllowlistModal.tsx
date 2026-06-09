@@ -74,12 +74,10 @@ export const ConfigureAllowlistModal = ({ modalId, filterToEdit }: Props) => {
         switch (modalId) {
             case MODAL_TYPE.ADD_ALLOWLIST: {
                 dispatch(addFilter(values.url, values.name, true));
-                dispatch(closeModal());
                 break;
             }
             case MODAL_TYPE.EDIT_ALLOWLIST: {
                 dispatch(editFilter(values.url, values, true));
-                dispatch(closeModal());
                 break;
             }
             default: {

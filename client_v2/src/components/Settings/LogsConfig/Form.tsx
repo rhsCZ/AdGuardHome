@@ -127,6 +127,7 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
                 setValue={setValue}
                 switchId="logs_config_ignored_enabled"
                 textareaId="logs_config_ignored"
+                description={intl.getMessage('ignore_domains_desc_log')}
             />
 
             <div className={theme.form.buttonGroup}>

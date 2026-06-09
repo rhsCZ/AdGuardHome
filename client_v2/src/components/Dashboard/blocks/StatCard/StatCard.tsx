@@ -1,7 +1,8 @@
 import React from 'react';
 import cn from 'clsx';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link } from 'panel/common/ui/Link';
+import { RoutePathKey } from 'panel/components/Routes/Paths';
 
 import { formatNumber } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
@@ -50,7 +51,8 @@ export type StatCardProps = {
     color: string;
     percentValue?: number;
     cardTheme: (typeof CARDS_THEME)[keyof typeof CARDS_THEME];
-    linkTo?: string;
+    linkTo?: RoutePathKey;
+    query?: Record<string, string | number | boolean>;
 };
 
 export const StatCard = ({
@@ -61,6 +63,7 @@ export const StatCard = ({
     percentValue,
     cardTheme,
     linkTo,
+    query,
 }: StatCardProps) => {
     const chartData = data.map((v, i) => {
         const date = new Date();
@@ -92,7 +95,7 @@ export const StatCard = ({
 
                     <div className={cn(theme.text.t4, s.statCardLabel)}>
                         {linkTo ? (
-                            <Link to={linkTo} className={s.statLabelLink}>
+                            <Link to={linkTo} query={query} className={s.statLabelLink}>
                                 {label}
                             </Link>
                         ) : (
@@ -134,7 +137,7 @@ export const StatCard = ({
             </div>
             <div className={cn(theme.text.t3, s.statCardLabel)}>
                 {linkTo ? (
-                    <Link to={linkTo} className={s.statLabelLink}>
+                    <Link to={linkTo} query={query} className={s.statLabelLink}>
                         {label}
                     </Link>
                 ) : (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -57,12 +57,19 @@ export const FilterUpdateModal = () => {
     const { filtering } = useSelector((state: RootState) => state);
     const { processingSetConfig, interval: currentInterval } = filtering;
 
-    const { control, handleSubmit, watch, setValue } = useForm<FormValues>({
+    const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
         defaultValues: {
             interval: currentInterval || 24,
             customInterval: null,
         },
     });
+
+    useEffect(() => {
+        reset({
+            interval: currentInterval || 24,
+            customInterval: null,
+        });
+    }, [currentInterval, reset]);
 
     const intervalValue = watch('interval');
 
@@ -74,15 +81,17 @@ export const FilterUpdateModal = () => {
         const finalInterval =
             data.interval === FILTER_INTERVALS.CUSTOM ? data.customInterval : data.interval;
 
-        if (finalInterval !== null && finalInterval !== undefined) {
-            dispatch(
-                setFiltersConfig({
-                    enabled: filtering.enabled,
-                    interval: finalInterval,
-                }),
-            );
-            onClose();
+        if (finalInterval === null || finalInterval === undefined || finalInterval < 0) {
+            return;
         }
+
+        dispatch(
+            setFiltersConfig({
+                enabled: filtering.enabled,
+                interval: finalInterval,
+            }),
+        );
+        onClose();
     };
 
     return (

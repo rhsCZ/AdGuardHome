@@ -6,6 +6,7 @@ import { Textarea } from 'panel/common/controls/Textarea';
 import { Button } from 'panel/common/ui/Button';
 import { FaqTooltip } from 'panel/common/ui/FaqTooltip';
 import { CLIENT_ID_LINK } from 'panel/helpers/constants';
+import { validateIpPerLine } from 'panel/helpers/validators';
 import { removeEmptyLines, trimMultilineString } from 'panel/helpers/helpers';
 import theme from 'panel/lib/theme';
 
@@ -99,12 +100,14 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
         faq: ReactNode;
         normalizeOnBlur: (value: string) => string;
     }) => {
+        const isIpField = id === 'allowed_clients' || id === 'disallowed_clients';
         return (
             <div key={id} className={theme.form.input}>
                 <Controller
                     name={id}
                     control={control}
-                    render={({ field }) => (
+                    rules={isIpField ? { validate: validateIpPerLine } : undefined}
+                    render={({ field, fieldState }) => (
                         <Textarea
                             {...field}
                             id={id}
@@ -119,6 +122,7 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
                                     />
                                 </>
                             }
+                            errorMessage={fieldState.error?.message}
                             onBlur={(e) => {
                                 field.onChange(normalizeOnBlur(e.target.value));
                             }}

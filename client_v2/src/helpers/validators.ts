@@ -222,6 +222,25 @@ export const validateIp = (value: any) => {
 };
 
 /**
+ * Validates that each non-empty line contains a valid IP address.
+ * Returns the first error found, or undefined if all lines are valid.
+ * @param value {string} multiline string
+ * @returns {undefined|string}
+ */
+export const validateIpPerLine = (value: string): string | undefined => {
+    if (!value) return undefined;
+    const lines = value.split('\n');
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        if (line) {
+            const error = validateIp(line);
+            if (error) return error;
+        }
+    }
+    return undefined;
+};
+
+/**
  * @param value {string}
  * @returns {undefined|string}
  */

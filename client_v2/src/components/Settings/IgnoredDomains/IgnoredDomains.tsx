@@ -18,6 +18,7 @@ type Props = {
     setValue: UseFormSetValue<any>;
     switchId: string;
     textareaId: string;
+    description: string;
 };
 
 export const IgnoredDomains = ({
@@ -27,12 +28,13 @@ export const IgnoredDomains = ({
     setValue,
     switchId,
     textareaId,
+    description,
 }: Props) => {
     return (
         <SwitchGroup
             id={switchId}
             title={intl.getMessage('ignore_domains_title')}
-            description={intl.getMessage('ignore_domains_desc_query')}
+            description={description}
             checked={ignoreEnabled}
             onChange={(e) => setValue('ignore_enabled', e.target.checked)}
             disabled={processing}

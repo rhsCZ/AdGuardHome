@@ -113,6 +113,7 @@ export const Form = ({ initialValues, processing, processingReset, onSubmit, onR
                 setValue={setValue}
                 switchId="stats_config_ignored_enabled"
                 textareaId="stats_config_ignored"
+                description={intl.getMessage('ignore_domains_desc_stats')}
             />
 
             <div className={theme.form.buttonGroup}>

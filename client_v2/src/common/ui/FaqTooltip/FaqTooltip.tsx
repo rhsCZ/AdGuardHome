@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import cn from 'clsx';
 
 import { Dropdown } from 'panel/common/ui/Dropdown';
+import { useIsMobile } from 'panel/hooks/useIsMobile';
 import theme from 'panel/lib/theme';
 import { Icon } from 'panel/common/ui/Icon';
 
@@ -22,9 +23,11 @@ export const FaqTooltip = ({
     menuClassName,
     overlayClassName,
 }: Props) => {
+    const isMobile = useIsMobile();
+
     return (
         <Dropdown
-            trigger="hover"
+            trigger={isMobile ? 'click' : 'hover'}
             overlayClassName={overlayClassName}
             menu={
                 <div

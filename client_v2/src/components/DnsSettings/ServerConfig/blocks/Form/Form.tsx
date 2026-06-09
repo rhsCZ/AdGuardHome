@@ -5,6 +5,7 @@ import cn from 'clsx';
 import intl from 'panel/common/intl';
 import {
     validateIp,
+    validateIpPerLine,
     validateIpv4,
     validateIpv6,
     validateRequiredValue,
@@ -242,6 +243,7 @@ export const Form = ({ processing, initialValues, onSubmit }: Props) => {
                     <Controller
                         name="ratelimit_whitelist"
                         control={control}
+                        rules={{ validate: validateIpPerLine }}
                         render={({ field, fieldState }) => (
                             <Textarea
                                 {...field}
