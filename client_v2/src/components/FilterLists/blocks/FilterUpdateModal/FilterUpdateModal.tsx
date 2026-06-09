@@ -74,6 +74,10 @@ export const FilterUpdateModal = () => {
     const intervalValue = watch('interval');
 
     const onClose = () => {
+        reset({
+            interval: currentInterval || 24,
+            customInterval: null,
+        });
         dispatch(closeModal());
     };
 
