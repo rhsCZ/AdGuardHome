@@ -17,7 +17,7 @@ export const Cache = () => {
 
     const handleFormSubmit = (values: any) => {
         const completedFields = replaceEmptyStringsWithZeroes(values);
-        dispatch(setDnsConfig(completedFields));
+        dispatch(setDnsConfig(completedFields, intl.getMessage('dns_cache_configuration_saved_toast')));
     };
 
     return (

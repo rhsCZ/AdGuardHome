@@ -38,7 +38,7 @@ export const setAccessList = (config: any) => async (dispatch: any) => {
 
         await apiClient.setAccessList(values);
         dispatch(setAccessListSuccess());
-        dispatch(addSuccessToast(intl.getMessage('settings_notify_changes_saved')));
+        dispatch(addSuccessToast(intl.getMessage('access_settings_saved_toast')));
     } catch (error) {
         dispatch(addErrorToast({ error }));
         dispatch(setAccessListFailure());
