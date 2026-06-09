@@ -27,7 +27,7 @@
   "enabled_protection": "Enabled protection",
   "disabled_protection": "Disabled protection",
   "refresh_statics": "Refresh statistics",
-  "dns_query": "DNS Queries",
+  "dns_query": "DNS queries",
   "stats_adult": "Blocked adult websites",
   "stats_query_domain": "Top queried domains",
   "top_blocked_domains": "Top blocked domains",
