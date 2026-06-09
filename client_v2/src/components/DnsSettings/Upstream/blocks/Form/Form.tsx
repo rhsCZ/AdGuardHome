@@ -268,7 +268,7 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                                     <div>
                                                         {intl.getMessage('upstream_ptr_faq_2')}
                                                     </div>
-                                                    {defaultLocalPtrUpstreams && (
+                                                    {defaultLocalPtrUpstreams?.length > 0 && (
                                                         <div>
                                                             {intl.getMessage('upstream_ptr_faq_3', {
                                                                 value_1:

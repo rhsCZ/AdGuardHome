@@ -48,39 +48,45 @@ type ShortPollTotal = {
     oldest?: string;
 };
 
-// Maps the frontend "status" broad category to backend reason value(s)
-// when the reason filter is "all" (meaning the status should drive server filtering).
-const STATUS_TO_REASON: Record<string, string | string[]> = {
-    allowed: 'NotFilteredWhiteList',
-    processed: 'NotFilteredNotFound',
-    blocked: [
-        'FilteredBlackList',
-        'FilteredBlockedService',
-        'FilteredSafeBrowsing',
-        'FilteredParental',
-    ],
-    rewritten: ['Rewrite', 'RewriteEtcHosts', 'RewriteRule', 'FilteredSafeSearch'],
+// Maps the frontend reason filter values to backend response_status values.
+const REASON_TO_RESPONSE_STATUS: Record<string, string> = {
+    FilteredBlackList: 'blocked',
+    FilteredBlockedService: 'blocked_services',
+    FilteredSafeBrowsing: 'blocked_safebrowsing',
+    FilteredParental: 'blocked_parental',
+    FilteredSafeSearch: 'safe_search',
+    Rewrite: 'rewritten',
+    RewriteEtcHosts: 'rewritten',
+    RewriteRule: 'rewritten',
+    NotFilteredWhiteList: 'whitelisted',
+    NotFilteredNotFound: 'processed',
 };
 
-const getEffectiveReason = (filter?: SearchFormValues): string | string[] | '' => {
+// Maps the frontend status categories to backend response_status values
+// when the reason filter is 'all'.
+const STATUS_TO_RESPONSE_STATUS: Record<string, string> = {
+    allowed: 'whitelisted',
+    processed: 'processed',
+    blocked: 'blocked',
+    rewritten: 'rewritten',
+};
+
+const getEffectiveResponseStatus = (filter?: SearchFormValues): string => {
     const reason = filter?.reason ?? DEFAULT_LOGS_FILTER.reason;
     const status = filter?.status ?? DEFAULT_LOGS_FILTER.status;
 
-    // If the reason filter is already specific, use it directly
     if (reason !== 'all') {
-        return reason;
+        return REASON_TO_RESPONSE_STATUS[reason] ?? 'all';
     }
 
-    // Map the broad status category to backend reason value(s).
-    // If no mapping exists (e.g. status is also 'all'), return '' to omit the param entirely.
-    return STATUS_TO_REASON[status] ?? '';
+    return STATUS_TO_RESPONSE_STATUS[status] ?? 'all';
 };
 
 const getLogsWithParams = async (config: GetLogsParams): Promise<LogsResponse> => {
     const { older_than, filter, ...values } = config;
     const requestFilter = {
         search: filter?.search ?? DEFAULT_LOGS_FILTER.search,
-        reason: getEffectiveReason(filter),
+        response_status: getEffectiveResponseStatus(filter),
     };
     const rawLogs = await apiClient.getQueryLog({
         ...requestFilter,

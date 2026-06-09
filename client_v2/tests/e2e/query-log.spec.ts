@@ -303,22 +303,30 @@ const applySearchFilter = (rows: QueryLogApiEntry[], search: string) => {
     });
 };
 
-const applyReasonFilter = (rows: QueryLogApiEntry[], responseStatus: string) => {
+const applyResponseStatusFilter = (rows: QueryLogApiEntry[], responseStatus: string) => {
     switch (responseStatus) {
+        case 'all':
+            return rows;
         case 'blocked':
-            return rows.filter((row) => row.reason === 'FilteredBlackList');
-        case 'whitelisted':
-            return rows.filter((row) => row.reason === 'NotFilteredWhiteList');
-        case 'rewritten':
-            return rows.filter((row) => row.reason === 'Rewrite' || row.reason === 'RewriteEtcHosts' || row.reason === 'RewriteRule');
-        case 'safe_search':
-            return rows.filter((row) => row.reason === 'FilteredSafeSearch');
+            return rows.filter((row) => row.reason === 'FilteredBlackList' || row.reason === 'FilteredBlockedService');
         case 'blocked_services':
             return rows.filter((row) => row.reason === 'FilteredBlockedService');
         case 'blocked_safebrowsing':
             return rows.filter((row) => row.reason === 'FilteredSafeBrowsing');
         case 'blocked_parental':
             return rows.filter((row) => row.reason === 'FilteredParental');
+        case 'safe_search':
+            return rows.filter((row) => row.reason === 'FilteredSafeSearch');
+        case 'whitelisted':
+            return rows.filter((row) => row.reason === 'NotFilteredWhiteList');
+        case 'rewritten':
+            return rows.filter((row) => row.reason === 'Rewrite' || row.reason === 'RewriteEtcHosts' || row.reason === 'RewriteRule');
+        case 'processed':
+            return rows.filter((row) =>
+                row.reason !== 'FilteredBlackList'
+                && row.reason !== 'FilteredBlockedService'
+                && row.reason !== 'NotFilteredWhiteList',
+            );
         default:
             return rows;
     }
@@ -327,7 +335,7 @@ const applyReasonFilter = (rows: QueryLogApiEntry[], responseStatus: string) => 
 const buildDefaultQueryLogResponse = (requestUrl: URL): QueryLogResponse => {
     const search = requestUrl.searchParams.get('search') ?? '';
     const responseStatus = requestUrl.searchParams.get('response_status') ?? 'all';
-    const filteredRows = applyReasonFilter(applySearchFilter(QUERY_LOG_ROWS, search), responseStatus);
+    const filteredRows = applyResponseStatusFilter(applySearchFilter(QUERY_LOG_ROWS, search), responseStatus);
 
     return {
         data: filteredRows,
@@ -671,8 +679,7 @@ test.describe('Query log desktop', () => {
         await selectFilterOption(page, 'query-log-status-filter', 'blocked', 'query-log-status-option');
         const blockedStatusRequest = await expectQueryLogRequestCount(queryLogRequests, 2);
 
-        expect(blockedStatusRequest?.searchParams.has('status')).toBe(false);
-        expect(blockedStatusRequest?.searchParams.get('response_status')).toBe('all');
+        expect(blockedStatusRequest?.searchParams.get('response_status')).toBe('blocked');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'example.org')).toHaveCount(1);
         expectPageFilters(page, { search: null, status: 'blocked', reason: 'all' });
@@ -681,18 +688,18 @@ test.describe('Query log desktop', () => {
         await expectQueryLogRequestCount(queryLogRequests, 3);
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(QUERY_LOG_ROWS.length);
 
-        await selectFilterOption(page, 'query-log-reason-filter', 'safe_search', 'query-log-reason-option');
+        await selectFilterOption(page, 'query-log-reason-filter', 'FilteredSafeSearch', 'query-log-reason-option');
         const safeSearchRequest = await expectQueryLogRequestCount(queryLogRequests, 4);
 
         expect(safeSearchRequest?.searchParams.get('response_status')).toBe('safe_search');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'search.example')).toHaveCount(1);
-        expectPageFilters(page, { search: null, status: 'all', reason: 'safe_search' });
+        expectPageFilters(page, { search: null, status: 'all', reason: 'FilteredSafeSearch' });
 
         await selectFilterOption(page, 'query-log-status-filter', 'blocked', 'query-log-status-option');
         const emptyStateRequest = await expectQueryLogRequestCount(queryLogRequests, 5);
 
-        expect(emptyStateRequest?.searchParams.get('response_status')).toBe('all');
+        expect(emptyStateRequest?.searchParams.get('response_status')).toBe('blocked');
         await expect(page.getByTestId('query-log-request-cell')).toHaveCount(1);
         await expect(getRequestCellByDomain(page, 'example.org')).toHaveCount(1);
         expectPageFilters(page, { search: null, status: 'blocked', reason: 'all' });
