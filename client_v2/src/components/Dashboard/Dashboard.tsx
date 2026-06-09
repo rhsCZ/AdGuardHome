@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import theme from 'panel/lib/theme';
 import { RootState } from 'panel/initialState';
-import { Loader } from 'panel/common/ui/Loader';
+import { Loader, PageLoader } from 'panel/common/ui/Loader';
 import { toggleProtection, getClients } from 'panel/actions';
 import { getStats, getStatsConfig } from 'panel/actions/stats';
 import { getAccessList } from 'panel/actions/access';
@@ -184,7 +184,7 @@ export const Dashboard = () => {
 
                 {isLoading ? (
                     <div className={s.loader}>
-                        <Loader />
+                        <PageLoader />
                     </div>
                 ) : (
                     <>
