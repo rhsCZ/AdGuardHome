@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Input } from 'panel/common/controls/Input';
@@ -34,6 +34,7 @@ import s from './AddClient.module.pcss';
 export const AddClient = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const { clientName: urlClientName } = useParams<{ clientName?: string }>();
     const form = useSelector((state: RootState) => state.clientForm);
     const dashboard = useSelector((state: RootState) => state.dashboard);
@@ -43,6 +44,17 @@ export const AddClient = () => {
     useEffect(() => {
         dispatch(getClients());
     }, []);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const id = searchParams.get('id');
+
+        if (!id || form.mode !== 'add') {
+            return;
+        }
+
+        dispatch(updateClientFormField({ field: 'ids', value: [id] }));
+    }, [location.search]);
 
     // When on the edit route and clients are loaded, initialize the form
     // from the URL param. This handles page refreshes on the edit page.

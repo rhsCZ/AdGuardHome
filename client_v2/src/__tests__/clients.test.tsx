@@ -176,19 +176,6 @@ describe('Clients Page', () => {
         });
     });
 
-    it('renders empty state when no clients exist', async () => {
-        mocks.state.dashboard.processingClients = false;
-        mocks.state.stats.processingStats = false;
-        mocks.state.dashboard.clients = [];
-        mocks.state.dashboard.autoClients = [];
-
-        render(<Clients />);
-
-        const notFoundElements = await screen.findAllByText('No clients found');
-
-        expect(notFoundElements.length).toBe(2);
-    });
-
     it('uses the persisted persistent-clients page size from localStorage', async () => {
         localStorage.setItem('clients_page_size', JSON.stringify(5));
 

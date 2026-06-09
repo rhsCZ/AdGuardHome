@@ -107,17 +107,19 @@ export const Clients = () => {
                     <div className={s.desc}>{intl.getMessage('clients_desc')}</div>
                 </div>
 
-                <div className={cn(s.section, s.section_table)}>
-                    <PersistentClientsTable
-                        clients={clients}
-                        normalizedTopClients={normalizedTopClients}
-                        loading={isLoading}
-                        onEdit={handleEditClient}
-                        onDelete={handleDeleteClient}
-                        deleteDisabled={processingDeleting}
-                        allServices={allServices}
-                    />
-                </div>
+                {clients.length > 0 && (
+                    <div className={cn(s.section, s.section_table)}>
+                        <PersistentClientsTable
+                            clients={clients}
+                            normalizedTopClients={normalizedTopClients}
+                            loading={isLoading}
+                            onEdit={handleEditClient}
+                            onDelete={handleDeleteClient}
+                            deleteDisabled={processingDeleting}
+                            allServices={allServices}
+                        />
+                    </div>
+                )}
 
                 <div className={s.section}>
                     <h2 className={cn(theme.title.h5, theme.title.h4_tablet, s.sectionTitle)}>
@@ -126,13 +128,15 @@ export const Clients = () => {
                     <div className={s.desc}>{intl.getMessage('auto_clients_desc')}</div>
                 </div>
 
-                <div className={cn(s.section, s.section_table)}>
-                    <RuntimeClientsTable
-                        autoClients={autoClients}
-                        normalizedTopClients={normalizedTopClients}
-                        loading={isLoading}
-                    />
-                </div>
+                {autoClients.length > 0 && (
+                    <div className={cn(s.section, s.section_table)}>
+                        <RuntimeClientsTable
+                            autoClients={autoClients}
+                            normalizedTopClients={normalizedTopClients}
+                            loading={isLoading}
+                        />
+                    </div>
+                )}
 
                 {clientNameToDelete && (
                     <ConfirmDialog

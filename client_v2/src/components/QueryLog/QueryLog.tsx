@@ -25,7 +25,7 @@ import {
     QUERY_LOG_STATUS_FILTER_QUERIES,
 } from 'panel/helpers/constants';
 import { getLogsUrlParams } from 'panel/helpers/helpers';
-import { Paths } from 'panel/components/Routes/Paths';
+import { RoutePath, linkPathBuilder } from 'panel/components/Routes/Paths';
 
 import { filterLogsByStatus } from './helpers';
 import { LogEntry } from './types';
@@ -206,7 +206,7 @@ export const QueryLog = () => {
 
     const handleAddPersistentClient = useCallback(
         (clientId: string) => {
-            navigate(`${Paths.Clients}?clientId=${encodeURIComponent(clientId)}`);
+            navigate(linkPathBuilder(RoutePath.ClientsAdd, undefined, { id: clientId }));
         },
         [navigate],
     );

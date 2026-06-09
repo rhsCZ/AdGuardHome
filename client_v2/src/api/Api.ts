@@ -16,7 +16,10 @@ class Api {
     }
 
     async makeRequest(path: any, method = 'POST', config: any = {}) {
-        const url = `${this.baseUrl}/${path}`;
+        const pathWithBase = `${this.baseUrl}/${path}`;
+        const url = config.params
+            ? getPathWithQueryString(pathWithBase, config.params)
+            : pathWithBase;
 
         const fetchConfig: RequestInit = { method };
         const headers: Record<string, string> = {};
