@@ -181,7 +181,7 @@
   "filter_category_security_desc": "Lists designed specifically to block malicious, phishing, and scam domains",
   "filter_category_regional_desc": "Lists that focus on regional ads and tracking servers",
   "filter_category_other_desc": "Other blocklists",
-  "port_53_faq_link": "Port 53 is often occupied by \"DNSStubListener\" or \"systemd-resolved\" services. Please read this instruction on how to resolve this.",
+  "port_53_faq_link": "Port 53 is often occupied by \"DNSStubListener\" or \"systemd-resolved\" services. Please read <a>this instruction</a> on how to resolve this.",
   "use_saved_key": "Use the previously saved key",
   "parental_control": "Parental Control",
   "safe_browsing": "Safe Browsing",

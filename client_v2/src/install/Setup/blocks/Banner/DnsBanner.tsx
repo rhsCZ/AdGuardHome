@@ -151,7 +151,7 @@ export const DnsBanner = ({
                         dnsStatus?.includes(ADDRESS_IN_USE_TEXT) && (
                             <p>
                                 {intl.getMessage('port_53_faq_link', {
-                                    0: (text: string) => (
+                                    a: (text: string) => (
                                         <a
                                             key="faq"
                                             href={PORT_53_FAQ_LINK}
