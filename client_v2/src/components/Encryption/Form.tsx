@@ -185,6 +185,7 @@ export const Form = ({ initialValues, encryption, onSubmit, debouncedConfigValid
         reset();
         dispatch(setTlsConfig(defaultValues));
         dispatch(validateTlsConfig(defaultValues));
+        handleResetClose();
     };
 
     const validatePorts = (values: EncryptionFormValues) => {
