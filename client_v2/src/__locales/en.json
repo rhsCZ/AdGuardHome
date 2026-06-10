@@ -434,6 +434,7 @@
   "dns_rewrites": "DNS rewrites",
   "dns_rewrites_desc": "Helps you configure custom DNS responses for specific domain names",
   "rewrite_add": "Add DNS rewrite",
+  "rewrite_domain": "Domain name or wildcard to be rewritten",
   "rewrites_empty": "No rewrites yet — <button>add your first one</button>",
   "domain": "Domain",
   "result": "Result",
