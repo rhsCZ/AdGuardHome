@@ -48,6 +48,16 @@ export const DNSRewrites = () => {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [targetEnabled, setTargetEnabled] = useState<boolean | null>(null);
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+    // Only show loader during initial fetch, not on subsequent enable/disable toggles.
+    useEffect(() => {
+        if (!processingSettings && !settingsLoaded) {
+            setSettingsLoaded(true);
+        }
+    }, [processingSettings, settingsLoaded]);
+
+    const isInitialSettingsLoad = processingSettings && !settingsLoaded;
 
     useEffect(() => {
         dispatch(getRewritesList());
@@ -111,7 +121,7 @@ export const DNSRewrites = () => {
                     processingAdd={processingAdd}
                     processingUpdate={processingUpdate}
                     processingDelete={processingDelete}
-                    processingSettings={processingSettings}
+                    processingSettings={isInitialSettingsLoad}
                     enabled={enabled}
                     addRewritesList={openAddRewiresModal}
                     deleteRewrite={openDeleteRewriteModal}
