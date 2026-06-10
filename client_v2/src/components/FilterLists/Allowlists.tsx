@@ -11,6 +11,7 @@ import { getFilteringStatus, toggleFilterStatus, refreshFilters } from 'panel/ac
 import { Icon } from 'panel/common/ui/Icon';
 
 import { openModal } from 'panel/reducers/modals';
+import { PlusButton } from 'panel/common/ui/PlusButton';
 import { FilterUpdateModal } from 'panel/components/FilterLists/blocks/FilterUpdateModal';
 import { DeleteAllowlistModal } from './blocks/DeleteAllowlistModal/DeleteAllowlistModal';
 import { ConfigureAllowlistModal } from './blocks/ConfigureAllowlistModal';
@@ -117,18 +118,13 @@ export const Allowlists = () => {
                         <div className={s.desc}>{intl.getMessage('allowlists_desc')}</div>
 
                         <div className={s.group}>
-                            <button
-                                type="button"
-                                className={cn(s.button, s.button_add)}
-                                onClick={openAddAllowlistModal}
-                            >
-                                <Icon icon="plus" color="green" />
+                            <PlusButton onClick={openAddAllowlistModal}>
                                 {intl.getMessage('add_allowlist')}
-                            </button>
+                            </PlusButton>
                         </div>
 
                         {whitelistFilters.length > 0 && (
-                            <div className={cn(s.group, s.stretchSelf)}>
+                            <div className={cn(s.group, s.tableGroup)}>
                                 <ListsTable
                                     tableId={TABLE_IDS.ALLOWLISTS_TABLE}
                                     filters={whitelistFilters}

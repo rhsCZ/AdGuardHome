@@ -68,15 +68,23 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
     });
     const { handleSubmit, reset, control } = methods;
 
+    const initialValues = {
+        ...defaultValues,
+        ...rewriteToEdit,
+    };
+
     useEffect(() => {
-        reset({
-            ...defaultValues,
-            ...rewriteToEdit,
-        });
+        reset(initialValues);
     }, [rewriteToEdit, reset]);
 
     const closeDialog = () => {
         reset(defaultValues);
+        onClose?.();
+        dispatch(closeModal());
+    };
+
+    const handleCancel = () => {
+        reset(initialValues);
         onClose?.();
         dispatch(closeModal());
     };
@@ -97,6 +105,7 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                 dispatch(
                     addRewrite({ answer: values.answer, domain: values.domain, enabled: true }),
                 );
+                reset(defaultValues);
                 dispatch(closeModal());
                 break;
             }
@@ -111,6 +120,7 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                         },
                     }),
                 );
+                reset(defaultValues);
                 dispatch(closeModal());
                 break;
             }
@@ -118,10 +128,6 @@ export const ConfigureRewritesModal = ({ modalId, rewriteToEdit, onSubmit, onClo
                 break;
             }
         }
-    };
-
-    const handleCancel = () => {
-        closeDialog();
     };
 
     return (

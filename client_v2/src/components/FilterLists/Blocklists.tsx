@@ -12,6 +12,7 @@ import { openModal } from 'panel/reducers/modals';
 import { DeleteBlocklistModal } from 'panel/components/FilterLists/blocks/DeleteBlocklistModal';
 import { ConfigureBlocklistModal } from 'panel/components/FilterLists/blocks/ConfigureBlocklistModal';
 import { PageLoader } from 'panel/common/ui/Loader';
+import { PlusButton } from 'panel/common/ui/PlusButton';
 import { ListsTable, TABLE_IDS } from './blocks/ListsTable/ListsTable';
 import { FilterUpdateModal } from './blocks/FilterUpdateModal';
 
@@ -113,18 +114,13 @@ export const Blocklists = () => {
                         <div className={s.desc}>{intl.getMessage('blocklists_desc')}</div>
 
                         <div className={s.group}>
-                            <button
-                                type="button"
-                                className={cn(s.button, s.button_add)}
-                                onClick={openAddBlocklistModal}
-                            >
-                                <Icon icon="plus" color="green" />
+                            <PlusButton onClick={openAddBlocklistModal}>
                                 {intl.getMessage('add_blocklist')}
-                            </button>
+                            </PlusButton>
                         </div>
 
                         {filters.length > 0 && (
-                            <div className={cn(s.group, s.stretchSelf)}>
+                            <div className={cn(s.group, s.tableGroup)}>
                                 <ListsTable
                                     tableId={TABLE_IDS.BLOCKLISTS_TABLE}
                                     filters={filters}

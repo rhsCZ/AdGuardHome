@@ -12,10 +12,10 @@ import {
     getRewriteSettings,
     updateRewriteSettings,
 } from 'panel/actions/rewrites';
-import { Icon } from 'panel/common/ui/Icon';
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import { openModal } from 'panel/reducers/modals';
 import { DeleteRewriteModal } from 'panel/components/FilterLists/blocks/DeleteRewriteModal';
+import { PlusButton } from 'panel/common/ui/PlusButton';
 import { ConfigureRewritesModal } from 'panel/components/FilterLists/blocks/ConfigureRewritesModal/ConfigureRewritesModal';
 import { RewritesTable } from './blocks/RewritesTable/RewritesTable';
 
@@ -104,7 +104,7 @@ export const DNSRewrites = () => {
         }
 
         return (
-            <div className={cn(s.group, s.stretchSelf)}>
+            <div className={cn(s.group, s.tableGroup)}>
                 <RewritesTable
                     list={list}
                     processing={processing}
@@ -133,15 +133,9 @@ export const DNSRewrites = () => {
                 <div className={s.desc}>{intl.getMessage('dns_rewrites_desc')}</div>
 
                 <div className={s.group}>
-                    <button
-                        type="button"
-                        className={cn(s.button, s.button_add)}
-                        onClick={openAddRewiresModal}
-                        data-testid="add-rewrite"
-                    >
-                        <Icon icon="plus" color="green" />
+                    <PlusButton onClick={openAddRewiresModal} testId="add-rewrite">
                         {intl.getMessage('rewrite_add')}
-                    </button>
+                    </PlusButton>
                 </div>
 
                 {renderTable()}
