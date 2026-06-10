@@ -14,8 +14,6 @@ import {
     R_DOMAIN,
     MAX_PASSWORD_LENGTH,
     MIN_PASSWORD_LENGTH,
-    R_IPV4_SUBNET,
-    R_IPV6_SUBNET,
     R_HOSTNAME,
 } from './constants';
 
