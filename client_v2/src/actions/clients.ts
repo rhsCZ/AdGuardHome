@@ -43,7 +43,6 @@ export const deleteClient = (config: ClientDeleteConfig) => async (dispatch: App
     try {
         await apiClient.deleteClient(config);
         dispatch(deleteClientSuccess());
-        dispatch(addSuccessToast(intl.getMessage('client_deleted', { key: config.name })));
         dispatch(getClients());
     } catch (error) {
         dispatch(addErrorToast({ error }));
@@ -67,10 +66,6 @@ export const updateClient =
 
             if (options.toggleModal !== false) {
                 dispatch(toggleClientModal());
-            }
-
-            if (options.showToast !== false) {
-                dispatch(addSuccessToast(intl.getMessage('client_updated', { key: name })));
             }
 
             dispatch(getClients());

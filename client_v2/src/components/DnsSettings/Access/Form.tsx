@@ -89,6 +89,22 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
         return id === 'disallowed_clients' && !!allowedClientsValue;
     };
 
+    const getPlaceholder = (id: string) => {
+        if (id === 'allowed_clients') {
+            return intl.getMessage('access_settings_allowed_placeholder');
+        }
+
+        if (id === 'disallowed_clients') {
+            return intl.getMessage('access_settings_disallowed_placeholder');
+        }
+
+        if (id === 'blocked_hosts') {
+            return intl.getMessage('access_settings_blocked_placeholder');
+        }
+
+        return '';
+    };
+
     const renderField = ({
         id,
         title,
@@ -101,6 +117,8 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
         normalizeOnBlur: (value: string) => string;
     }) => {
         const isIpField = id === 'allowed_clients' || id === 'disallowed_clients';
+        const placeholder = getPlaceholder(id);
+
         return (
             <div key={id} className={theme.form.input}>
                 <Controller
@@ -128,6 +146,7 @@ export const Form = ({ initialValues, onSubmit, processingSet }: FormProps) => {
                             }}
                             size="medium"
                             disabled={handleDisabledFieldState(id)}
+                            placeholder={placeholder}
                         />
                     )}
                 />

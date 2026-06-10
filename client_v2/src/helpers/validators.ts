@@ -148,31 +148,6 @@ export const validateIpForGatewaySubnetMask = (value: any, allValues: any) => {
  * @param value {string}
  * @returns {undefined|string}
  */
-export const validateClientId = (value: string) => {
-    if (!value) {
-        return undefined;
-    }
-    const formattedValue = value.trim();
-    if (
-        formattedValue &&
-        !(
-            R_IPV4.test(formattedValue) ||
-            R_IPV6.test(formattedValue) ||
-            R_MAC.test(formattedValue) ||
-            R_CIDR.test(formattedValue) ||
-            R_CIDR_IPV6.test(formattedValue) ||
-            R_CLIENT_ID.test(formattedValue)
-        )
-    ) {
-        return intl.getMessage('form_error_client_id_format');
-    }
-    return undefined;
-};
-
-/**
- * @param value {string}
- * @returns {undefined|string}
- */
 export const validateConfigClientId = (value: any) => {
     if (!value) {
         return undefined;
@@ -367,11 +342,7 @@ export const validatePasswordLength = (value: any) => {
     if (value) {
         const length = utf8StringLength(value);
         if (length < MIN_PASSWORD_LENGTH || length > MAX_PASSWORD_LENGTH) {
-            // TODO: Make the i18n clearer with regards to bytes vs. characters.
-            return intl.getMessage('form_error_password_length', {
-                min: MIN_PASSWORD_LENGTH,
-                max: MAX_PASSWORD_LENGTH,
-            });
+            return true;
         }
     }
 
@@ -385,28 +356,6 @@ export const validatePasswordLength = (value: any) => {
 export const validateIpGateway = (value: any, allValues: any) => {
     if (value === allValues.gatewayIp) {
         return intl.getMessage('form_error_gateway_ip');
-    }
-    return undefined;
-};
-
-/**
- * @param value {string}
- * @returns {Function}
- */
-export const validateIPv4Subnet = (value: any) => {
-    if (!R_IPV4_SUBNET.test(value)) {
-        return intl.getMessage('rate_limit_subnet_len_ipv4_error');
-    }
-    return undefined;
-};
-
-/**
- * @param value {string}
- * @returns {Function}
- */
-export const validateIPv6Subnet = (value: any) => {
-    if (!R_IPV6_SUBNET.test(value)) {
-        return intl.getMessage('rate_limit_subnet_len_ipv6_error');
     }
     return undefined;
 };
