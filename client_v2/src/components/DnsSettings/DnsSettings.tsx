@@ -17,11 +17,14 @@ import { Cache } from './Cache';
 
 export const DnsSettings = () => {
     const dispatch = useDispatch();
-    const processing = useSelector((state: RootState) => state.access.processing);
-    const processingGetConfig = useSelector(
-        (state: RootState) => state.dnsConfig.processingGetConfig,
+    const { processingGetConfig, upstream_dns: upstreamDns } = useSelector(
+        (state: RootState) => state.dnsConfig,
     );
-    const isDataLoading = processing || processingGetConfig;
+    const processing = useSelector((state: RootState) => state.access.processing);
+
+    // upstream_dns is only defined after a successful fetch.
+    const hasCachedData = upstreamDns !== undefined;
+    const isDataLoading = !hasCachedData && (processing || processingGetConfig);
 
     useEffect(() => {
         dispatch(getAccessList());

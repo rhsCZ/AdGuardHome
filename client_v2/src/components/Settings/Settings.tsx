@@ -123,8 +123,10 @@ export const Settings = () => {
         );
     };
 
+    const hasCachedData = Object.keys(settings.settingsList || {}).length > 0;
     const isLoading =
-        settings.processing || stats.processingGetConfig || queryLogs.processingGetConfig;
+        !hasCachedData &&
+        (settings.processing || stats.processingGetConfig || queryLogs.processingGetConfig);
 
     const location = useLocation();
 
