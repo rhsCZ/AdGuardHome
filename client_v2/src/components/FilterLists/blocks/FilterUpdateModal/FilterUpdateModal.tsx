@@ -57,9 +57,18 @@ export const FilterUpdateModal = () => {
     const { filtering } = useSelector((state: RootState) => state);
     const { processingSetConfig, interval: currentInterval } = filtering;
 
+    const PREDEFINED_INTERVALS: number[] = [
+        FILTER_INTERVALS.DISABLE,
+        FILTER_INTERVALS.HOURLY,
+        FILTER_INTERVALS.DAILY,
+        FILTER_INTERVALS.WEEKLY,
+    ];
+
+    const isCustom = currentInterval != null && !PREDEFINED_INTERVALS.includes(currentInterval);
+
     const defaultFormValues: FormValues = {
-        interval: currentInterval || 24,
-        customInterval: null,
+        interval: isCustom ? FILTER_INTERVALS.CUSTOM : (currentInterval || 24),
+        customInterval: isCustom ? currentInterval : null,
     };
 
     const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
