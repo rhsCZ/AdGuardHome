@@ -20,7 +20,7 @@ export const PlusButton = ({ children, className, onClick, disabled, testId }: P
         disabled={disabled}
         data-testid={testId}
     >
-        <Icon icon="plus" color="green" />
+        <Icon icon="plus" />
         {children}
     </button>
 );
