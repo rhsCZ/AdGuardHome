@@ -9,6 +9,7 @@ import { Button } from 'panel/common/ui/Button';
 import { Icon } from 'panel/common/ui/Icon';
 import { Select } from 'panel/common/controls/Select';
 import { FaqTooltip } from 'panel/common/ui/FaqTooltip';
+import { InlineLoader } from 'panel/common/ui/Loader';
 import { IOption } from 'panel/lib/helpers/utils';
 import {
     QUERY_LOG_REASON_FILTER,
@@ -115,18 +116,22 @@ export const Header = ({
                         prefixIcon={<Icon icon="search" className={s.searchIcon} />}
                         suffixIcon={
                             <div className={s.searchSuffix}>
-                                {searchValue && (
-                                    <button
-                                        type="button"
-                                        className={s.searchClearButton}
-                                        data-testid="query-log-search-clear-button"
-                                        aria-label={intl.getMessage('reset')}
-                                        title={intl.getMessage('reset')}
-                                        onMouseDown={(event) => event.preventDefault()}
-                                        onClick={handleClearSearch}
-                                    >
-                                        <Icon icon="cross" className={s.searchClearIcon} />
-                                    </button>
+                                {isLoading ? (
+                                    <InlineLoader />
+                                ) : (
+                                    searchValue && (
+                                        <button
+                                            type="button"
+                                            className={s.searchClearButton}
+                                            data-testid="query-log-search-clear-button"
+                                            aria-label={intl.getMessage('reset')}
+                                            title={intl.getMessage('reset')}
+                                            onMouseDown={(event) => event.preventDefault()}
+                                            onClick={handleClearSearch}
+                                        >
+                                            <Icon icon="cross" className={s.searchClearIcon} />
+                                        </button>
+                                    )
                                 )}
 
                                 <FaqTooltip text={intl.getMessage('query_log_strict_search')} />
