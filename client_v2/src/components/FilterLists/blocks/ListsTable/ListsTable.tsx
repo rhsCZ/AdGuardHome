@@ -78,7 +78,7 @@ export const ListsTable = ({
             {
                 key: 'enabled',
                 header: {
-                    text: intl.getMessage('enabled_table_header'),
+                    text: '',
                     className: s.headerCell,
                 },
                 accessor: 'enabled',

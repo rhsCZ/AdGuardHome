@@ -38,7 +38,6 @@
   "upstream_dns_configured_in_file": "Configured in %path%",
   "upstreams": "Upstreams",
   "upstream": "Upstream",
-  "enabled_table_header": "Enabled",
   "name_table_header": "Name",
   "request_table_header": "Request",
   "add_blocklist": "Add blocklist",
