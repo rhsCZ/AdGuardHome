@@ -66,9 +66,14 @@ export const StatCard = ({
     linkTo,
     query,
 }: StatCardProps) => {
-    const chartData = data.map((v, i) => {
+    // Ensure the chart has at least 2 data points so Recharts' AreaChart can
+    // render a filled area.  When there is only 1 data point (e.g., stats
+    // retention set to "Last 1 hour"), duplicate it as a flat baseline.
+    const paddedData: number[] = data.length < 2 ? [0, ...data] : data;
+
+    const chartData = paddedData.map((v, i) => {
         const date = new Date();
-        date.setDate(date.getDate() - (data.length - 1 - i));
+        date.setDate(date.getDate() - (paddedData.length - 1 - i));
         return { value: v, index: i, date: formatDate(date) };
     });
     const percent = percentValue !== undefined ? percentValue : 0;

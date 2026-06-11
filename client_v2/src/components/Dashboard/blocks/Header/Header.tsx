@@ -25,9 +25,6 @@ const DISABLE_PROTECTION_ITEMS = [
 
 export const getPeriodLabel = (interval: number) => {
     const hours = interval / (60 * 60 * 1000);
-    if (hours === 1) {
-        return intl.getMessage('last_hour');
-    }
     if (hours === 24) {
         return intl.getPlural('last_hours', 24);
     }
