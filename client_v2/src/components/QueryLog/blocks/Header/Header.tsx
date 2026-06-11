@@ -117,7 +117,7 @@ export const Header = ({
                         suffixIcon={
                             <div className={s.searchSuffix}>
                                 {isLoading ? (
-                                    <InlineLoader />
+                                    <InlineLoader className={s.searchLoader} />
                                 ) : (
                                     searchValue && (
                                         <button
