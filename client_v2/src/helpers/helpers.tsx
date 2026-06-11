@@ -927,12 +927,11 @@ const getAddressesComparisonBytes = (item: any) => {
 };
 
 /**
- * Compare function for IP and CIDR sort in ascending order (supports both v4 and v6)
- * @param a
- * @param b
- * @returns {number} -1 | 0 | 1
+ * Compare function for IP addresses and CIDR ranges in ascending order.
+ * Supports both IPv4 and IPv6. IPv4 addresses are sorted before IPv6.
+ * Individual IPs are sorted after their equivalent /32 (or /128) CIDR range.
  */
-export const sortIp = (a: any, b: any) => {
+export const sortIp = (a: string, b: string): number => {
     try {
         const comparisonBytesA = Array.isArray(a)
             ? getAddressesComparisonBytes(a[0])
@@ -945,11 +944,9 @@ export const sortIp = (a: any, b: any) => {
             const byteA = comparisonBytesA[i];
             const byteB = comparisonBytesB[i];
 
-            if (byteA === byteB) {
-                // eslint-disable-next-line no-continue
-                continue;
+            if (byteA !== byteB) {
+                return byteA > byteB ? 1 : -1;
             }
-            return byteA > byteB ? 1 : -1;
         }
 
         return 0;
