@@ -8,12 +8,10 @@ import { RootState } from 'panel/initialState';
 import { MOBILE_CONFIG_LINKS } from 'panel/helpers/constants';
 import { MobileConfigForm } from 'panel/components/SetupGuide/MobileConfigForm';
 import { Select } from 'panel/common/controls/Select';
+import { Paths } from 'panel/components/Routes/Paths';
 import { IconType } from '../Icons';
 import { CopiedText } from '../CopiedText';
 import s from './Guide.module.pcss';
-
-const ROUTE_DHCP = '/dhcp';
-const ROUTE_ENCRYPTION = '/encryption';
 
 type PlatformLayoutProps = {
     serverName?: string;
@@ -54,7 +52,7 @@ const RouterLayout = () => (
             <div className={s.guideParagraph}>
                 {intl.getMessage('setup_devices_router_desc_2', {
                     a: (text: string) => (
-                        <Link to={ROUTE_DHCP} className={s.dnsLink}>
+                        <Link to={Paths.Dhcp} className={s.dnsLink}>
                             {text}
                         </Link>
                     ),
@@ -313,7 +311,7 @@ const getDnsSettingsContent = (
         <div className={s.guideParagraph}>
             {intl.getMessage('setup_dns_notice_new', {
                 a: (text: string) => (
-                    <Link to={ROUTE_ENCRYPTION} className={s.dnsLink}>
+                    <Link to={Paths.Encryption} className={s.dnsLink}>
                         {text}
                     </Link>
                 ),
@@ -421,11 +419,11 @@ const getPlatformLayouts = ({
     },
 });
 
-interface GuideProps {
+type Props = {
     dnsAddresses?: string[];
-}
+};
 
-export const Guide = ({ dnsAddresses }: GuideProps) => {
+export const Guide = ({ dnsAddresses }: Props) => {
     const serverName = useSelector((state: RootState) => state.encryption?.server_name);
     const portHttps = useSelector((state: RootState) => state.encryption?.port_https);
 
