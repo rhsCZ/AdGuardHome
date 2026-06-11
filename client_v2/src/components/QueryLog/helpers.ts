@@ -167,7 +167,7 @@ export const formatLogDate = (time: string): string => {
     const parsedTime = parseLogDate(time);
 
     return parsedTime
-        ? parsedTime.toLocaleDateString(navigator.language, {
+        ? parsedTime.toLocaleDateString(intl.getUILanguage(), {
               day: 'numeric',
               month: 'short',
               year: 'numeric',

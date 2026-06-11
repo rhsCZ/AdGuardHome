@@ -134,6 +134,7 @@
   "encryption_key_source_content": "Paste the private key contents",
   "filter_removed_successfully": "Removed blocklist: <strong>%value%</strong>",
   "filter_added_successfully": "Added blocklist: <strong>%value%</strong>",
+  "filter_added_successfully_more": "Added blocklists: <strong>%value%</strong> and %more% more",
   "filter_removed_successfully_allowlist": "Removed allowlist: <strong>%value%</strong>",
   "filter_added_successfully_allowlist": "Added allowlist: <strong>%value%</strong>",
   "ignore_domains_title": "Ignored domains",

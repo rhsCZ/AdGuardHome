@@ -5,6 +5,7 @@ import { Link } from 'panel/common/ui/Link';
 import { RoutePathKey } from 'panel/components/Routes/Paths';
 
 import { formatNumber } from 'panel/helpers/helpers';
+import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
 
 import s from './StatCard.module.pcss';
@@ -24,7 +25,7 @@ export const CARDS_COLORS = {
 };
 
 const formatDate = (date: Date): string => {
-    return date.toLocaleDateString(navigator.language, {
+    return date.toLocaleDateString(intl.getUILanguage(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

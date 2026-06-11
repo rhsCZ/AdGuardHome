@@ -109,6 +109,69 @@ export const addFilter =
         }
     };
 
+export const addFiltersBatch =
+    (filters: FilterIdentity[]) =>
+    async (dispatch: AppDispatch) => {
+        dispatch(addFilterRequest());
+        try {
+            const results = await Promise.allSettled(
+                filters.map(({ url, name }) =>
+                    apiClient.addFilter({ url, name, whitelist: false }),
+                ),
+            );
+
+            const successes: FilterIdentity[] = [];
+            const failures: Array<{ filter: FilterIdentity; error: unknown }> = [];
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    successes.push(filters[index]);
+                } else {
+                    failures.push({
+                        filter: filters[index],
+                        error: result.reason,
+                    });
+                }
+            });
+
+            if (successes.length === 1) {
+                dispatch(
+                    addSuccessToast({
+                        message: intl.getMessage('filter_added_successfully', {
+                            value: successes[0].name || successes[0].url,
+                        }),
+                    }),
+                );
+            } else if (successes.length > 1) {
+                dispatch(
+                    addSuccessToast({
+                        message: intl.getMessage('filter_added_successfully_more', {
+                            value: successes[0].name || successes[0].url,
+                            more: String(successes.length - 1),
+                        }),
+                    }),
+                );
+            }
+
+            failures.forEach(({ error }) => {
+                dispatch(addErrorToast({ error }));
+            });
+
+            if (successes.length > 0) {
+                dispatch(addFilterSuccess(successes[0].url));
+                dispatch(closeModal());
+                dispatch(getFilteringStatus());
+            } else {
+                dispatch(addFilterFailure());
+                // Modal stays open so user can retry
+            }
+        } catch (error) {
+            dispatch(addErrorToast({ error }));
+            dispatch(addFilterFailure());
+            // Modal stays open so user can retry
+        }
+    };
+
 export const removeFilterRequest = createAction('REMOVE_FILTER_REQUEST');
 export const removeFilterFailure = createAction('REMOVE_FILTER_FAILURE');
 export const removeFilterSuccess = createAction('REMOVE_FILTER_SUCCESS');

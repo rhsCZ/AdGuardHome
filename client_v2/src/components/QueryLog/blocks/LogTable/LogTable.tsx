@@ -77,7 +77,7 @@ export const LogTable = ({
                 key: 'time',
                 header: { text: intl.getMessage('time_table_header') },
                 render: (_value: unknown, row: LogEntry) => <TimeCell row={row} />,
-                width: 108,
+                width: 116,
                 sortable: false,
             },
             {

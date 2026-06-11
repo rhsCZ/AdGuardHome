@@ -11,11 +11,12 @@ import theme from 'panel/lib/theme';
 import { Button } from 'panel/common/ui/Button';
 import { FormProvider, useForm } from 'react-hook-form';
 import { RootState } from 'panel/initialState';
-import { addFilter, editFilter } from 'panel/actions/filtering';
+import { addFilter, addFiltersBatch, editFilter } from 'panel/actions/filtering';
 import { Filter } from 'panel/helpers/helpers';
 import { ManualFilterForm } from 'panel/components/FilterLists/blocks/ConfigureBlocklistModal/blocks/ManualFilterForm';
 import { Tabs } from 'panel/common/ui/Tabs';
 import filtersCatalog from 'panel/helpers/filters/filters';
+import { InlineLoader } from 'panel/common/ui/Loader/InlineLoader';
 import { FiltersList } from './blocks/FiltersList';
 import s from './ConfigureBlocklistModal.module.pcss';
 
@@ -190,13 +191,17 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
                         {},
                     );
 
-                    Object.keys(changedValues).forEach((fieldName) => {
+                    const filtersToAdd = Object.keys(changedValues).map((fieldName) => {
                         const { source, name } =
                             filtersCatalog.filters[
                                 fieldName as keyof typeof filtersCatalog.filters
                             ];
-                        dispatch(addFilter(source, name));
+                        return { url: source, name };
                     });
+                    if (filtersToAdd.length > 0) {
+                        await dispatch(addFiltersBatch(filtersToAdd));
+                    }
+                    return; // skip bottom reset/closeModal — batch action handles them
                 }
                 break;
             }
@@ -242,6 +247,7 @@ export const ConfigureBlocklistModal = ({ modalId, filterToEdit }: Props) => {
                                 variant="primary"
                                 size="small"
                                 disabled={processingAddFilter}
+                                leftAddon={processingAddFilter ? <InlineLoader /> : undefined}
                                 className={theme.dialog.button}
                             >
                                 {getButtonText(modalId)}

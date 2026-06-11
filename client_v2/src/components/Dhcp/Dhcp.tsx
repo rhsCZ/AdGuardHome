@@ -264,7 +264,6 @@ export const Dhcp = () => {
                             processingDhcp || processingConfig || (!enabled && !selectedInterface)
                         }
                     >
-                        {/* Interface select */}
                         <div className={s.fieldGroup}>
                             <InterfaceSelect
                                 interfaces={interfaces}
