@@ -67,7 +67,7 @@ export const FilterUpdateModal = () => {
     const isCustom = currentInterval != null && !PREDEFINED_INTERVALS.includes(currentInterval);
 
     const defaultFormValues: FormValues = {
-        interval: isCustom ? FILTER_INTERVALS.CUSTOM : (currentInterval || 24),
+        interval: isCustom ? FILTER_INTERVALS.CUSTOM : (currentInterval ?? 24),
         customInterval: isCustom ? currentInterval : null,
     };
 
