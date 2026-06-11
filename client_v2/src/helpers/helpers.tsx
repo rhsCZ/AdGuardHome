@@ -46,6 +46,10 @@ export const formatDateTime = (
     dateTime: string,
     options: Intl.DateTimeFormatOptions = DEFAULT_DATE_FORMAT_OPTIONS,
 ) => {
+    if (!dateTime) {
+        return '-';
+    }
+
     const parsedTime = new Date(dateTime);
 
     return parsedTime.toLocaleString(navigator.language, options);

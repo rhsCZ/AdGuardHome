@@ -73,6 +73,8 @@
   "dns_over_quic": "DNS-over-QUIC",
   "client_id": "ClientID",
   "client_id_placeholder": "Enter a ClientID",
+  "client_added": "Client added",
+  "client_removed": "Client removed",
   "download_mobileconfig": "Download configuration file",
   "plain_dns": "Plain DNS",
   "rate_limit_subnet_len_ipv4_error": "The IPv4 subnet prefix length should be between 0 and 32",

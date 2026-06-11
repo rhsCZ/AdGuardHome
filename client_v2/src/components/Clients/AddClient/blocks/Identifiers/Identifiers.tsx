@@ -83,14 +83,12 @@ export const Identifiers = () => {
     const handleAdd = () => {
         append({ value: '' });
         const values = getValues('ids').map((item) => item.value);
-        dispatch(updateClientFormField({ field: 'ids', value: [...values, ''] }));
+        dispatch(updateClientFormField({ field: 'ids', value: values }));
     };
 
     const handleRemove = (index: number) => {
         remove(index);
-        const values = getValues('ids')
-            .filter((_: { value: string }, i: number) => i !== index)
-            .map((item) => item.value);
+        const values = getValues('ids').map((item) => item.value);
         dispatch(updateClientFormField({ field: 'ids', value: values }));
     };
 

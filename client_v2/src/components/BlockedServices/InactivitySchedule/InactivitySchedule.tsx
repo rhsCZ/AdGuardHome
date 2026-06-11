@@ -21,10 +21,13 @@ import s from './InactivitySchedule.module.pcss';
 
 const timezones = getAllTimezones();
 
-const TIMEZONE_OPTIONS = Object.entries(timezones).map(([tz, data]: [string, Timezone]) => ({
-    label: `${tz} (GMT${data.utcOffsetStr})`,
-    value: tz,
-}));
+const TIMEZONE_OPTIONS = [
+    { label: `Local (${getLocalTimezone()})`, value: 'Local' },
+    ...Object.entries(timezones).map(([tz, data]: [string, Timezone]) => ({
+        label: `${tz} (GMT${data.utcOffsetStr})`,
+        value: tz,
+    })),
+];
 
 type Props = {
     clientScope?: boolean;
