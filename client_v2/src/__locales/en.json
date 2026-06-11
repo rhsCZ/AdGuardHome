@@ -64,7 +64,6 @@
   "add_persistent_client": "Add as persistent client",
   "time_table_header": "Time",
   "client_table_header": "Client",
-  "updated_custom_filtering_toast": "Custom rules successfully saved",
   "query_log_retention": "Log rotation",
   "dns_config": "DNS server configuration",
   "dns_cache_config": "DNS cache configuration",

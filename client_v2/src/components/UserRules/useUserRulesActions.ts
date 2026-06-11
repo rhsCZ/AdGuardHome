@@ -557,12 +557,10 @@ export const useUserRulesActions = ({
                 const currentRules = splitByNewLine(userRules || '');
                 const updatedRules = currentRules.filter((rule: string) => rule !== ruleToRemove);
 
-                return dispatch(
-                    setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
-                ) as Promise<boolean>;
+                return dispatch(setRules(`${updatedRules.join('\n')}\n`)) as Promise<boolean>;
             },
             message: intl.getMessage('user_rules_rule_removed'),
-            undo: () => dispatch(setRules(originalRules, { showToast: false })) as Promise<boolean>,
+            undo: () => dispatch(setRules(originalRules)) as Promise<boolean>,
             refresh: async () => {
                 await dispatch(getFilteringStatus());
             },

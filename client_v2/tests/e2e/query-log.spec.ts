@@ -812,9 +812,6 @@ test.describe('Query log desktop', () => {
         await expect(
             page.locator('[data-testid="toast"][data-toast-code="notify_user_rule_added"]'),
         ).toBeVisible();
-        await expect(
-            page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]'),
-        ).toHaveCount(0);
         await expect(detailModal).toHaveCount(0);
 
         const blockedRow = getDesktopRowByDomain(page, 'example.org');
@@ -822,9 +819,6 @@ test.describe('Query log desktop', () => {
         await getVisibleActionsMenu(page).getByTestId('query-log-row-action-toggle-block').click();
         await expect.poll(() => rulesUpdatePayloads.length).toBe(2);
         expect(rulesUpdatePayloads[1].rules).toContain('@@||example.org^$important');
-        await expect(
-            page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]'),
-        ).toHaveCount(0);
         await closeOpenActionMenus(page);
 
         const processedRow = getDesktopRowByDomain(page, 'plain.example');
@@ -957,9 +951,6 @@ test.describe('Query log desktop', () => {
         await expect(
             page.locator('[data-testid="toast"][data-toast-code="notify_user_rule_added"]'),
         ).toBeVisible();
-        await expect(
-            page.locator('[data-testid="toast"][data-toast-code="updated_custom_filtering_toast"]'),
-        ).toHaveCount(0);
         await expect(detailModal).toHaveCount(0);
 
         await getDesktopRowByDomain(page, 'streaming.example').click();

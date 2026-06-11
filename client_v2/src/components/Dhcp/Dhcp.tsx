@@ -459,6 +459,11 @@ export const Dhcp = () => {
                         processingAdding={!!processingAdding}
                         processingUpdating={!!processingUpdating}
                         staticLeases={staticLeases || []}
+                        dhcpConfig={
+                            v4
+                                ? { gatewayIp: v4.gateway_ip, subnetMask: v4.subnet_mask }
+                                : undefined
+                        }
                         onSubmit={handleLeaseModalSubmit}
                         onClose={handleLeaseModalClose}
                     />

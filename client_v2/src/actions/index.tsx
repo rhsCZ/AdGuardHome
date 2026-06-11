@@ -781,9 +781,7 @@ export const toggleBlocking =
             addedRuleMessageKey,
             intl.getMessage('notify_undo'),
             async () => {
-                const didUndo = (await dispatch(
-                    setRules(previousRules, { showToast: false }),
-                )) as boolean;
+                const didUndo = (await dispatch(setRules(previousRules))) as boolean;
 
                 if (didUndo) {
                     await dispatch(getFilteringStatus());
@@ -799,9 +797,7 @@ export const toggleBlocking =
         const updatedRules = currentRules.filter((rule: string) => !rulesToRemove.has(rule));
         updatedRules.push(desiredRule);
 
-        const didSave = (await dispatch(
-            setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
-        )) as boolean;
+        const didSave = (await dispatch(setRules(`${updatedRules.join('\n')}\n`))) as boolean;
 
         if (!didSave) {
             return false;
@@ -844,9 +840,7 @@ export const blockDomain =
             ...currentRules.filter((r: string) => r !== `@@${rule}`),
             desiredRule,
         ];
-        const didSave = (await dispatch(
-            setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
-        )) as boolean;
+        const didSave = (await dispatch(setRules(`${updatedRules.join('\n')}\n`))) as boolean;
 
         if (!didSave) {
             return false;
@@ -858,9 +852,7 @@ export const blockDomain =
                     intl.getMessage('user_rules_rule_added_to_custom_filtering_rules'),
                     intl.getMessage('notify_undo'),
                     async () => {
-                        const didUndo = (await dispatch(
-                            setRules(previousRules, { showToast: false }),
-                        )) as boolean;
+                        const didUndo = (await dispatch(setRules(previousRules))) as boolean;
 
                         if (didUndo) {
                             await dispatch(getFilteringStatus());
@@ -887,9 +879,7 @@ export const unblockDomain =
         }
 
         const updatedRules = [...currentRules.filter((r: string) => r !== rule), desiredRule];
-        const didSave = (await dispatch(
-            setRules(`${updatedRules.join('\n')}\n`, { showToast: false }),
-        )) as boolean;
+        const didSave = (await dispatch(setRules(`${updatedRules.join('\n')}\n`))) as boolean;
 
         if (!didSave) {
             return false;
@@ -901,9 +891,7 @@ export const unblockDomain =
                     intl.getMessage('user_rules_rule_added_to_custom_filtering_rules'),
                     intl.getMessage('notify_undo'),
                     async () => {
-                        const didUndo = (await dispatch(
-                            setRules(previousRules, { showToast: false }),
-                        )) as boolean;
+                        const didUndo = (await dispatch(setRules(previousRules))) as boolean;
 
                         if (didUndo) {
                             await dispatch(getFilteringStatus());

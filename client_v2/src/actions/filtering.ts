@@ -8,10 +8,6 @@ import { apiClient } from '../api/Api';
 import { addErrorToast, addSuccessToast } from './toasts';
 import { closeModal } from '../reducers/modals';
 
-type RulesMutationOptions = {
-    showToast?: boolean;
-};
-
 type CheckHostRequest = {
     name: string;
     client?: string;
@@ -60,7 +56,7 @@ export const setRulesFailure = createAction('SET_RULES_FAILURE');
 export const setRulesSuccess = createAction('SET_RULES_SUCCESS');
 
 export const setRules =
-    (rules: string, options: RulesMutationOptions = {}) =>
+    (rules: string) =>
     async (dispatch: AppDispatch): Promise<boolean> => {
         dispatch(setRulesRequest());
         try {
@@ -69,10 +65,6 @@ export const setRules =
                 rules: normalizedUserRules ? normalizedUserRules.split('\n') : [],
             };
             await apiClient.setRules(normalizedRules);
-
-            if (options.showToast !== false) {
-                dispatch(addSuccessToast(intl.getMessage('updated_custom_filtering_toast')));
-            }
 
             dispatch(
                 setRulesSuccess({
