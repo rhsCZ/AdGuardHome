@@ -348,9 +348,7 @@ export const Form = ({ initialValues, encryption, onSubmit, debouncedConfigValid
                                             type="number"
                                             label={
                                                 <FaqTooltip
-                                                    text={intl.getMessage(
-                                                        'encryption_dot_tooltip',
-                                                    )}
+                                                    text={intl.getMessage('encryption_dot_tooltip')}
                                                     menuSize="large"
                                                     label={intl.getMessage('encryption_dot')}
                                                 />
@@ -381,9 +379,7 @@ export const Form = ({ initialValues, encryption, onSubmit, debouncedConfigValid
                                             type="number"
                                             label={
                                                 <FaqTooltip
-                                                    text={intl.getMessage(
-                                                        'encryption_doq_tooltip',
-                                                    )}
+                                                    text={intl.getMessage('encryption_doq_tooltip')}
                                                     menuSize="large"
                                                     label={intl.getMessage('encryption_doq')}
                                                 />

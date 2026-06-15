@@ -129,31 +129,28 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                     id="upstream_dns"
                                     label={
                                         <FaqTooltip
-                                            text={intl.getMessage(
-                                                'upstream_dns_addresses_faq',
-                                                {
-                                                    a: (text: string) => (
-                                                        <a
-                                                            href="https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration#upstreams"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className={theme.link.link}
-                                                        >
-                                                            {text}
-                                                        </a>
-                                                    ),
-                                                    b: (text: string) => (
-                                                        <a
-                                                            href="https://link.adtidy.org/forward.html?action=dns_kb_providers&from=ui&app=home"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className={theme.link.link}
-                                                        >
-                                                            {text}
-                                                        </a>
-                                                    ),
-                                                },
-                                            )}
+                                            text={intl.getMessage('upstream_dns_addresses_faq', {
+                                                a: (text: string) => (
+                                                    <a
+                                                        href="https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration#upstreams"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={theme.link.link}
+                                                    >
+                                                        {text}
+                                                    </a>
+                                                ),
+                                                b: (text: string) => (
+                                                    <a
+                                                        href="https://link.adtidy.org/forward.html?action=dns_kb_providers&from=ui&app=home"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={theme.link.link}
+                                                    >
+                                                        {text}
+                                                    </a>
+                                                ),
+                                            })}
                                             menuSize="large"
                                             label={intl.getMessage('upstream_dns_addresses')}
                                         />
@@ -257,16 +254,12 @@ export const Form = ({ initialValues, onSubmit }: FormProps) => {
                                                         value: '192.168.1.1/24',
                                                     })}
                                                 </div>
-                                                <div>
-                                                    {intl.getMessage('upstream_ptr_faq_2')}
-                                                </div>
+                                                <div>{intl.getMessage('upstream_ptr_faq_2')}</div>
                                                 {defaultLocalPtrUpstreams?.length > 0 && (
                                                     <div>
                                                         {intl.getMessage('upstream_ptr_faq_3', {
-                                                            value_1:
-                                                                defaultLocalPtrUpstreams[0],
-                                                            value_2:
-                                                                defaultLocalPtrUpstreams[1],
+                                                            value_1: defaultLocalPtrUpstreams[0],
+                                                            value_2: defaultLocalPtrUpstreams[1],
                                                         })}
                                                     </div>
                                                 )}

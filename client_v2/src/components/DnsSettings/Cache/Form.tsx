@@ -187,13 +187,7 @@ export const Form = ({ initialValues, onSubmit }: CacheFormProps) => {
                                     {...field}
                                     type="number"
                                     id={name}
-                                    label={
-                                        <FaqTooltip
-                                            text={faq}
-                                            menuSize="large"
-                                            label={title}
-                                        />
-                                    }
+                                    label={<FaqTooltip text={faq} menuSize="large" label={title} />}
                                     placeholder={placeholder}
                                     min={0}
                                     max={UINT32_RANGE.MAX}

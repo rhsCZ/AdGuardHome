@@ -177,9 +177,7 @@ export const Form = ({ processing, initialValues, onSubmit }: Props) => {
                                 type="number"
                                 label={
                                     <FaqTooltip
-                                        text={intl.getMessage(
-                                            'server_config_subnet_len_ipv4_faq',
-                                        )}
+                                        text={intl.getMessage('server_config_subnet_len_ipv4_faq')}
                                         menuSize="large"
                                         label={intl.getMessage('server_config_subnet_len_ipv4')}
                                     />
@@ -211,9 +209,7 @@ export const Form = ({ processing, initialValues, onSubmit }: Props) => {
                                 type="number"
                                 label={
                                     <FaqTooltip
-                                        text={intl.getMessage(
-                                            'server_config_subnet_len_ipv6_faq',
-                                        )}
+                                        text={intl.getMessage('server_config_subnet_len_ipv6_faq')}
                                         menuSize="large"
                                         label={intl.getMessage('server_config_subnet_len_ipv6')}
                                     />
@@ -248,7 +244,9 @@ export const Form = ({ processing, initialValues, onSubmit }: Props) => {
                                             'server_config_rate_limit_whitelist_faq',
                                         )}
                                         menuSize="large"
-                                        label={intl.getMessage('server_config_rate_limit_whitelist')}
+                                        label={intl.getMessage(
+                                            'server_config_rate_limit_whitelist',
+                                        )}
                                     />
                                 }
                                 placeholder={intl.getMessage('ip_addresses_placeholder')}
