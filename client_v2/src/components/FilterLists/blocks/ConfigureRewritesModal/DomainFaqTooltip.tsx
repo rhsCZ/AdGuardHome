@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import cn from 'clsx';
 
 import intl from 'panel/common/intl';
@@ -18,11 +18,16 @@ const items = [
     },
 ];
 
-export const DomainFaqTooltip = () => {
+type Props = {
+    label?: ReactNode;
+};
+
+export const DomainFaqTooltip = ({ label }: Props) => {
     return (
         <FaqTooltip
             overlayClassName={s.dropdown}
             menuClassName={s.tooltip}
+            label={label}
             text={
                 <>
                     <div className={cn(theme.text.t3, s.tooltipTitle)}>
