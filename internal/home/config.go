@@ -301,7 +301,7 @@ type pendingRequests struct {
 // and HTTPS.  When adding new properties, update the [tlsConfigSettings.clone]
 // and [tlsConfigSettings.setPrivateFieldsAndCompare] methods as necessary.
 type tlsConfigSettings struct {
-	// Status is the current status of the configuration.  It is never nil.
+	// Status is the current status of the configuration.
 	Status tlsConfigStatus `yaml:"-" json:"-"`
 
 	// Enabled indicates whether encryption (DoT/DoH/HTTPS) is enabled.
@@ -390,6 +390,7 @@ func (c *tlsConfigSettings) clone() (clone *tlsConfigSettings) {
 //	[tlsConfigSettings.DNSCryptConfigFile]
 //	[tlsConfigSettings.OverrideTLSCiphers]
 //	[tlsConfigSettings.PortDNSCrypt]
+//	[tlsConfigSettings.Status]
 //
 // The following properties are skipped as they are set by
 // [tlsManager.loadTLSConfig]:
@@ -399,17 +400,12 @@ func (c *tlsConfigSettings) clone() (clone *tlsConfigSettings) {
 func (c *tlsConfigSettings) setPrivateFieldsAndCompare(
 	conf *tlsConfigSettings,
 	status tlsConfigStatus,
-	servePlain aghalg.NullBool,
 ) (equal bool) {
 	conf.OverrideTLSCiphers = slices.Clone(c.OverrideTLSCiphers)
 
 	conf.DNSCryptConfigFile = c.DNSCryptConfigFile
 	conf.PortDNSCrypt = c.PortDNSCrypt
 	conf.Status = status
-
-	if servePlain != aghalg.NBNull {
-		conf.ServePlainDNS = servePlain == aghalg.NBTrue
-	}
 
 	// TODO(a.garipov): Define a custom comparer.
 	return cmp.Equal(c, conf)

@@ -278,34 +278,6 @@ func (m *tlsManager) reload(ctx context.Context) {
 	m.web.tlsConfigChanged(context.Background(), m.extTLSConf)
 }
 
-// reconfigureDNSServer updates the DNS server configuration using extTLSConf.
-// extTLSConf must not be nil.
-func (web *webAPI) reconfigureDNSServer(
-	ctx context.Context,
-	extTLSConf *tlsConfigSettings,
-) (err error) {
-	newConf, err := newServerConfig(
-		&config.DNS,
-		config.Clients.Sources,
-		extTLSConf,
-		config.HTTPConfig.DoH,
-		web.tlsManager,
-		web.httpReg,
-		globalContext.clients.storage,
-		web.tlsManager.confModifier,
-	)
-	if err != nil {
-		return fmt.Errorf("generating forwarding dns server config: %w", err)
-	}
-
-	err = globalContext.dnsServer.Reconfigure(ctx, newConf)
-	if err != nil {
-		return fmt.Errorf("starting forwarding dns server: %w", err)
-	}
-
-	return nil
-}
-
 // loadTLSConfig loads and validates the TLS configuration.  It also sets
 // [tlsConfigSettings.CertificateChainData] and
 // [tlsConfigSettings.PrivateKeyData] properties.  The returned error is also
@@ -451,8 +423,8 @@ type tlsConfigSettingsExt struct {
 	ServePlainDNS aghalg.NullBool `yaml:"-" json:"serve_plain_dns"`
 }
 
-// setConfig updates manager TLS configuration with the given one.  newConf must
-// not be nil.
+// setConfig updates manager TLS configuration with the given one.  newConf and
+// status must not be nil.
 func (m *tlsManager) setConfig(
 	ctx context.Context,
 	newConf *tlsConfigSettings,
@@ -462,7 +434,9 @@ func (m *tlsManager) setConfig(
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if !m.extTLSConf.setPrivateFieldsAndCompare(newConf, *status, servePlain) {
+	m.extTLSConf.updatePlainDNS(newConf, servePlain)
+
+	if !m.extTLSConf.setPrivateFieldsAndCompare(newConf, *status) {
 		m.logger.InfoContext(ctx, "config has changed, restarting https server")
 		restartHTTPS = true
 	} else {
@@ -487,6 +461,27 @@ func (m *tlsManager) setConfig(
 	m.setCertFileTime(ctx)
 
 	return restartHTTPS
+}
+
+// updatePlainDNS checks the old value of [tlsConfigSettings.ServePlainDNS] in
+// c and if it differs from servePlain, sets the value of servePlain in
+// newTLSConf.ServePlainDNS.  newTLSConf must not be nil.
+func (c *tlsConfigSettings) updatePlainDNS(
+	newTLSConf *tlsConfigSettings,
+	servePlain aghalg.NullBool,
+) {
+	if servePlain != aghalg.NBNull {
+		func() {
+			config.Lock()
+			defer config.Unlock()
+
+			config.DNS.ServePlainDNS = servePlain == aghalg.NBTrue
+		}()
+
+		newTLSConf.ServePlainDNS = servePlain == aghalg.NBTrue
+	} else {
+		newTLSConf.ServePlainDNS = c.ServePlainDNS
+	}
 }
 
 // validateCertChain verifies certs using the first as the main one and others

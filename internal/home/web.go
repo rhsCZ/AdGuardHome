@@ -208,10 +208,10 @@ func newWebAPI(ctx context.Context, conf *webAPIConfig) (w *webAPI) {
 		mux.Handle("/install.html", w.preInstallHandler(clientFS))
 		w.registerInstallHandlers()
 	} else {
+		w.registerTLSHandlers()
 		w.registerControlHandlers()
 	}
 
-	w.registerTLSHandlers()
 	w.httpsServer.cond = sync.NewCond(&w.httpsServer.condLock)
 
 	return w
@@ -733,15 +733,6 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 
 	restartHTTPS = web.tlsManager.setConfig(ctx, newTLSConf, status, req.ServePlainDNS)
 
-	if req.ServePlainDNS != aghalg.NBNull {
-		func() {
-			config.Lock()
-			defer config.Unlock()
-
-			config.DNS.ServePlainDNS = req.ServePlainDNS == aghalg.NBTrue
-		}()
-	}
-
 	err = web.reconfigureDNSServer(ctx, newTLSConf)
 	if err != nil {
 		web.logger.ErrorContext(ctx, "reconfiguring dns server", slogutil.KeyError, err)
@@ -770,4 +761,32 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 	if restartHTTPS {
 		go web.tlsConfigChanged(context.Background(), &req.tlsConfigSettings)
 	}
+}
+
+// reconfigureDNSServer updates the DNS server configuration using extTLSConf.
+// extTLSConf must not be nil.
+func (web *webAPI) reconfigureDNSServer(
+	ctx context.Context,
+	extTLSConf *tlsConfigSettings,
+) (err error) {
+	newConf, err := newServerConfig(
+		&config.DNS,
+		config.Clients.Sources,
+		extTLSConf,
+		config.HTTPConfig.DoH,
+		web.tlsManager,
+		web.httpReg,
+		globalContext.clients.storage,
+		web.tlsManager.confModifier,
+	)
+	if err != nil {
+		return fmt.Errorf("generating forwarding dns server config: %w", err)
+	}
+
+	err = globalContext.dnsServer.Reconfigure(ctx, newConf)
+	if err != nil {
+		return fmt.Errorf("starting forwarding dns server: %w", err)
+	}
+
+	return nil
 }
