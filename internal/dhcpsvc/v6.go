@@ -210,6 +210,13 @@ func (srv *DHCPServer) newDHCPInterfaceV6(
 		// TODO(e.burkov):  Use an ICMP implementation.
 		addrChecker:  noopAddressChecker{},
 		subnetPrefix: netip.PrefixFrom(conf.RangeStart, v6PrefLen),
+		// Recommended values for T1 and T2 are 0.5 and 0.8 times the shortest
+		// preferred lifetime of the addresses in the IA that the server is
+		// willing to extend, respectively.
+		//
+		// See RFC 9915 Section 21.4.
+		//
+		// TODO(e.burkov):  Consider making configurable.
 		t1:           conf.LeaseDuration / 2,
 		t2:           conf.LeaseDuration * 4 / 5,
 		raSLAACOnly:  conf.RASLAACOnly,
@@ -412,7 +419,7 @@ func respond6(fd *frameData6, resp *layers.DHCPv6) (err error) {
 // option is malformed.  lease is nil if there is no address available for
 // leasing.  mac must be a valid MAC address according to [netutil.ValidateMAC],
 // req must be a valid DHCPv6 message of SOLICIT type, iface.common.indexMu
-// mutex must be locked.
+// must be locked.
 //
 // TODO(e.burkov):  Support allocating several leases at a time when the
 // database will migrate, see the BUG at [Lease]'s documentation.
@@ -422,6 +429,7 @@ func (iface *dhcpInterfaceV6) allocateForSolicit(
 	req *layers.DHCPv6,
 ) (lease *Lease, iaid uint32) {
 	l := iface.common.logger
+	key := macToKey(mac)
 
 	for _, reqOpt := range req.Options {
 		if reqOpt.Code != layers.DHCPv6OptIANA {
@@ -437,9 +445,11 @@ func (iface *dhcpInterfaceV6) allocateForSolicit(
 			continue
 		}
 
-		// TODO(e.burkov):  Test the case, where the lease exists and is
-		// expired.
-		//
+		var ok bool
+		if lease, ok = iface.common.leases[key]; ok {
+			return lease, iana.ID
+		}
+
 		// TODO(e.burkov):  Support allocating the exact requested address if it
 		// is available.
 		lease, err = iface.common.allocateLease(ctx, mac, iface.addrChecker, iface.clock)
@@ -451,6 +461,8 @@ func (iface *dhcpInterfaceV6) allocateForSolicit(
 
 		return lease, iana.ID
 	}
+
+	l.DebugContext(ctx, "no valid ia_na in solicit")
 
 	return nil, 0
 }
@@ -530,6 +542,10 @@ func (iface *dhcpInterfaceV6) commit(
 		lease.Hostname = hostname
 	} else {
 		lease.Hostname = aghnet.GenerateHostname(lease.IP)
+	}
+
+	if lease.Expiry.After(iface.clock.Now()) {
+		lease.updateExpiry(iface.clock, iface.common.leaseTTL)
 	}
 
 	err = iface.common.index.update(ctx, iface.common.logger, lease, iface.common)

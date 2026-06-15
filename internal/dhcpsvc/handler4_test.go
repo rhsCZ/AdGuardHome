@@ -63,7 +63,8 @@ var (
 	// testIPv4Dynamic is the test IP address for a known dynamic lease.
 	testIPv4Dynamic = netip.MustParseAddr("192.0.2.102")
 
-	// testIPv4OtherSubnet is the test IP address for a client on another subnet.
+	// testIPv4OtherSubnet is the test IP address for a client on another
+	// subnet.
 	testIPv4OtherSubnet = netip.MustParseAddr(testAnotherGatewayIPv4Str)
 
 	// testIPv4RelayAgent is the test IP address of the relay agent.

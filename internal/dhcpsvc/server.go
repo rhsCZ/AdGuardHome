@@ -156,7 +156,7 @@ func (srv *DHCPServer) Start(ctx context.Context) (err error) {
 			Name: netDevName,
 		})
 		if err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("opening ipv4 device %q: %w", netDevName, err))
 
 			continue
 		}
@@ -177,7 +177,7 @@ func (srv *DHCPServer) Start(ctx context.Context) (err error) {
 			Name: netDevName,
 		})
 		if err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("opening ipv6 device %q: %w", netDevName, err))
 
 			continue
 		}

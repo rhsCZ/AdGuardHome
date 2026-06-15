@@ -92,7 +92,6 @@ func (iface *dhcpInterfaceV6) handleSolicit(
 	}
 
 	if lease == nil {
-		l.DebugContext(ctx, "no ia_na in solicit or no addresses available")
 		resp.Options = iface.newSolicitRespOpts(fd, req, cliID, iaid, nil, false)
 
 		return respond6(fd, resp)

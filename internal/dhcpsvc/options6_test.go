@@ -13,7 +13,10 @@ import (
 
 // newOptIANA creates a DHCPv6 Identity Association for Non-temporary Address
 // (3) option containing an IA Address with the specified IAID and requested IP
-// address.  reqIP must be a valid IPv6 address.
+// address.  reqIP must be a valid IPv6 address.  The option will have the T1
+// and T2 values set to the recommended values based on the [testLeaseTTL]
+// constant, see the RFC reference in the
+// [dhcpsvc.DHCPServer.newDHCPInterfaceV6].
 func newOptIANA(tb testing.TB, iaid uint32, reqIP netip.Addr) (opt layers.DHCPv6Option) {
 	tb.Helper()
 

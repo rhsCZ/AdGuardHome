@@ -99,7 +99,7 @@ const (
 const (
 	// testRangeStartV6Str is the string representation of the range start of
 	// the IPv6 interface used in tests.
-	testRangeStartV6Str = "2001:db8::1"
+	testRangeStartV6Str = "2001:db8::2"
 
 	// testAnotherRangeStartV6Str is the string representation of the range
 	// start of the second IPv6 interface used in tests.
@@ -107,7 +107,7 @@ const (
 
 	// testIfaceAddrV6Str is the string representation of the interface's IPv6
 	// address used in tests.
-	testIfaceAddrV6Str = "2001:db8::2"
+	testIfaceAddrV6Str = "2001:db8::1"
 )
 
 var (
