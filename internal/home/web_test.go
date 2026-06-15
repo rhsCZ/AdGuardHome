@@ -33,7 +33,7 @@ const (
 	// testSettings is a common value of the HTTP2-Settings header for tests.
 	testSettings = "AAEAABAAAAIAAAABAAQAAP__AAUAAEAAAAgAAAAAAAMAAABkAAYAAQAA"
 
-	// testHpackMaxDynamicTableSize is the common HPACK max dynamic table size
+	// testHPACKMaxDynamicTableSize is the common HPACK max dynamic table size
 	// value for tests.
 	testHPACKMaxDynamicTableSize = 4096
 
