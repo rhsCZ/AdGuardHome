@@ -544,7 +544,8 @@ func (iface *dhcpInterfaceV6) commit(
 		lease.Hostname = aghnet.GenerateHostname(lease.IP)
 	}
 
-	if lease.Expiry.After(iface.clock.Now()) {
+	// TODO(e.burkov):  Add the Lease.isExpired. method.
+	if lease.Expiry.Before(iface.clock.Now()) {
 		lease.updateExpiry(iface.clock, iface.common.leaseTTL)
 	}
 
