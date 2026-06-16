@@ -423,8 +423,8 @@ type tlsConfigSettingsExt struct {
 	ServePlainDNS aghalg.NullBool `yaml:"-" json:"serve_plain_dns"`
 }
 
-// setConfig updates manager TLS configuration with the given one.  newConf and
-// status must not be nil.
+// setConfig updates manager TLS configuration with the given one.  newConf must
+// not be nil.
 func (m *tlsManager) setConfig(
 	ctx context.Context,
 	newConf *tlsConfigSettings,
