@@ -671,6 +671,8 @@ func validatePorts(
 
 // handleTLSConfigure is the handler for the POST /control/tls/configure HTTP
 // API.
+//
+// TODO(m.kazantsev):  Improve maintainability.
 func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -724,8 +726,9 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newTLSConf := &req.tlsConfigSettings
+	newTLSConf.Status = *status
 
-	restartHTTPS = web.tlsManager.setConfig(ctx, newTLSConf, status, req.ServePlainDNS)
+	restartHTTPS = web.tlsManager.setConfig(ctx, newTLSConf, req.ServePlainDNS)
 
 	err = web.reconfigureDNSServer(ctx, newTLSConf)
 	if err != nil {

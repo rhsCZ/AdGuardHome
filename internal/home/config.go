@@ -390,22 +390,17 @@ func (c *tlsConfigSettings) clone() (clone *tlsConfigSettings) {
 //	[tlsConfigSettings.DNSCryptConfigFile]
 //	[tlsConfigSettings.OverrideTLSCiphers]
 //	[tlsConfigSettings.PortDNSCrypt]
-//	[tlsConfigSettings.Status]
 //
 // The following properties are skipped as they are set by
 // [tlsManager.loadTLSConfig]:
 //
 //	[tlsConfigSettings.CertificateChainData]
 //	[tlsConfigSettings.PrivateKeyData]
-func (c *tlsConfigSettings) setPrivateFieldsAndCompare(
-	conf *tlsConfigSettings,
-	status tlsConfigStatus,
-) (equal bool) {
+func (c *tlsConfigSettings) setPrivateFieldsAndCompare(conf *tlsConfigSettings) (equal bool) {
 	conf.OverrideTLSCiphers = slices.Clone(c.OverrideTLSCiphers)
 
 	conf.DNSCryptConfigFile = c.DNSCryptConfigFile
 	conf.PortDNSCrypt = c.PortDNSCrypt
-	conf.Status = status
 
 	// TODO(a.garipov): Define a custom comparer.
 	return cmp.Equal(c, conf)

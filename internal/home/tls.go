@@ -428,7 +428,6 @@ type tlsConfigSettingsExt struct {
 func (m *tlsManager) setConfig(
 	ctx context.Context,
 	newConf *tlsConfigSettings,
-	status *tlsConfigStatus,
 	servePlain aghalg.NullBool,
 ) (restartHTTPS bool) {
 	m.mu.Lock()
@@ -436,7 +435,7 @@ func (m *tlsManager) setConfig(
 
 	m.extTLSConf.updatePlainDNS(newConf, servePlain)
 
-	if !m.extTLSConf.setPrivateFieldsAndCompare(newConf, *status) {
+	if !m.extTLSConf.setPrivateFieldsAndCompare(newConf) {
 		m.logger.InfoContext(ctx, "config has changed, restarting https server")
 		restartHTTPS = true
 	} else {
