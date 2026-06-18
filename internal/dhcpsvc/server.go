@@ -43,6 +43,10 @@ type DHCPServer struct {
 	// hostnames.
 	localTLD string
 
+	// serveGroup is used to wait for all serving goroutines to finish in
+	// [DHCPServer.Shutdown].
+	serveGroup *sync.WaitGroup
+
 	// leasesMu protects the leases index as well as leases in the interfaces.
 	leasesMu *sync.RWMutex
 
@@ -80,6 +84,7 @@ func New(ctx context.Context, conf *Config) (srv *DHCPServer, err error) {
 		logger:        l,
 		deviceManager: conf.NetworkDeviceManager,
 		localTLD:      conf.LocalDomainName,
+		serveGroup:    &sync.WaitGroup{},
 		leasesMu:      &sync.RWMutex{},
 		leases:        newLeaseIndex(conf.DBFilePath),
 		icmpTimeout:   conf.ICMPTimeout,
@@ -136,9 +141,7 @@ func (srv *DHCPServer) newInterfaces(
 }
 
 // type check
-//
-// TODO(e.burkov):  Uncomment when the [Interface] interface is implemented.
-// var _ Interface = (*DHCPServer)(nil)
+var _ Interface = (*DHCPServer)(nil)
 
 // Start implements the [Interface] interface for *DHCPServer.
 func (srv *DHCPServer) Start(ctx context.Context) (err error) {
@@ -166,7 +169,7 @@ func (srv *DHCPServer) Start(ctx context.Context) (err error) {
 			Value: netDev,
 		})
 
-		go srv.serveEther4(context.WithoutCancel(ctx), iface, netDev)
+		srv.serveGroup.Go(func() { srv.serveEther4(context.WithoutCancel(ctx), iface, netDev) })
 	}
 
 	for _, iface := range srv.interfaces6 {
@@ -187,7 +190,7 @@ func (srv *DHCPServer) Start(ctx context.Context) (err error) {
 			Value: netDev,
 		})
 
-		go srv.serveEther6(context.WithoutCancel(ctx), iface, netDev)
+		srv.serveGroup.Go(func() { srv.serveEther6(context.WithoutCancel(ctx), iface, netDev) })
 	}
 
 	return errors.Join(errs...)
@@ -206,6 +209,9 @@ func (srv *DHCPServer) Shutdown(ctx context.Context) (err error) {
 			errs = append(errs, fmt.Errorf("closing device %q: %w", netDevName, err))
 		}
 	}
+
+	// TODO(e.burkov):  Respect the context cancellation.
+	srv.serveGroup.Wait()
 
 	return errors.Join(errs...)
 }

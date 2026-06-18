@@ -151,7 +151,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV6)
+			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv6InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -276,8 +276,6 @@ func assertValidResponse6(
 	tb.Helper()
 
 	if wantOpts == nil {
-		assertNoResponse(tb, recvCh, testTimeout/10)
-
 		return
 	}
 

@@ -133,7 +133,7 @@ func TestDHCPServer_ServeEther4_discover(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -154,7 +154,7 @@ func TestDHCPServer_ServeEther4_discoverExpired(t *testing.T) {
 	pkt := newDHCPDISCOVER(t, testHWUnknown)
 	req := testutil.RequireTypeAssert[*layers.DHCPv4](t, pkt.Layer(layers.LayerTypeDHCPv4))
 
-	ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+	ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 
 	startTestDHCPServer(t, &dhcpsvc.Config{
 		Interfaces:           testIPv4InterfacesConf,
@@ -205,7 +205,7 @@ func TestDHCPServer_ServeEther4_release(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, _ := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, _, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			srv := newTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -216,20 +216,10 @@ func TestDHCPServer_ServeEther4_release(t *testing.T) {
 
 			leases := srv.Leases()
 			slices.SortStableFunc(leases, dhcpsvc.CompareLeases)
-			cond := func() (ok bool) {
-				got := srv.Leases()
-				slices.SortStableFunc(got, dhcpsvc.CompareLeases)
-
-				return !assert.ObjectsAreEqual(leases, got)
-			}
 
 			testutil.RequireSend(t, inCh, tc.req, testTimeout)
 
-			if tc.wantChange {
-				assert.Eventually(t, cond, testTimeout/2, testTimeout/20)
-			} else {
-				assert.Never(t, cond, testTimeout/2, testTimeout/20)
-			}
+			assertLeases(t, leases, srv, tc.wantChange)
 		})
 	}
 }
@@ -321,7 +311,7 @@ func TestDHCPServer_ServeEther4_requestSelecting(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Logger:               slogutil.NewDiscardLogger(),
 				Interfaces:           testIPv4InterfacesConf,
@@ -335,6 +325,10 @@ func TestDHCPServer_ServeEther4_requestSelecting(t *testing.T) {
 
 				_, ok := testutil.RequireReceive(t, outCh, testTimeout)
 				require.True(t, ok)
+			}
+
+			if tc.wantOpts == nil {
+				dev.onWritePacketData = unexpectedWritePacketData
 			}
 
 			testutil.RequireSend(t, inCh, tc.request, testTimeout)
@@ -421,7 +415,11 @@ func TestDHCPServer_ServeEther4_requestInitReboot(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			if tc.wantOpts == nil {
+				dev.onWritePacketData = unexpectedWritePacketData
+			}
+
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -502,7 +500,7 @@ func TestDHCPServer_ServeEther4_requestRenewSuccess(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -559,7 +557,11 @@ func TestDHCPServer_ServeEther4_requestRenewFail(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			if tc.wantOpts == nil {
+				dev.onWritePacketData = unexpectedWritePacketData
+			}
+
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -609,7 +611,7 @@ func TestDHCPServer_ServeEther4_decline(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, inCh, _ := newTestNetworkDeviceManager(t, testIfaceName, testIfaceAddrV4)
+			ndMgr, _, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			srv := newTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -620,20 +622,10 @@ func TestDHCPServer_ServeEther4_decline(t *testing.T) {
 
 			leases := srv.Leases()
 			slices.SortStableFunc(leases, dhcpsvc.CompareLeases)
-			cond := func() (ok bool) {
-				got := srv.Leases()
-				slices.SortStableFunc(got, dhcpsvc.CompareLeases)
-
-				return !assert.ObjectsAreEqual(leases, got)
-			}
 
 			testutil.RequireSend(t, inCh, tc.req, testTimeout)
 
-			if tc.wantChange {
-				assert.Eventually(t, cond, testTimeout/2, testTimeout/20)
-			} else {
-				assert.Never(t, cond, testTimeout/2, testTimeout/20)
-			}
+			assertLeases(t, leases, srv, tc.wantChange)
 		})
 	}
 }
@@ -845,8 +837,6 @@ func assertValidResponse4(
 	tb.Helper()
 
 	if wantOpts == nil {
-		assertNoResponse(tb, recvCh, testTimeout/10)
-
 		return
 	}
 

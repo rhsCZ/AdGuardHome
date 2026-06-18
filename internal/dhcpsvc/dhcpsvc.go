@@ -9,6 +9,7 @@ import (
 	"net/netip"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/next/agh"
+	"github.com/AdguardTeam/golibs/service"
 )
 
 const (
@@ -26,7 +27,7 @@ const (
 //
 // TODO(e.burkov):  Reconsider the requirements for the leases validity.
 type Interface interface {
-	agh.ServiceWithConfig[*Config]
+	service.Interface
 
 	// Enabled returns true if DHCP provides information about clients.
 	Enabled() (ok bool)

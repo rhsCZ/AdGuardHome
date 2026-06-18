@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -296,17 +298,19 @@ func newTestPacket(
 	return gopacket.NewPacket(buf.Bytes(), first, gopacket.Default)
 }
 
-// assertNoResponse asserts that no response is received on the channel within
-// the timeout.
-//
-// TODO(e.burkov):  Improve the helper to not rely on timeout.
-func assertNoResponse(tb testing.TB, outCh <-chan []byte, timeout time.Duration) {
+func assertLeases(tb testing.TB, orig []*dhcpsvc.Lease, srv dhcpsvc.Interface, wantChanged bool) {
 	tb.Helper()
 
-	var resp []byte
-	require.Panics(tb, func() {
-		resp, _ = testutil.RequireReceive(testutil.NewPanicT(tb), outCh, timeout)
-	})
+	cond := func() (ok bool) {
+		got := srv.Leases()
+		slices.SortStableFunc(got, dhcpsvc.CompareLeases)
 
-	require.Nil(tb, resp)
+		return !assert.ObjectsAreEqual(orig, got)
+	}
+
+	if wantChanged {
+		assert.Eventually(tb, cond, testTimeout/2, testTimeout/20)
+	} else {
+		assert.Never(tb, cond, testTimeout/2, testTimeout/20)
+	}
 }
