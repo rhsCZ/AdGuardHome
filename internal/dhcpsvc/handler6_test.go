@@ -9,8 +9,8 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket"
+	"github.com/gopacket/gopacket/layers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -327,7 +327,7 @@ func assertValidDHCPv6(
 		if isRapidCommit {
 			assert.Equal(tb, layers.DHCPv6MsgTypeReply, resp.MsgType)
 		} else {
-			assert.Equal(tb, layers.DHCPv6MsgTypeAdverstise, resp.MsgType)
+			assert.Equal(tb, layers.DHCPv6MsgTypeAdvertise, resp.MsgType)
 		}
 	default:
 		tb.Errorf("request message type: %v: %s", errors.ErrUnexpectedValue, req.MsgType)

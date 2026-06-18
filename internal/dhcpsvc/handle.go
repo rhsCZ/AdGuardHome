@@ -7,8 +7,8 @@ import (
 	"slices"
 
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/gopacket/gopacket"
+	"github.com/gopacket/gopacket/layers"
 )
 
 // serveEther4 handles the incoming ethernet packets and dispatches them to the
