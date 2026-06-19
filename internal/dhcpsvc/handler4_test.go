@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"net"
 	"net/netip"
-	"slices"
 	"testing"
 	"time"
 
@@ -133,7 +132,7 @@ func TestDHCPServer_ServeEther4_discover(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -154,7 +153,7 @@ func TestDHCPServer_ServeEther4_discoverExpired(t *testing.T) {
 	pkt := newDHCPDISCOVER(t, testHWUnknown)
 	req := testutil.RequireTypeAssert[*layers.DHCPv4](t, pkt.Layer(layers.LayerTypeDHCPv4))
 
-	ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+	ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 
 	startTestDHCPServer(t, &dhcpsvc.Config{
 		Interfaces:           testIPv4InterfacesConf,
@@ -205,7 +204,7 @@ func TestDHCPServer_ServeEther4_release(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, _, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			srv := newTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -215,7 +214,6 @@ func TestDHCPServer_ServeEther4_release(t *testing.T) {
 			servicetest.RequireRun(t, srv, testTimeout)
 
 			leases := srv.Leases()
-			slices.SortStableFunc(leases, dhcpsvc.CompareLeases)
 
 			testutil.RequireSend(t, inCh, tc.req, testTimeout)
 
@@ -311,7 +309,7 @@ func TestDHCPServer_ServeEther4_requestSelecting(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceAndManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Logger:               slogutil.NewDiscardLogger(),
 				Interfaces:           testIPv4InterfacesConf,
@@ -415,7 +413,7 @@ func TestDHCPServer_ServeEther4_requestInitReboot(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceAndManager(t, testIfaceAddrV4)
 			if tc.wantOpts == nil {
 				dev.onWritePacketData = unexpectedWritePacketData
 			}
@@ -500,7 +498,7 @@ func TestDHCPServer_ServeEther4_requestRenewSuccess(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -557,7 +555,7 @@ func TestDHCPServer_ServeEther4_requestRenewFail(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, dev, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, dev, inCh, outCh := newTestNetworkDeviceAndManager(t, testIfaceAddrV4)
 			if tc.wantOpts == nil {
 				dev.onWritePacketData = unexpectedWritePacketData
 			}
@@ -611,7 +609,7 @@ func TestDHCPServer_ServeEther4_decline(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, _, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
+			ndMgr, inCh, _ := newTestNetworkDeviceManager(t, testIfaceAddrV4)
 			srv := newTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv4InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -621,7 +619,6 @@ func TestDHCPServer_ServeEther4_decline(t *testing.T) {
 			servicetest.RequireRun(t, srv, testTimeout)
 
 			leases := srv.Leases()
-			slices.SortStableFunc(leases, dhcpsvc.CompareLeases)
 
 			testutil.RequireSend(t, inCh, tc.req, testTimeout)
 
@@ -826,8 +823,8 @@ func requireEthernet(
 }
 
 // assertValidResponse4 asserts that recvCh eventually gets the response with
-// wantOpts for request.  If wantOpts is nil, asserts that no response is sent.
-// request and recvCh must not be nil.
+// wantOpts for request.  It does nothing if wantOpts is nil, which should be
+// used in case no response is expected.  request and recvCh must not be nil.
 func assertValidResponse4(
 	tb testing.TB,
 	request *layers.DHCPv4,

@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/AdguardTeam/AdGuardHome/internal/next/agh"
 	"github.com/AdguardTeam/golibs/service"
 )
 
@@ -80,16 +79,13 @@ type Interface interface {
 type Empty struct{}
 
 // type check
-var _ agh.ServiceWithConfig[*Config] = Empty{}
+var _ service.Interface = Empty{}
 
 // Start implements the [Service] interface for Empty.
 func (Empty) Start(_ context.Context) (err error) { return nil }
 
 // Shutdown implements the [Service] interface for Empty.
 func (Empty) Shutdown(_ context.Context) (err error) { return nil }
-
-// Config implements the [ServiceWithConfig] interface for Empty.
-func (Empty) Config() (conf *Config) { return nil }
 
 // type check
 var _ Interface = Empty{}

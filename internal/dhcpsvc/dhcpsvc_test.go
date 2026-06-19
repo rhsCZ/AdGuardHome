@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"slices"
 	"testing"
 	"time"
 
@@ -298,12 +297,14 @@ func newTestPacket(
 	return gopacket.NewPacket(buf.Bytes(), first, gopacket.Default)
 }
 
+// assertLeases asserts that the leases returned by srv are equal to orig if
+// wantChanged is false and not equal if wantChanged is true.  The assertion is
+// performed 10 times during half of [testTimeout].
 func assertLeases(tb testing.TB, orig []*dhcpsvc.Lease, srv dhcpsvc.Interface, wantChanged bool) {
 	tb.Helper()
 
 	cond := func() (ok bool) {
 		got := srv.Leases()
-		slices.SortStableFunc(got, dhcpsvc.CompareLeases)
 
 		return !assert.ObjectsAreEqual(orig, got)
 	}

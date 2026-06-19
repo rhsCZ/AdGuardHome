@@ -16,6 +16,8 @@ require (
 	// own code for that.  Perhaps, use gopacket.
 	github.com/go-ping/ping v1.2.0
 	github.com/google/go-cmp v0.7.0
+	// TODO(e.burkov): Remove this dependency along with the dhcpd package.
+	github.com/google/gopacket v1.1.19
 	github.com/google/renameio/v2 v2.0.2
 	github.com/google/uuid v1.6.0
 	github.com/gopacket/gopacket v1.6.1
@@ -38,10 +40,7 @@ require (
 	golang.org/x/sys v0.45.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	howett.net/plist v1.0.1
-	// TODO(e.burkov): Remove this dependency along with the dhcpd package.
-	github.com/google/gopacket v1.1.19
 )
-
 
 require (
 	cloud.google.com/go v0.123.0 // indirect

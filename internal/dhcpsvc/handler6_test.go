@@ -151,7 +151,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ndMgr, _, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
+			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
 			startTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv6InterfacesConf,
 				NetworkDeviceManager: ndMgr,
@@ -265,8 +265,9 @@ func newEthernetLayer(
 }
 
 // assertValidResponse6 asserts that the response received on recvCh is a valid
-// DHCPv6 response for the given request and contains the expected options.  If
-// wantOpts is nil, it asserts that no response is received.
+// DHCPv6 response for the given request and contains the expected options.  It
+// does nothing if wantOpts is nil, which should be used in case no response is
+// expected.  req and recvCh must not be nil.
 func assertValidResponse6(
 	tb testing.TB,
 	req *layers.DHCPv6,
