@@ -395,7 +395,8 @@ func (s *Server) newProxyConfig(ctx context.Context) (conf *proxy.Config, err er
 		return nil, fmt.Errorf("validating plain: %w", err)
 	}
 
-	conf, err = prepareCacheConfig(conf,
+	conf, err = prepareCacheConfig(
+		conf,
 		srvConf.CacheEnabled,
 		srvConf.CacheSize,
 		srvConf.CacheMinTTL,
