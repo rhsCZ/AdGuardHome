@@ -216,9 +216,7 @@ Optional environment:
 
 - `TWOSKY_URI`: set an alternative URL for `download` or `upload`.
 
-- `TWOSKY_PROJECT_ID`: set an alternative project ID for `download` or `upload`.
-
-    Deprectated: This environment variable should not be used since the script began supporting multiple configurations.
+- `TWOSKY_PROJECT_ID`: set an alternative project ID. The default value is `home`.
 
 ## `companiesdb/`: Whotracks.me database converter
 
