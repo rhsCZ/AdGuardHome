@@ -28,21 +28,22 @@
 .leftGroup {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 24px;
     justify-content: center;
 
     @media (min-width: 1024px) {
-        flex-wrap: nowrap;
+        gap: 40px;
+        flex-direction: row;
         justify-content: flex-start;
         margin-right: auto;
     }
 }
 
 .version {
-    font-size: 13px;
-    color: var(--default-description-text);
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .checkUpdateBtn {
@@ -55,11 +56,12 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    color: var(--default-gray-icons);
     border-radius: 4px;
+    color: var(--default-product-icon);
     flex-shrink: 0;
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: var(--page-background-additional);
     }
 

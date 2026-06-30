@@ -78,31 +78,27 @@ export const Footer = () => {
                     <div class={s.copyright}>&copy; 2018–{getYear()} AdGuard Home</div>
 
                     <Show when={dashboardState.dnsVersion}>
-                        <span class={s.version}>
+                        <div class={s.version}>
                             {intl.getMessage('version_number', {
                                 value: dashboardState.dnsVersion,
                             })}
-                        </span>
-                    </Show>
 
-                    <button
-                        type="button"
-                        class={cn(s.checkUpdateBtn, {
-                            [s.checkUpdateBtn_loading]: dashboardState.processingVersion,
-                        })}
-                        aria-label={intl.getMessage('check_updates_btn')}
-                        disabled={dashboardState.processingVersion}
-                        data-testid="footer-check-updates"
-                        onClick={() => getVersion(true)}
-                    >
-                        <Icon
-                            icon={
-                                dashboardState.processingVersion
-                                    ? ('loader' as any)
-                                    : ('refresh' as any)
-                            }
-                        />
-                    </button>
+                            <button
+                                type="button"
+                                class={cn(s.checkUpdateBtn, {
+                                    [s.checkUpdateBtn_loading]: dashboardState.processingVersion,
+                                })}
+                                aria-label={intl.getMessage('check_updates_btn')}
+                                disabled={dashboardState.processingVersion}
+                                data-testid="footer-check-updates"
+                                onClick={() => getVersion(true)}
+                            >
+                                <Icon
+                                    icon={dashboardState.processingVersion ? 'loader' : 'refresh'}
+                                />
+                            </button>
+                        </div>
+                    </Show>
                 </div>
 
                 <div class={s.links}>
