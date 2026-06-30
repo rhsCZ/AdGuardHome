@@ -1,6 +1,5 @@
 import { Show, createMemo, createSignal, type JSX } from 'solid-js';
 import { useNavigate, useSearchParams } from '@solidjs/router';
-import cn from 'clsx';
 
 import { Banner } from 'panel/common/ui/Banner';
 import { Button } from 'panel/common/ui/Button';
