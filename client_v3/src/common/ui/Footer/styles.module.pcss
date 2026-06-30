@@ -33,8 +33,10 @@
     justify-content: center;
 
     @media (min-width: 1024px) {
-        gap: 40px;
+        column-gap: 40px;
+        row-gap: 24px;
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: flex-start;
         margin-right: auto;
     }
@@ -93,6 +95,7 @@
     @media (min-width: 1024px) {
         flex-wrap: nowrap;
         gap: 24px;
+        flex-shrink: 0;
     }
 
     @media (min-width: 1200px) {
@@ -104,6 +107,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .dropdownTrigger {

@@ -99,71 +99,67 @@ export const Footer = () => {
                             </button>
                         </div>
                     </Show>
+
+                    <div class={s.links}>
+                        <For each={linksData()}>
+                            {({ name, href }) => (
+                                <a
+                                    href={href}
+                                    class={cn(theme.link.link, theme.link.noDecoration)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {name}
+                                </a>
+                            )}
+                        </For>
+                    </div>
                 </div>
 
-                <div class={s.links}>
-                    <For each={linksData()}>
-                        {({ name, href }) => (
-                            <a
-                                href={href}
-                                class={cn(theme.link.link, theme.link.noDecoration)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {name}
-                            </a>
-                        )}
-                    </For>
-                </div>
-
-                <div class={s.column}>
-                    <Dropdown
-                        trigger="click"
-                        open={themeDropdownOpen()}
-                        onOpenChange={setThemeDropdownOpen}
-                        menu={
-                            <div class={theme.dropdown.menu}>
-                                <For each={Object.values(THEMES)}>
-                                    {(v) => (
-                                        <button
-                                            type="button"
-                                            class={cn(theme.dropdown.item, {
-                                                [theme.dropdown.item_active]: currentTheme() === v,
-                                            })}
-                                            onClick={() => onThemeChange(v)}
-                                        >
-                                            {themeTranslations()[v]}
-                                        </button>
-                                    )}
-                                </For>
-                            </div>
-                        }
-                        class={s.dropdown}
-                        position="bottomRight"
-                    >
-                        <div class={s.dropdownTrigger}>
-                            <Icon icon={getThemeIcon() as any} class={s.icon} />
-                            <span>
-                                {
-                                    themeTranslations()[
-                                        isLoggedIn() ? currentTheme() : currentThemeLocal()
-                                    ]
-                                }
-                            </span>
+                <Dropdown
+                    trigger="click"
+                    open={themeDropdownOpen()}
+                    onOpenChange={setThemeDropdownOpen}
+                    menu={
+                        <div class={theme.dropdown.menu}>
+                            <For each={Object.values(THEMES)}>
+                                {(v) => (
+                                    <button
+                                        type="button"
+                                        class={cn(theme.dropdown.item, {
+                                            [theme.dropdown.item_active]: currentTheme() === v,
+                                        })}
+                                        onClick={() => onThemeChange(v)}
+                                    >
+                                        {themeTranslations()[v]}
+                                    </button>
+                                )}
+                            </For>
                         </div>
-                    </Dropdown>
-                </div>
+                    }
+                    class={s.dropdown}
+                    position="bottomRight"
+                >
+                    <div class={s.dropdownTrigger}>
+                        <Icon icon={getThemeIcon() as any} class={s.icon} />
+                        <span>
+                            {
+                                themeTranslations()[
+                                    isLoggedIn() ? currentTheme() : currentThemeLocal()
+                                ]
+                            }
+                        </span>
+                    </div>
+                </Dropdown>
 
-                <div class={s.column}>
-                    <LanguageDropdown
-                        value={currentLanguage()}
-                        languages={LANGUAGES}
-                        languageNames={LANGUAGE_NAMES}
-                        onChange={(lang: string) => changeLanguage(lang as LocalesType)}
-                        class={s.dropdown}
-                        position="bottomRight"
-                    />
-                </div>
+                <LanguageDropdown
+                    value={currentLanguage()}
+                    languages={LANGUAGES}
+                    languageNames={LANGUAGE_NAMES}
+                    onChange={(lang: string) => changeLanguage(lang as LocalesType)}
+                    class={s.dropdown}
+                    position="bottomRight"
+                />
             </div>
         </footer>
     );
