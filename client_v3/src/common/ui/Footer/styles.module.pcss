@@ -42,10 +42,23 @@
     }
 }
 
+.copyright {
+    order: 1;
+
+    @media (min-width: 1024px) {
+        order: 0;
+    }
+}
+
 .version {
     display: flex;
     align-items: center;
     gap: 12px;
+    order: 2;
+
+    @media (min-width: 1024px) {
+        order: 0;
+    }
 }
 
 .checkUpdateBtn {
