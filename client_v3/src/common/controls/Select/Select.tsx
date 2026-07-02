@@ -168,27 +168,19 @@ const SelectItemContent = <T, ExtendOption extends Record<any, any>>(props: {
     );
 };
 
-/** Single-select overlay: shows the selected value behind the input, hidden while typing. */
-const ComboboxSingleValueDisplay = (props: {
-    value: string | undefined;
-    options: any[];
-    placeholder?: string;
-}) => {
+/** Single-select overlay: shows the selected value behind the input, hidden while typing.
+ *  Reads from the combobox context (not props.value) so the label updates in the
+ *  same tick as inputValue clears — avoiding a flash of the previous value. */
+const ComboboxSingleValueDisplay = (props: { placeholder?: string }) => {
     const comboCtx = useComboboxContext();
-
-    const label = createMemo(() => {
-        if (!props.value) return '';
-        const item = props.options.find((i: any) => String(i.value) === String(props.value));
-        return item?.label ?? props.value;
-    });
 
     return (
         <Show when={!comboCtx().inputValue}>
             <Show
-                when={props.value}
+                when={comboCtx().hasSelectedItems}
                 fallback={<span class="solid-select-placeholder">{props.placeholder ?? ''}</span>}
             >
-                <span class="solid-combobox-single-value">{label()}</span>
+                <span class="solid-combobox-single-value">{comboCtx().valueAsString}</span>
             </Show>
         </Show>
     );
@@ -536,8 +528,6 @@ export const Select = <
                                 {/* Single-select: value overlay + input share a grid cell. */}
                                 <div class="solid-combobox-single-value-wrapper">
                                     <ComboboxSingleValueDisplay
-                                        value={currentValue()[0]}
-                                        options={props.options}
                                         placeholder={props.placeholder as string}
                                     />
                                     <ArkCombobox.Input

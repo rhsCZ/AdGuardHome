@@ -4,6 +4,7 @@ import type { ClientFormState, Client } from 'panel/initialState';
 import { apiClient } from 'panel/api/Api';
 import intl from 'panel/common/intl';
 import { validateIdentifier, validateCacheSize } from 'panel/helpers/validators';
+import { DEFAULT_DNS_CACHE_SIZE } from 'panel/helpers/constants';
 import { addErrorToast, addSuccessToast } from './toasts';
 import { getClients, dashboardState } from './dashboard';
 
@@ -35,7 +36,7 @@ const getInitialClientFormState = (): ClientFormState => ({
     },
     upstreams: '',
     upstreams_cache_enabled: false,
-    upstreams_cache_size: 0,
+    upstreams_cache_size: DEFAULT_DNS_CACHE_SIZE,
     processingSave: false,
     formErrors: {},
 });
@@ -115,7 +116,7 @@ export const buildFormPayload = (client: Client): Partial<ClientFormState> => ({
     },
     upstreams: (client.upstreams || []).join('\n'),
     upstreams_cache_enabled: client.upstreams_cache_enabled || false,
-    upstreams_cache_size: client.upstreams_cache_size || 0,
+    upstreams_cache_size: client.upstreams_cache_size || DEFAULT_DNS_CACHE_SIZE,
 });
 
 export const buildClientConfig = (form: ClientFormState) => ({

@@ -113,7 +113,7 @@ export const Clients = () => {
                                         onClick={handleAddClient}
                                         data-testid="clients-add-button"
                                     >
-                                        {intl.getMessage('client_add')}
+                                        {intl.getMessage('clients_add')}
                                     </PlusButton>
 
                                     {dashboardState.clients?.length > 0 && (
