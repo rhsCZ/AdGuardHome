@@ -818,7 +818,7 @@
   "clients_remove_title": "Remove client?",
   "clients_remove_desc": "<strong>%value%</strong> will be removed from Persistent clients along with its settings",
   "clients_add_name": "Client name",
-  "clients_add_default_name": "My device",
+  "clients_add_placeholder": "Enter client name",
   "clients_identifiers": "Identifiers",
   "clients_identifiers_desc": "You can use the client’s IP address, CIDR, MAC address, or ClientID (for DoT, DoH, and DoQ). <a>Learn more</a>",
   "clients_add_identifier": "Add identifier",

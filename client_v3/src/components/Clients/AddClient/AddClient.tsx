@@ -204,7 +204,7 @@ export const AddClient = () => {
                             value={clientFormState.name}
                             onChange={handleNameChange}
                             onInput={handleNameChange}
-                            placeholder={intl.getMessage('clients_add_default_name')}
+                            placeholder={intl.getMessage('clients_add_placeholder')}
                             label={intl.getMessage('clients_add_name')}
                             size="large"
                             error={!!nameError()}

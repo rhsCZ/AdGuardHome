@@ -161,6 +161,10 @@ const SelectItemContent = <T, ExtendOption extends Record<any, any>>(props: {
  *  same tick as inputValue clears — avoiding a flash of the previous value. */
 const ComboboxSingleValueDisplay = (props: { placeholder?: string }) => {
     const comboCtx = useComboboxContext();
+    const selectedLabel = createMemo(() => {
+        const items = comboCtx().selectedItems;
+        return items && items.length > 0 ? (items[0] as any).label : '';
+    });
 
     return (
         <Show when={!comboCtx().inputValue}>
@@ -168,7 +172,7 @@ const ComboboxSingleValueDisplay = (props: { placeholder?: string }) => {
                 when={comboCtx().hasSelectedItems}
                 fallback={<span class="solid-select-placeholder">{props.placeholder ?? ''}</span>}
             >
-                <span class="solid-combobox-single-value">{comboCtx().valueAsString}</span>
+                <span class="solid-combobox-single-value">{selectedLabel()}</span>
             </Show>
         </Show>
     );
