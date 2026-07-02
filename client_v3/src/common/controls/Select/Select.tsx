@@ -71,10 +71,7 @@ interface SelectProps<
     menuFooter?: JSX.Element;
 }
 
-/**
- * Multi-value display wrapper that reads selected items from Ark UI context.
- * Used inside Select.Trigger to render pill components.
- */
+/** Multi-value pills for the non-searchable Select branch (reads from select context). */
 const SelectMultiValueDisplay = (props: { placeholder?: string }) => {
     const selectCtx = useSelectContext();
 
@@ -116,11 +113,7 @@ const ComboboxMultiValueDisplay = (props: {
     );
 };
 
-/**
- * Check/dot icon for the item indicator.
- * Matches client_v2 CustomOption: check when selected, dot when not.
- * Used inside ArkSelect.Item (non-searchable Select branch).
- */
+/** Check/dot icon for item indicators (check when selected, dot when not). */
 const OptionCheckIcon = () => {
     // eslint-disable-next-line solid/reactivity
     const itemCtx = useSelectItemContext();
@@ -128,10 +121,7 @@ const OptionCheckIcon = () => {
     return <Icon icon={state.selected ? 'check' : 'dot'} />;
 };
 
-/**
- * Check/dot icon for the item indicator in Combobox (searchable) mode.
- * Same appearance as OptionCheckIcon but uses ComboboxItemContext.
- */
+/** Like OptionCheckIcon, for the searchable Combobox branch. */
 const ComboboxOptionCheckIcon = () => {
     // eslint-disable-next-line solid/reactivity
     const itemCtx = useComboboxItemContext();
@@ -139,9 +129,7 @@ const ComboboxOptionCheckIcon = () => {
     return <Icon icon={state.selected ? 'check' : 'dot'} />;
 };
 
-/**
- * Individual option item rendered inside the dropdown list.
- */
+/** Option row rendered inside the dropdown list. */
 const SelectItemContent = <T, ExtendOption extends Record<any, any>>(props: {
     option: IOption<T> & ExtendOption;
     isMulti?: boolean;
