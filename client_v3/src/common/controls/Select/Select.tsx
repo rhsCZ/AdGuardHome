@@ -1,4 +1,4 @@
-import { type JSX, For, Show, createMemo, createSignal } from 'solid-js';
+import { type JSX, For, Show, createMemo, createSignal, createEffect } from 'solid-js';
 import cn from 'clsx';
 import {
     Select as ArkSelect,
@@ -10,6 +10,7 @@ import {
     useComboboxItemContext,
 } from '@ark-ui/solid';
 import { Icon } from 'panel/common/ui/Icon';
+import intl from 'panel/common/intl';
 import { IOption } from 'panel/lib/helpers/utils';
 import theme from 'panel/lib/theme';
 
@@ -90,23 +91,28 @@ const SelectMultiValueDisplay = (props: { placeholder?: string }) => {
     );
 };
 
-/**
- * Multi-value display wrapper that reads selected items from Ark UI Combobox context.
- * Used inside the Combobox branch when isMulti is true.
- */
-const ComboboxMultiValueDisplay = (props: { placeholder?: string }) => {
+/** Multi-value pills + inline search input for Combobox multi-select (react-select parity). */
+const ComboboxMultiValueDisplay = (props: {
+    placeholder?: string;
+    inputId?: string;
+    onInputRef?: (el: HTMLInputElement) => void;
+}) => {
     const comboCtx = useComboboxContext();
 
     return (
-        <Show
-            when={comboCtx().hasSelectedItems}
-            fallback={<span class="solid-select-placeholder">{props.placeholder ?? ''}</span>}
-        >
-            <SelectMultiValue
-                items={comboCtx().selectedItems as any[]}
-                onRemove={(item) => comboCtx().clearValue(String(item.value))}
+        <>
+            <Show when={comboCtx().hasSelectedItems}>
+                <SelectMultiValue
+                    items={comboCtx().selectedItems as any[]}
+                    onRemove={(item) => comboCtx().clearValue(String(item.value))}
+                />
+            </Show>
+            <ArkCombobox.Input
+                id={props.inputId}
+                placeholder={comboCtx().hasSelectedItems ? '' : (props.placeholder ?? '')}
+                ref={props.onInputRef}
             />
-        </Show>
+        </>
     );
 };
 
@@ -162,6 +168,48 @@ const SelectItemContent = <T, ExtendOption extends Record<any, any>>(props: {
     );
 };
 
+/** Single-select overlay: shows the selected value behind the input, hidden while typing. */
+const ComboboxSingleValueDisplay = (props: {
+    value: string | undefined;
+    options: any[];
+    placeholder?: string;
+}) => {
+    const comboCtx = useComboboxContext();
+
+    const label = createMemo(() => {
+        if (!props.value) return '';
+        const item = props.options.find((i: any) => String(i.value) === String(props.value));
+        return item?.label ?? props.value;
+    });
+
+    return (
+        <Show when={!comboCtx().inputValue}>
+            <Show
+                when={props.value}
+                fallback={<span class="solid-select-placeholder">{props.placeholder ?? ''}</span>}
+            >
+                <span class="solid-combobox-single-value">{label()}</span>
+            </Show>
+        </Show>
+    );
+};
+
+/** Clears the combobox input on close so stale search text doesn't persist. */
+const ComboboxInputReset = (): null => {
+    const comboCtx = useComboboxContext();
+    let prevOpen = false;
+
+    createEffect((): void => {
+        const isOpen = comboCtx().open;
+        if (prevOpen && !isOpen) {
+            comboCtx().setInputValue('', 'script');
+        }
+        prevOpen = isOpen;
+    });
+
+    return null;
+};
+
 export const Select = <
     T,
     Multi extends boolean = false,
@@ -212,7 +260,7 @@ export const Select = <
 
     /* ---- Combobox search input tracking ---- */
     const [searchInput, setSearchInput] = createSignal('');
-    /** DOM ref to the Combobox <input> — used to physically clear it on open. */
+    /** DOM ref to the Combobox input (used for the multi-mode defensive clear). */
     let inputRef: HTMLInputElement | undefined;
 
     const filteredOptions = createMemo(() => {
@@ -297,9 +345,11 @@ export const Select = <
                                     <Show
                                         when={!isMulti()}
                                         fallback={
-                                            <SelectMultiValueDisplay
-                                                placeholder={props.placeholder as string}
-                                            />
+                                            <div class="solid-select-multi-value-container">
+                                                <SelectMultiValueDisplay
+                                                    placeholder={props.placeholder as string}
+                                                />
+                                            </div>
                                         }
                                     >
                                         <ArkSelect.ValueText
@@ -407,32 +457,25 @@ export const Select = <
                     openOnClick
                     autoFocus={props.autoFocus}
                     open={props.menuIsOpen}
+                    // Input holds only search text; value shown via the overlay.
+                    selectionBehavior="clear"
                     onInputValueChange={(details) => {
                         if (details.reason === 'input-change') {
-                            // Track user keystrokes so searchInput reflects
-                            // what the user typed.
                             setSearchInput(details.inputValue);
-                        } else if (isMulti()) {
-                            // Programmatic changes (item-select, clear-trigger,
-                            // etc.) clear the input in multi mode so the
-                            // selected item's label doesn't persist.
+                        } else {
+                            // Non-typing change (select/clear/close): reset filter.
                             setSearchInput('');
-                            if (inputRef) {
+                            if (isMulti() && inputRef) {
                                 inputRef.value = '';
                             }
                         }
                     }}
                     onOpenChange={(details) => {
                         if (details.open) {
-                            // Reset search filter and physically clear the input
-                            // so the user sees a blank field ready for fresh typing
-                            // (like react-select).
                             setSearchInput('');
-                            if (inputRef) {
-                                inputRef.value = '';
-                            }
                             props.onMenuOpen?.();
                         } else {
+                            // Stale search cleared by ComboboxInputReset.
                             props.onMenuClose?.();
                         }
                     }}
@@ -451,11 +494,12 @@ export const Select = <
                                   : ['bottom-start', 'top-start'],
                     }}
                 >
+                    {/* Clears the search input on close so the value overlay reappears. */}
+                    <ComboboxInputReset />
                     <Show when={!props.isDropdownSelect}>
                         <ArkCombobox.Control
                             onClick={(e: MouseEvent) => {
-                                // Click the inner input when clicking the dead zone
-                                // of the Control so openOnClick triggers the menu.
+                                // Click the input when clicking the control's dead zone.
                                 if (e.target === e.currentTarget) {
                                     const input = (e.currentTarget as HTMLElement).querySelector(
                                         'input',
@@ -465,25 +509,54 @@ export const Select = <
                             }}
                         >
                             <Show when={isMulti()}>
-                                <ComboboxMultiValueDisplay
-                                    placeholder={props.placeholder as string}
-                                />
+                                {/* Pills + input share a flex-wrap flow (inline). */}
+                                <div class="solid-select-multi-value-container">
+                                    <ComboboxMultiValueDisplay
+                                        placeholder={props.placeholder as string}
+                                        inputId={props.inputId}
+                                        onInputRef={(el) => {
+                                            inputRef = el;
+                                        }}
+                                    />
+                                </div>
+                                {/* Clear button shown whenever values exist (react-select v2 only checks hasValue). */}
+                                <Show when={currentValue().length > 0}>
+                                    <ArkCombobox.ClearTrigger>
+                                        <Icon icon="cross" />
+                                    </ArkCombobox.ClearTrigger>
+                                </Show>
+                                {/* Arrow hidden when values exist (clear button takes its place). */}
+                                <Show when={!currentValue().length}>
+                                    <ArkCombobox.Trigger>
+                                        <Icon icon="arrow_bottom" />
+                                    </ArkCombobox.Trigger>
+                                </Show>
                             </Show>
-                            <ArkCombobox.Input
-                                id={props.inputId}
-                                placeholder={isMulti() ? '' : (props.placeholder as string)}
-                                ref={(el) => {
-                                    inputRef = el;
-                                }}
-                            />
-                            <Show when={isClearable() && currentValue().length > 0}>
-                                <ArkCombobox.ClearTrigger>
-                                    <Icon icon="cross" />
-                                </ArkCombobox.ClearTrigger>
+                            <Show when={!isMulti()}>
+                                {/* Single-select: value overlay + input share a grid cell. */}
+                                <div class="solid-combobox-single-value-wrapper">
+                                    <ComboboxSingleValueDisplay
+                                        value={currentValue()[0]}
+                                        options={props.options}
+                                        placeholder={props.placeholder as string}
+                                    />
+                                    <ArkCombobox.Input
+                                        id={props.inputId}
+                                        placeholder=""
+                                        ref={(el) => {
+                                            inputRef = el;
+                                        }}
+                                    />
+                                </div>
+                                <Show when={isClearable() && currentValue().length > 0}>
+                                    <ArkCombobox.ClearTrigger>
+                                        <Icon icon="cross" />
+                                    </ArkCombobox.ClearTrigger>
+                                </Show>
+                                <ArkCombobox.Trigger>
+                                    <Icon icon="arrow_bottom" />
+                                </ArkCombobox.Trigger>
                             </Show>
-                            <ArkCombobox.Trigger>
-                                <Icon icon="arrow_bottom" />
-                            </ArkCombobox.Trigger>
                         </ArkCombobox.Control>
                     </Show>
                     <ArkCombobox.Positioner>
@@ -577,6 +650,12 @@ export const Select = <
                                         </div>
                                     </Show>
                                 </ArkCombobox.ItemGroup>
+                                {/* Empty state: shown when the search yields no matches
+                                    (collection.size === 0), like react-select's
+                                    NoOptionsMessage / CustomNoOptionsMessage. */}
+                                <ArkCombobox.Empty>
+                                    {intl.getMessage('nothing_found')}
+                                </ArkCombobox.Empty>
                             </Show>
                         </ArkCombobox.Content>
                     </ArkCombobox.Positioner>

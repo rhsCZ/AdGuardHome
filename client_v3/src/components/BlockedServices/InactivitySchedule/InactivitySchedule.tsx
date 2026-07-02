@@ -194,7 +194,6 @@ export const InactivitySchedule = (props: Props) => {
                                 onChange={handleTimezoneChange}
                                 size="responsive"
                                 height="big"
-                                isDisabled={servicesState.processing}
                                 isSearchable
                             />
                         </div>
