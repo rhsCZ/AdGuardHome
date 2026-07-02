@@ -132,6 +132,7 @@ export const DynamicLeasesTable = (props: Props) => {
                                     title={intl.getMessage('edit_table_action')}
                                     aria-label={intl.getMessage('edit_table_action')}
                                     data-testid="dynamic-lease-edit-button"
+                                    data-table-action
                                 >
                                     <Icon icon="edit" color="gray" />
                                     <span class={theme.table.actionLabel}>
@@ -146,6 +147,7 @@ export const DynamicLeasesTable = (props: Props) => {
                                     title={intl.getMessage('make_static')}
                                     aria-label={intl.getMessage('make_static')}
                                     data-testid="dynamic-lease-make-static-button"
+                                    data-table-action
                                 >
                                     <Icon icon="plus" color="gray" />
                                     <span class={theme.table.actionLabel}>
@@ -160,6 +162,7 @@ export const DynamicLeasesTable = (props: Props) => {
                                     title={intl.getMessage('refresh_btn')}
                                     aria-label={intl.getMessage('refresh_btn')}
                                     data-testid="dynamic-lease-refresh-button"
+                                    data-table-action
                                 >
                                     <Icon icon="refresh" color="gray" />
                                     <span class={theme.table.actionLabel}>
@@ -175,6 +178,7 @@ export const DynamicLeasesTable = (props: Props) => {
                                     title={intl.getMessage('delete_table_action')}
                                     aria-label={intl.getMessage('delete_table_action')}
                                     data-testid="dynamic-lease-delete-button"
+                                    data-table-action
                                 >
                                     <Icon icon="delete" color="red" />
                                     <span class={theme.table.actionLabel}>

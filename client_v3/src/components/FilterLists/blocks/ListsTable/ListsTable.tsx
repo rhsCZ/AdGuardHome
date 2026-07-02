@@ -227,6 +227,7 @@ export const ListsTable = (props: Props) => {
                                     class={theme.table.action}
                                     title={intl.getMessage('edit_table_action')}
                                     aria-label={intl.getMessage('edit_table_action')}
+                                    data-table-action
                                 >
                                     <Icon icon="edit" color="gray" />
                                     <span class={theme.table.actionLabel}>
@@ -241,6 +242,7 @@ export const ListsTable = (props: Props) => {
                                     class={cn(theme.table.action, theme.table.action_danger)}
                                     title={intl.getMessage('delete_table_action')}
                                     aria-label={intl.getMessage('delete_table_action')}
+                                    data-table-action
                                 >
                                     <Icon icon="delete" color="red" />
                                     <span class={theme.table.actionLabel}>

@@ -163,7 +163,7 @@ export const Clients = () => {
                         onClose={handleDeleteClose}
                         onConfirm={handleDeleteConfirm}
                         submitDisabled={clientsState.processingDeleting}
-                        buttonText={intl.getMessage('remove')}
+                        buttonText={intl.getMessage('yes_remove')}
                         cancelText={intl.getMessage('cancel')}
                         title={intl.getMessage('clients_remove_title')}
                         text={intl.getMessage('clients_remove_desc', {

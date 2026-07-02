@@ -300,7 +300,7 @@
 
     [data-scope='combobox'][data-part='input'] {
         flex: 1;
-        min-width: 50px;
+        min-width: 80px;
         border: none;
         background: transparent;
         font-size: inherit;
@@ -311,6 +311,10 @@
         &::placeholder {
             color: var(--default-description-text);
         }
+    }
+
+    &.solid-select--multi [data-scope='combobox'][data-part='input'] {
+        padding-left: 8px;
     }
 
     [data-scope='select'][data-part='item'],
@@ -389,7 +393,15 @@
         padding: 8px 12px 8px 0;
     }
 
+    [data-scope='combobox'][data-part='control'] .solid-select-multi-value-container {
+        padding-left: 16px;
+    }
+
     .solid-select-placeholder {
         color: var(--default-description-text);
+    }
+
+    [data-scope='combobox'][data-part='control'] .solid-select-placeholder {
+        padding-left: 16px;
     }
 }

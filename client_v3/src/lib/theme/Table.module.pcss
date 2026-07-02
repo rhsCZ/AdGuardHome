@@ -126,7 +126,9 @@
     padding: 0;
     cursor: pointer;
     background: none;
+    transition: background-color var(--t2);
     color: var(--default-gray-icons);
+    border-radius: 4px;
 
     &:disabled {
         cursor: default;
@@ -139,6 +141,15 @@
         min-height: unset;
         justify-content: center;
         gap: 0;
+    }
+
+    &:hover,
+    &:focus {
+        background-color: var(--hovered-page-background);
+    }
+
+    &:active {
+        background-color: var(--pressed-page-background);
     }
 }
 

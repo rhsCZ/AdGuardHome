@@ -321,10 +321,10 @@ export const AddClient = () => {
                         onChange={handleUpstreamsCacheEnabled}
                         disabled={clientFormState.use_global_settings}
                     >
-                        <Show when={clientFormState.upstreams_cache_enabled}>
+                        {clientFormState.upstreams_cache_enabled && (
                             <Input
                                 id="dns-cache-size"
-                                type="text"
+                                type="number"
                                 value={String(clientFormState.upstreams_cache_size)}
                                 onChange={(e: Event) =>
                                     updateClientFormField({
@@ -344,7 +344,7 @@ export const AddClient = () => {
                                         : undefined
                                 }
                             />
-                        </Show>
+                        )}
                     </SwitchGroup>
 
                     <div class={s.actions}>

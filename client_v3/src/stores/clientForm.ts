@@ -1,4 +1,4 @@
-import { createStore } from 'solid-js/store';
+import { createStore, reconcile } from 'solid-js/store';
 import { untrack } from 'solid-js';
 import type { ClientFormState, Client } from 'panel/initialState';
 import { apiClient } from 'panel/api/Api';
@@ -58,10 +58,11 @@ export const initClientForm = (client?: Partial<ClientFormState> | null) => {
 export const updateClientFormField = (
     fieldOrObj: keyof ClientFormState | { field: keyof ClientFormState; value: any },
     maybeValue?: any,
+    replace?: boolean,
 ) => {
     const field = typeof fieldOrObj === 'string' ? fieldOrObj : fieldOrObj.field;
     const value = typeof fieldOrObj === 'string' ? maybeValue : fieldOrObj.value;
-    setState(field as any, value);
+    setState(field as any, replace ? reconcile(value) : value);
     // Clear the error for this field
     if (state.formErrors[field as string]) {
         setState('formErrors', (prev) => {

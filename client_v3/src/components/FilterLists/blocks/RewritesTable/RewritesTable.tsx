@@ -169,6 +169,7 @@ export const RewritesTable = (props: Props) => {
                                     title={intl.getMessage('edit_table_action')}
                                     aria-label={intl.getMessage('edit_table_action')}
                                     data-testid={`edit-rewrite-${row.domain}`}
+                                    data-table-action
                                 >
                                     <Icon icon="edit" color="gray" />
                                     <span class={theme.table.actionLabel}>
@@ -184,6 +185,7 @@ export const RewritesTable = (props: Props) => {
                                     title={intl.getMessage('delete_table_action')}
                                     aria-label={intl.getMessage('delete_table_action')}
                                     data-testid={`delete-rewrite-${row.domain}`}
+                                    data-table-action
                                 >
                                     <Icon icon="delete" color="red" />
                                     <span class={theme.table.actionLabel}>

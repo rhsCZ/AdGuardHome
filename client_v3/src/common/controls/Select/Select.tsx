@@ -6,6 +6,7 @@ import {
     createListCollection,
     useSelectContext,
     useSelectItemContext,
+    useComboboxContext,
     useComboboxItemContext,
 } from '@ark-ui/solid';
 import { Icon } from 'panel/common/ui/Icon';
@@ -84,6 +85,26 @@ const SelectMultiValueDisplay = (props: { placeholder?: string }) => {
             <SelectMultiValue
                 items={selectCtx().selectedItems as any[]}
                 onRemove={(item) => selectCtx().clearValue(String(item.value))}
+            />
+        </Show>
+    );
+};
+
+/**
+ * Multi-value display wrapper that reads selected items from Ark UI Combobox context.
+ * Used inside the Combobox branch when isMulti is true.
+ */
+const ComboboxMultiValueDisplay = (props: { placeholder?: string }) => {
+    const comboCtx = useComboboxContext();
+
+    return (
+        <Show
+            when={comboCtx().hasSelectedItems}
+            fallback={<span class="solid-select-placeholder">{props.placeholder ?? ''}</span>}
+        >
+            <SelectMultiValue
+                items={comboCtx().selectedItems as any[]}
+                onRemove={(item) => comboCtx().clearValue(String(item.value))}
             />
         </Show>
     );
@@ -176,13 +197,14 @@ export const Select = <
         ),
     );
 
-    // Multi-select always uses the non-searchable Select branch (see "Decisions Made"),
-    // so pills render correctly. Combobox is single-select only.
-    const isSearchable = createMemo(
-        () =>
-            !(props.isMulti ?? false) &&
-            (props.isSearchable ?? props.options.length > SEARCH_ENABLE_LIMIT),
-    );
+    const isSearchable = createMemo(() => {
+        // Explicit isSearchable prop takes precedence over defaults.
+        if (props.isSearchable !== undefined) {
+            return props.isSearchable;
+        }
+        // Default: only non-multi selects with > SEARCH_ENABLE_LIMIT options are searchable.
+        return !(props.isMulti ?? false) && props.options.length > SEARCH_ENABLE_LIMIT;
+    });
 
     const isDisabled = createMemo(() => props.isDisabled ?? false);
     const isMulti = createMemo(() => props.isMulti ?? false);
@@ -379,17 +401,25 @@ export const Select = <
                     collection={collection()}
                     value={currentValue()}
                     onValueChange={handleValueChange}
+                    multiple={isMulti()}
                     disabled={isDisabled()}
                     closeOnSelect={props.closeMenuOnSelect ?? true}
                     openOnClick
                     autoFocus={props.autoFocus}
                     open={props.menuIsOpen}
                     onInputValueChange={(details) => {
-                        // Only track actual user keystrokes — ignore programmatic
-                        // changes (item-select, clear-trigger, script, interact-outside)
-                        // so searchInput always reflects what the user typed.
                         if (details.reason === 'input-change') {
+                            // Track user keystrokes so searchInput reflects
+                            // what the user typed.
                             setSearchInput(details.inputValue);
+                        } else if (isMulti()) {
+                            // Programmatic changes (item-select, clear-trigger,
+                            // etc.) clear the input in multi mode so the
+                            // selected item's label doesn't persist.
+                            setSearchInput('');
+                            if (inputRef) {
+                                inputRef.value = '';
+                            }
                         }
                     }}
                     onOpenChange={(details) => {
@@ -434,9 +464,14 @@ export const Select = <
                                 }
                             }}
                         >
+                            <Show when={isMulti()}>
+                                <ComboboxMultiValueDisplay
+                                    placeholder={props.placeholder as string}
+                                />
+                            </Show>
                             <ArkCombobox.Input
                                 id={props.inputId}
-                                placeholder={props.placeholder as string}
+                                placeholder={isMulti() ? '' : (props.placeholder as string)}
                                 ref={(el) => {
                                     inputRef = el;
                                 }}

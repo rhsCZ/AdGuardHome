@@ -73,7 +73,7 @@ export const InactivitySchedule = (props: Props) => {
             ? { ...(clientFormState.blocked_services_schedule as any), time_zone: option.value }
             : { ...schedule(), time_zone: option.value };
         if (props.clientScope) {
-            updateClientFormField('blocked_services_schedule', newSchedule);
+            updateClientFormField('blocked_services_schedule', newSchedule, true);
         } else {
             updateBlockedServices({ ids: servicesState.list?.ids || [], schedule: newSchedule });
         }
@@ -105,7 +105,7 @@ export const InactivitySchedule = (props: Props) => {
             }
         });
         if (props.clientScope) {
-            updateClientFormField('blocked_services_schedule', newSchedule);
+            updateClientFormField('blocked_services_schedule', newSchedule, true);
         } else {
             updateBlockedServices({ ids: servicesState.list?.ids || [], schedule: newSchedule });
         }
@@ -121,7 +121,7 @@ export const InactivitySchedule = (props: Props) => {
         });
         newSchedule[day] = { start, end };
         if (props.clientScope) {
-            updateClientFormField('blocked_services_schedule', newSchedule);
+            updateClientFormField('blocked_services_schedule', newSchedule, true);
         } else {
             updateBlockedServices({ ids: servicesState.list?.ids || [], schedule: newSchedule });
         }
@@ -253,7 +253,7 @@ export const InactivitySchedule = (props: Props) => {
                     onChange={handleTimezoneChange}
                     size="responsive"
                     height="big"
-                    isDisabled={servicesState.processing}
+                    isDisabled={clientFormState.processingSave}
                     isSearchable
                 />
             </div>
