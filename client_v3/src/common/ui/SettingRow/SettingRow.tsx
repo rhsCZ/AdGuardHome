@@ -1,4 +1,4 @@
-import { type JSX, Show, splitProps, createMemo } from 'solid-js';
+import { type JSX, Show, createMemo } from 'solid-js';
 import cn from 'clsx';
 
 import { Switch } from 'panel/common/controls/Switch';
@@ -27,31 +27,14 @@ type Props = {
 };
 
 export const SettingRow = (props: Props) => {
-    const [local] = splitProps(props, [
-        'id',
-        'title',
-        'description',
-        'value',
-        'variant',
-        'checked',
-        'disabled',
-        'titleClass',
-        'onChange',
-        'onClick',
-        'class',
-        'children',
-        'divider',
-        'align',
-    ]);
-
     let inputRef: HTMLInputElement | undefined;
 
-    const isSwitch = createMemo(() => local.variant === 'switch');
-    const isLink = createMemo(() => local.variant === 'link');
-    const isSwitchLink = createMemo(() => local.variant === 'switch-link');
+    const isSwitch = createMemo(() => props.variant === 'switch');
+    const isLink = createMemo(() => props.variant === 'link');
+    const isSwitchLink = createMemo(() => props.variant === 'switch-link');
 
     const handleRowClick = (e?: MouseEvent) => {
-        if (local.disabled) {
+        if (props.disabled) {
             return;
         }
         // Skip programmatic click if the user already clicked the switch/label
@@ -65,25 +48,25 @@ export const SettingRow = (props: Props) => {
         if (isSwitch()) {
             inputRef?.click();
         } else if (isLink() || isSwitchLink()) {
-            local.onClick?.();
+            props.onClick?.();
         }
     };
 
     const handleSwitchChange = (e: Event) => {
         e.stopPropagation();
-        if (local.disabled) {
+        if (props.disabled) {
             return;
         }
         const target = e.target as HTMLInputElement;
-        local.onChange?.(target.checked);
+        props.onChange?.(target.checked);
     };
 
     const handleLinkClick = (e: Event) => {
         e.stopPropagation();
-        if (local.disabled) {
+        if (props.disabled) {
             return;
         }
-        local.onClick?.();
+        props.onClick?.();
     };
 
     const handleInputClick = (e: MouseEvent) => {
@@ -95,7 +78,7 @@ export const SettingRow = (props: Props) => {
             return;
         }
 
-        if ((isSwitch() || isSwitchLink()) && !local.disabled) {
+        if ((isSwitch() || isSwitchLink()) && !props.disabled) {
             e.stopPropagation();
             inputRef?.click();
         }
@@ -107,11 +90,11 @@ export const SettingRow = (props: Props) => {
 
     return (
         <div
-            class={cn(s.switch, local.class, {
-                [s.switchDisabled]: local.disabled,
+            class={cn(s.switch, props.class, {
+                [s.switchDisabled]: props.disabled,
             })}
             role="button"
-            tabIndex={local.disabled ? -1 : 0}
+            tabIndex={props.disabled ? -1 : 0}
             onClick={handleRowClick}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -122,44 +105,44 @@ export const SettingRow = (props: Props) => {
         >
             <div
                 class={cn(s.row, {
-                    [s.rowTop]: local.align === 'top',
-                    [s.rowCenter]: local.align === 'center',
+                    [s.rowTop]: props.align === 'top',
+                    [s.rowCenter]: props.align === 'center',
                 })}
             >
                 <div class={s.text}>
                     <div
-                        class={cn(s.title, local.titleClass, {
-                            [s.titleDisabled]: local.disabled,
+                        class={cn(s.title, props.titleClass, {
+                            [s.titleDisabled]: props.disabled,
                         })}
                     >
-                        {local.title}
+                        {props.title}
                     </div>
-                    <Show when={local.description}>
+                    <Show when={props.description}>
                         <div
-                            class={cn(s.desc, theme.text.t3, { [s.descDisabled]: local.disabled })}
+                            class={cn(s.desc, theme.text.t3, { [s.descDisabled]: props.disabled })}
                         >
-                            {local.description}
+                            {props.description}
                         </div>
                     </Show>
-                    <Show when={local.value}>
+                    <Show when={props.value}>
                         <div
                             class={cn(s.value, theme.text.t3, {
-                                [s.valueDisabled]: local.disabled,
+                                [s.valueDisabled]: props.disabled,
                             })}
                         >
-                            {local.value}
+                            {props.value}
                         </div>
                     </Show>
                 </div>
-                <Show when={isSwitchLink() && local.divider}>
+                <Show when={isSwitchLink() && props.divider}>
                     <div class={s.divider} />
                 </Show>
                 <div class={s.input} onClick={handleInputClick}>
                     <Show when={isSwitchVariant()}>
                         <Switch
-                            id={local.id}
-                            checked={!!local.checked}
-                            disabled={!!local.disabled}
+                            id={props.id}
+                            checked={!!props.checked}
+                            disabled={!!props.disabled}
                             onChange={handleSwitchChange}
                             ref={(el: HTMLInputElement) => {
                                 inputRef = el;
@@ -170,7 +153,7 @@ export const SettingRow = (props: Props) => {
                         <button
                             type="button"
                             class={s.link}
-                            disabled={!!local.disabled}
+                            disabled={!!props.disabled}
                             onClick={handleLinkClick}
                         >
                             <Icon icon="arrow" class={s.arrow} />
@@ -178,8 +161,8 @@ export const SettingRow = (props: Props) => {
                     </Show>
                 </div>
             </div>
-            <Show when={local.children}>
-                <div class={s.content}>{local.children}</div>
+            <Show when={props.children}>
+                <div class={s.content}>{props.children}</div>
             </Show>
         </div>
     );

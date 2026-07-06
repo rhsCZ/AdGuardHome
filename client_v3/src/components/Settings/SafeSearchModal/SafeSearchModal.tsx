@@ -1,4 +1,4 @@
-import { createEffect, For } from 'solid-js';
+import { createEffect, For, on } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
 import { Checkbox } from 'panel/common/controls/Checkbox';
@@ -21,17 +21,19 @@ type Props = {
 export const SafeSearchModal = (props: Props) => {
     const [selected, setSelected] = createStore<Record<string, boolean>>({});
 
-    // Reset from props on open
-    createEffect(() => {
-        if (props.open) {
-            // Re-initialize the store with current provider values
-            const entries = Object.keys(SAFE_SEARCH_PROVIDERS).map((key) => [
-                key,
-                props.providers[key] ?? false,
-            ]);
-            setSelected(Object.fromEntries(entries));
-        }
-    });
+    createEffect(
+        on(
+            () => props.open,
+            (open) => {
+                if (!open) return;
+                const entries = Object.keys(SAFE_SEARCH_PROVIDERS).map((key) => [
+                    key,
+                    props.providers[key] ?? false,
+                ]);
+                setSelected(Object.fromEntries(entries));
+            },
+        ),
+    );
 
     const handleSave = () => {
         const result: Record<string, boolean> = {};

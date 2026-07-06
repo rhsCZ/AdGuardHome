@@ -1,11 +1,10 @@
-import { createSignal, createEffect, Show } from 'solid-js';
+import { createSignal, createEffect, Show, on } from 'solid-js';
 
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import intl from 'panel/common/intl';
-import { formatIntervalText } from 'panel/components/Settings/helpers';
+import { formatIntervalText, resolveInterval } from 'panel/components/Settings/helpers';
 import { setLogsConfig, queryLogsState } from 'panel/stores/queryLogs';
-import { HOUR } from 'panel/helpers/constants';
 
 import { Form, FormValues } from './Form';
 import { addSuccessToast } from 'panel/stores/toasts';
@@ -29,15 +28,18 @@ export const LogsConfig = (props: Props) => {
     });
     const [confirmConfig, setConfirmConfig] = createSignal<LogsConfigPayload | null>(null);
 
-    // Reset form values when modal opens
-    createEffect(() => {
-        if (props.modalOpen) {
-            setFormValues({
-                interval: props.interval,
-                customInterval: props.customInterval,
-            });
-        }
-    });
+    createEffect(
+        on(
+            () => props.modalOpen,
+            (open) => {
+                if (!open) return;
+                setFormValues({
+                    interval: props.interval,
+                    customInterval: props.customInterval,
+                });
+            },
+        ),
+    );
 
     const handleFormChange = (values: FormValues) => {
         setFormValues(values);
@@ -45,11 +47,7 @@ export const LogsConfig = (props: Props) => {
 
     const handleSave = () => {
         const values = formValues();
-        const newInterval = values.customInterval
-            ? values.customInterval >= HOUR
-                ? values.customInterval
-                : values.customInterval * HOUR
-            : values.interval;
+        const newInterval = resolveInterval(values.interval, values.customInterval);
 
         // If decreasing retention, show confirmation
         if (newInterval < props.interval) {

@@ -1,4 +1,4 @@
-import { type JSX, splitProps } from 'solid-js';
+import { type JSX } from 'solid-js';
 import cn from 'clsx';
 
 import { Dialog } from 'panel/common/ui/Dialog';
@@ -21,41 +21,28 @@ type Props = {
 };
 
 export const ConfigDialog = (props: Props) => {
-    const [local] = splitProps(props, [
-        'open',
-        'title',
-        'onClose',
-        'onSubmit',
-        'processing',
-        'submitDisabled',
-        'class',
-        'children',
-        'footer',
-        'description',
-    ]);
-
-    const isDisabled = () => !!local.processing || !!local.submitDisabled;
+    const isDisabled = () => !!props.processing || !!props.submitDisabled;
 
     return (
         <Dialog
-            visible={local.open}
-            onClose={local.onClose}
-            title={local.title}
-            wrapClass={cn('rc-dialog-update', s.configDialog, local.class)}
+            visible={props.open}
+            onClose={props.onClose}
+            title={props.title}
+            wrapClass={cn('rc-dialog-update', s.configDialog, props.class)}
         >
-            {local.description && <div class={s.description}>{local.description}</div>}
+            {props.description && <div class={s.description}>{props.description}</div>}
 
-            <fieldset disabled={!!local.processing} class={s.body}>
-                {local.children}
+            <fieldset disabled={!!props.processing} class={s.body}>
+                {props.children}
             </fieldset>
             <div class={s.footer}>
-                {local.footer}
+                {props.footer}
                 <Button
                     variant="primary"
                     class={s.saveButton}
                     disabled={isDisabled()}
                     data-testid="config-dialog-save"
-                    onClick={local.onSubmit}
+                    onClick={props.onSubmit}
                 >
                     {intl.getMessage('save')}
                 </Button>

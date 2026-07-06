@@ -1,4 +1,4 @@
-import { createSignal, createEffect } from 'solid-js';
+import { createSignal, createEffect, on } from 'solid-js';
 import cn from 'clsx';
 
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
@@ -20,15 +20,17 @@ type Props = {
 };
 
 export const IgnoredDomainsModal = (props: Props) => {
-    /* eslint-disable solid/reactivity -- createSignal initializers are not tracked scopes */
-    const [value, setValue] = createSignal(props.ignored.join('\n'));
-    /* eslint-enable solid/reactivity */
+    const [value, setValue] = createSignal('');
 
-    createEffect(() => {
-        if (props.open) {
-            setValue(props.ignored.join('\n'));
-        }
-    });
+    createEffect(
+        on(
+            () => props.open,
+            (open) => {
+                if (!open) return;
+                setValue(props.ignored.join('\n'));
+            },
+        ),
+    );
 
     const handleSave = () => {
         const trimmed = trimLinesAndRemoveEmpty(value());
