@@ -128,7 +128,7 @@ export const SettingRow = (props: Props) => {
             >
                 <div class={s.text}>
                     <div
-                        class={cn(s.title, local.titleClass, theme.text.t2, {
+                        class={cn(s.title, local.titleClass, {
                             [s.titleDisabled]: local.disabled,
                         })}
                     >

@@ -74,12 +74,7 @@ describe('ConfigDialog', () => {
     it('clicking save fires onSubmit', () => {
         const onSubmit = vi.fn();
         render(() => (
-            <ConfigDialog
-                open={true}
-                title="Test"
-                onClose={vi.fn()}
-                onSubmit={onSubmit}
-            >
+            <ConfigDialog open={true} title="Test" onClose={vi.fn()} onSubmit={onSubmit}>
                 <div>Content</div>
             </ConfigDialog>
         ));
