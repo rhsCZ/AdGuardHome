@@ -8,6 +8,7 @@ import { setLogsConfig, queryLogsState } from 'panel/stores/queryLogs';
 import { HOUR } from 'panel/helpers/constants';
 
 import { Form, FormValues } from './Form';
+import { addSuccessToast } from 'panel/stores/toasts';
 
 export type LogsConfigPayload = {
     interval: number;
@@ -63,6 +64,7 @@ export const LogsConfig = (props: Props) => {
                 interval: newInterval,
                 customInterval: values.customInterval,
             });
+            addSuccessToast(intl.getMessage('changes_saved_success'));
             props.onModalClose();
         }
     };
@@ -78,6 +80,7 @@ export const LogsConfig = (props: Props) => {
                 interval: config.interval,
                 customInterval: formValues().customInterval,
             });
+            addSuccessToast(intl.getMessage('changes_saved_success'));
             props.onModalClose();
         }
         setConfirmConfig(null);

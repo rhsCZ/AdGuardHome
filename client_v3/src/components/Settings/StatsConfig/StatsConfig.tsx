@@ -9,6 +9,7 @@ import { setStatsConfig, statsState } from 'panel/stores/stats';
 import { HOUR } from 'panel/helpers/constants';
 
 import { Form, FormValues } from './Form';
+import { addSuccessToast } from 'panel/stores/toasts';
 
 export type StatsConfigPayload = {
     interval: number;
@@ -63,6 +64,7 @@ export const StatsConfig = (props: Props) => {
                 interval: newInterval,
                 customInterval: values.customInterval,
             });
+            addSuccessToast(intl.getMessage('changes_saved_success'));
             props.onModalClose();
         }
     };
@@ -77,6 +79,7 @@ export const StatsConfig = (props: Props) => {
                 interval: config.interval,
                 customInterval: formValues().customInterval,
             });
+            addSuccessToast(intl.getMessage('changes_saved_success'));
             props.onModalClose();
         }
         setConfirmConfig(null);
