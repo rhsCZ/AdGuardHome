@@ -240,7 +240,6 @@
   "settings_notify_changes_saved": "Changes saved",
   "settings_notify_query_log_cleared": "Query log cleared",
   "settings_notify_statistics_cleared": "Statistics cleared",
-  "settings_retention_current": "Current: %value%",
   "encryption_title": "Encryption",
   "encryption_encrypted_dns": "Encrypted DNS",
   "encryption_encrypted_dns_desc": "The AdGuard Home admin interface uses HTTPS. The DNS server supports DNS-over-HTTPS, DNS-over-TLS, and DNS-over-QUIC",
