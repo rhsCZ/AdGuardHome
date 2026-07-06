@@ -59,7 +59,7 @@ export const StatsConfig = (props: Props) => {
             setStatsConfig({
                 enabled: statsState.enabled,
                 ignored: statsState.ignored,
-                ignore_enabled: statsState.ignore_enabled,
+                ignored_enabled: statsState.ignored_enabled,
                 interval: newInterval,
                 customInterval: values.customInterval,
             });
@@ -73,7 +73,7 @@ export const StatsConfig = (props: Props) => {
             setStatsConfig({
                 enabled: statsState.enabled,
                 ignored: statsState.ignored,
-                ignore_enabled: statsState.ignore_enabled,
+                ignored_enabled: statsState.ignored_enabled,
                 interval: config.interval,
                 customInterval: formValues().customInterval,
             });

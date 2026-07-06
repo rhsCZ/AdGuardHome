@@ -63,14 +63,14 @@ export const Settings = () => {
     });
 
     const logsIgnoredSummary = createMemo(() => {
-        if (!queryLogsState.ignore_enabled) return '';
+        if (!queryLogsState.ignored_enabled) return '';
         const ignored = queryLogsState.ignored;
         if (!ignored || ignored.length === 0) return '';
         return ignored.join(', ');
     });
 
     const statsIgnoredSummary = createMemo(() => {
-        if (!statsState.ignore_enabled) return '';
+        if (!statsState.ignored_enabled) return '';
         const ignored = statsState.ignored;
         if (!ignored || ignored.length === 0) return '';
         return ignored.join(', ');
@@ -270,12 +270,12 @@ export const Settings = () => {
                                     id="querylog_ignored"
                                     title={intl.getMessage('ignore_domains_title')}
                                     description={intl.getMessage('ignore_domains_desc_log')}
-                                    checked={queryLogsState.ignore_enabled}
+                                    checked={queryLogsState.ignored_enabled}
                                     value={logsIgnoredSummary()}
                                     divider
                                     disabled={!queryLogsState.enabled}
                                     onChange={(v) =>
-                                        setLogsConfig({ ...queryLogsState, ignore_enabled: v })
+                                        setLogsConfig({ ...queryLogsState, ignored_enabled: v })
                                     }
                                     onClick={() => setLogsIgnoredModalOpen(true)}
                                 />
@@ -350,12 +350,12 @@ export const Settings = () => {
                                     id="stats_ignored"
                                     title={intl.getMessage('ignore_domains_title')}
                                     description={intl.getMessage('ignore_domains_desc_stats')}
-                                    checked={statsState.ignore_enabled}
+                                    checked={statsState.ignored_enabled}
                                     value={statsIgnoredSummary()}
                                     divider
                                     disabled={!statsState.enabled}
                                     onChange={(v) =>
-                                        setStatsConfig({ ...statsState, ignore_enabled: v })
+                                        setStatsConfig({ ...statsState, ignored_enabled: v })
                                     }
                                     onClick={() => setStatsIgnoredModalOpen(true)}
                                 />

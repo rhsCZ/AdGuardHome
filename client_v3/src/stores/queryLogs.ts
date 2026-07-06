@@ -30,7 +30,7 @@ type QueryLogsState = {
     isEntireLog: boolean;
     customInterval: number | null;
     ignored: string[];
-    ignore_enabled: boolean;
+    ignored_enabled: boolean;
 };
 
 const initialState: QueryLogsState = {
@@ -50,7 +50,7 @@ const initialState: QueryLogsState = {
     isEntireLog: false,
     customInterval: null,
     ignored: [],
-    ignore_enabled: false,
+    ignored_enabled: false,
 };
 
 const [state, setState] = createStore<QueryLogsState>(initialState);
@@ -205,7 +205,7 @@ export const getLogsConfig = async () => {
                 ? data.interval / HOUR
                 : null,
             ignored: data.ignored || [],
-            ignore_enabled: data.ignore_enabled ?? (data.ignored || []).length > 0,
+            ignored_enabled: data.ignored_enabled ?? false,
             processingGetConfig: false,
         });
     } catch (error) {

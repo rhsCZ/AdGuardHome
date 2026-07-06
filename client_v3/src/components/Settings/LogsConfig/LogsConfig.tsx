@@ -59,7 +59,7 @@ export const LogsConfig = (props: Props) => {
                 enabled: queryLogsState.enabled,
                 anonymize_client_ip: queryLogsState.anonymize_client_ip,
                 ignored: queryLogsState.ignored,
-                ignore_enabled: queryLogsState.ignore_enabled,
+                ignored_enabled: queryLogsState.ignored_enabled,
                 interval: newInterval,
                 customInterval: values.customInterval,
             });
@@ -74,7 +74,7 @@ export const LogsConfig = (props: Props) => {
                 enabled: queryLogsState.enabled,
                 anonymize_client_ip: queryLogsState.anonymize_client_ip,
                 ignored: queryLogsState.ignored,
-                ignore_enabled: queryLogsState.ignore_enabled,
+                ignored_enabled: queryLogsState.ignored_enabled,
                 interval: config.interval,
                 customInterval: formValues().customInterval,
             });
