@@ -131,14 +131,16 @@ export const getStatsConfig = async () => {
     }
 };
 
-export const setStatsConfig = async (values: any) => {
+export const setStatsConfig = async (values: any): Promise<boolean> => {
     setState('processingSetConfig', true);
     try {
         await apiClient.setStatsConfig(values);
         setState({ ...values, processingSetConfig: false });
+        return true;
     } catch (error) {
         addErrorToast({ error });
         setState('processingSetConfig', false);
+        return false;
     }
 };
 

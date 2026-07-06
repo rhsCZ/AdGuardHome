@@ -47,7 +47,6 @@ describe('ConfigDialog', () => {
                 onClose={vi.fn()}
                 onSubmit={vi.fn()}
                 processing={true}
-                dirty={true}
             >
                 <div>Content</div>
             </ConfigDialog>
@@ -64,7 +63,6 @@ describe('ConfigDialog', () => {
                 onClose={vi.fn()}
                 onSubmit={vi.fn()}
                 submitDisabled={true}
-                dirty={true}
             >
                 <div>Content</div>
             </ConfigDialog>
@@ -81,7 +79,6 @@ describe('ConfigDialog', () => {
                 title="Test"
                 onClose={vi.fn()}
                 onSubmit={onSubmit}
-                dirty={true}
             >
                 <div>Content</div>
             </ConfigDialog>
@@ -117,7 +114,6 @@ describe('ConfigDialog', () => {
                 onClose={vi.fn()}
                 onSubmit={vi.fn()}
                 processing={true}
-                dirty={true}
             >
                 <input data-testid="test-input" />
             </ConfigDialog>

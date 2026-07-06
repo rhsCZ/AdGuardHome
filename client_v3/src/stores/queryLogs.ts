@@ -214,14 +214,16 @@ export const getLogsConfig = async () => {
     }
 };
 
-export const setLogsConfig = async (values: any) => {
+export const setLogsConfig = async (values: any): Promise<boolean> => {
     setState('processingSetConfig', true);
     try {
         await apiClient.setQueryLogConfig(values);
         setState({ ...values, processingSetConfig: false });
+        return true;
     } catch (error) {
         addErrorToast({ error });
         setState('processingSetConfig', false);
+        return false;
     }
 };
 

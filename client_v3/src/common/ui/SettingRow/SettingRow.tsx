@@ -115,6 +115,7 @@ export const SettingRow = (props: Props) => {
             onClick={handleRowClick}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
                     handleRowClick();
                 }
             }}

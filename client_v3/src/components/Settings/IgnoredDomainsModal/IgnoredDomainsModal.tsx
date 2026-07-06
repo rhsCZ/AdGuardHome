@@ -1,4 +1,4 @@
-import { createSignal, createEffect, createMemo } from 'solid-js';
+import { createSignal, createEffect } from 'solid-js';
 import cn from 'clsx';
 
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
@@ -30,8 +30,6 @@ export const IgnoredDomainsModal = (props: Props) => {
         }
     });
 
-    const dirty = createMemo(() => value() !== props.ignored.join('\n'));
-
     const handleSave = () => {
         const trimmed = trimLinesAndRemoveEmpty(value());
         const ignoredArray = trimmed.split('\n').filter(Boolean);
@@ -45,7 +43,6 @@ export const IgnoredDomainsModal = (props: Props) => {
             onClose={props.onClose}
             onSubmit={handleSave}
             processing={props.processing}
-            dirty={dirty()}
         >
             <Textarea
                 value={value()}

@@ -13,7 +13,6 @@ type Props = {
     onClose: () => void;
     onSubmit: () => void;
     processing?: boolean;
-    dirty?: boolean;
     submitDisabled?: boolean;
     class?: string;
     children?: JSX.Element;
@@ -28,7 +27,6 @@ export const ConfigDialog = (props: Props) => {
         'onClose',
         'onSubmit',
         'processing',
-        'dirty',
         'submitDisabled',
         'class',
         'children',

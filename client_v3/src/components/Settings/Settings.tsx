@@ -81,18 +81,21 @@ export const Settings = () => {
         const ss = untrack(() => settingsState.settingsList.safesearch);
         setSafesearchProcessing(true);
         toggleSetting('safesearch', { ...ss, ...newProviders })
-            .then(() => {
-                setSafesearchProvidersOpen(false);
-                addSuccessToast(intl.getMessage('changes_saved_success'));
+            .then((result) => {
+                if (result) {
+                    setSafesearchProvidersOpen(false);
+                    addSuccessToast(intl.getMessage('changes_saved_success'));
+                }
             })
-            .catch(() => {})
             .finally(() => setSafesearchProcessing(false));
     };
 
     const handleLogsIgnoredSave = (ignored: string[]) => {
-        setLogsConfig({ ...queryLogsState, ignored }).then(() => {
-            setLogsIgnoredModalOpen(false);
-            addSuccessToast(intl.getMessage('changes_saved_success'));
+        setLogsConfig({ ...queryLogsState, ignored }).then((result) => {
+            if (result) {
+                setLogsIgnoredModalOpen(false);
+                addSuccessToast(intl.getMessage('changes_saved_success'));
+            }
         });
     };
 
@@ -103,9 +106,11 @@ export const Settings = () => {
     };
 
     const handleStatsIgnoredSave = (ignored: string[]) => {
-        setStatsConfig({ ...statsState, ignored }).then(() => {
-            setStatsIgnoredModalOpen(false);
-            addSuccessToast(intl.getMessage('changes_saved_success'));
+        setStatsConfig({ ...statsState, ignored }).then((result) => {
+            if (result) {
+                setStatsIgnoredModalOpen(false);
+                addSuccessToast(intl.getMessage('changes_saved_success'));
+            }
         });
     };
 
@@ -290,10 +295,8 @@ export const Settings = () => {
                                 interval={queryLogsState.interval}
                                 customInterval={queryLogsState.customInterval}
                                 processing={queryLogsState.processingSetConfig}
-                                processingClear={queryLogsState.processingClear}
                                 modalOpen={logsModalOpen()}
                                 onModalClose={() => setLogsModalOpen(false)}
-                                onClear={() => setShowClearLogsConfirm(true)}
                             />
 
                             <IgnoredDomainsModal

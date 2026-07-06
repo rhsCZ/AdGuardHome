@@ -17,10 +17,8 @@ type Props = {
     interval: number;
     customInterval?: number;
     processing: boolean;
-    processingClear: boolean;
     modalOpen: boolean;
     onModalClose: () => void;
-    onClear: () => void;
 };
 
 export const LogsConfig = (props: Props) => {
