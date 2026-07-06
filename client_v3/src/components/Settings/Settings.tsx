@@ -282,7 +282,7 @@ export const Settings = () => {
 
                                 <div class={s.actionRow}>
                                     <Button
-                                        variant="danger"
+                                        variant="secondary-danger"
                                         class={s.clearButton}
                                         onClick={() => setShowClearLogsConfirm(true)}
                                         compact
@@ -363,7 +363,7 @@ export const Settings = () => {
 
                                 <div class={s.actionRow}>
                                     <Button
-                                        variant="danger"
+                                        variant="secondary-danger"
                                         class={s.clearButton}
                                         onClick={() => setShowClearStatsConfirm(true)}
                                         compact
