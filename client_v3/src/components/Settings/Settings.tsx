@@ -285,6 +285,7 @@ export const Settings = () => {
                                         variant="secondary"
                                         class={s.clearButton}
                                         onClick={() => setShowClearLogsConfirm(true)}
+                                        compact
                                     >
                                         {intl.getMessage('clear_query_log')}
                                     </Button>
@@ -365,6 +366,7 @@ export const Settings = () => {
                                         variant="secondary"
                                         class={s.clearButton}
                                         onClick={() => setShowClearStatsConfirm(true)}
+                                        compact
                                     >
                                         {intl.getMessage('settings_statistics_clear')}
                                     </Button>
