@@ -18,7 +18,7 @@ import { getFilteringStatus, filteringState } from 'panel/stores/filtering';
 import { SAFE_SEARCH_PROVIDERS } from 'panel/helpers/constants';
 import { addSuccessToast } from 'panel/stores/toasts';
 
-import { SettingRow } from './SettingRow';
+import { SettingRow } from 'panel/common/ui/SettingRow';
 import { StatsConfig } from './StatsConfig';
 import { LogsConfig } from './LogsConfig';
 import { FiltersConfig } from './FiltersConfig';

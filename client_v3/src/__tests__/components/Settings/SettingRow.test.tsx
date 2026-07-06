@@ -26,7 +26,7 @@ vi.mock('panel/common/intl', () => ({
     },
 }));
 
-import { SettingRow } from 'panel/components/Settings/SettingRow';
+import { SettingRow } from 'panel/common/ui/SettingRow';
 
 describe('SettingRow', () => {
     describe('switch variant', () => {

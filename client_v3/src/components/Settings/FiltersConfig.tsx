@@ -5,7 +5,7 @@ import theme from 'panel/lib/theme';
 import { RoutePath } from 'panel/components/Routes/Paths';
 import { Link } from 'panel/common/ui/Link';
 import { setFiltersConfig } from 'panel/stores/filtering';
-import { SettingRow } from './SettingRow';
+import { SettingRow } from 'panel/common/ui/SettingRow';
 
 export type FormValues = {
     enabled: boolean;
