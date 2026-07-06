@@ -29,6 +29,10 @@ export const getDefaultInterval = (customInterval?: number, interval?: number) =
     return interval || DAY;
 };
 
+export const getRetentionSummary = (intervalMs: number) => {
+    return formatIntervalText(intervalMs);
+};
+
 const SAFESEARCH_TITLES = {
     bing: 'Bing',
     duckduckgo: 'DuckDuckGo',
