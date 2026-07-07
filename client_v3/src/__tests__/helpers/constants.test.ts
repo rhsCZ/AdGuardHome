@@ -4,7 +4,8 @@ vi.mock('panel/common/intl', () => ({
     default: { getMessage: vi.fn((key: string) => key) },
 }));
 
-import { getUpstreamModeOptions, DNS_REQUEST_OPTIONS } from 'panel/helpers/constants';
+import { getUpstreamModeOptions } from '../../components/DnsSettings/helpers';
+import { DNS_REQUEST_OPTIONS } from 'panel/helpers/constants';
 
 describe('getUpstreamModeOptions', () => {
     beforeEach(() => vi.clearAllMocks());

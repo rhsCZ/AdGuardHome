@@ -5,7 +5,8 @@ import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Input } from 'panel/common/controls/Input';
 import { Radio } from 'panel/common/controls/Radio';
-import { BLOCKING_MODES, UINT32_RANGE, getBlockingModeOptions } from 'panel/helpers/constants';
+import { BLOCKING_MODES, UINT32_RANGE } from 'panel/helpers/constants';
+import { getBlockingModeOptions } from '../../helpers';
 import {
     validateRequiredValue,
     validateBetween,

@@ -1,4 +1,4 @@
-import { DNS_REQUEST_OPTIONS } from 'panel/helpers/constants';
+import { DNS_REQUEST_OPTIONS, BLOCKING_MODES, EDNS_MODES } from 'panel/helpers/constants';
 import intl from 'panel/common/intl';
 
 export const getUpstreamModeSummary = (mode: string): string => {
@@ -57,4 +57,82 @@ export const getTtlSummary = (seconds?: number): string => {
 export const getListSummary = (list: string): string => {
     if (!list || !list.trim()) return '';
     return list.split('\n').filter(Boolean).join(', ');
+};
+
+/**
+ * Returns blocking mode options with i18n text.
+ * Factory function — re-executes on each render for locale correctness.
+ */
+export const getBlockingModeOptions = () => {
+    return [
+        {
+            text: intl.getMessage('dns_blocking_mode_default'),
+            value: BLOCKING_MODES.default,
+            description: intl.getMessage('dns_blocking_mode_default_desc'),
+        },
+        {
+            text: intl.getMessage('dns_blocking_mode_refused'),
+            value: BLOCKING_MODES.refused,
+            description: intl.getMessage('dns_blocking_mode_refused_desc'),
+        },
+        {
+            text: intl.getMessage('dns_blocking_mode_nxdomain'),
+            value: BLOCKING_MODES.nxdomain,
+            description: intl.getMessage('dns_blocking_mode_nxdomain_desc'),
+        },
+        {
+            text: intl.getMessage('dns_blocking_mode_null_ip'),
+            value: BLOCKING_MODES.null_ip,
+            description: intl.getMessage('dns_blocking_mode_null_ip_desc'),
+        },
+        {
+            text: intl.getMessage('dns_blocking_mode_custom_ip'),
+            value: BLOCKING_MODES.custom_ip,
+            description: intl.getMessage('dns_blocking_mode_custom_ip_desc'),
+        },
+    ];
+};
+
+/**
+ * Returns EDNS mode options with i18n text.
+ * Factory function — re-executes on each render for locale correctness.
+ */
+export const getEdnsOptions = () => {
+    return [
+        {
+            text: intl.getMessage('dns_edns_option_default'),
+            value: EDNS_MODES.default,
+        },
+        {
+            text: intl.getMessage('dns_edns_option_custom'),
+            value: EDNS_MODES.custom,
+        },
+    ];
+};
+
+/**
+ * Returns upstream mode options with i18n text.
+ * Factory function — re-executes on each call for locale correctness.
+ * When used inside `createMemo`, tracks the locale signal and updates
+ * option labels on language change.
+ */
+export const getUpstreamModeOptions = () => {
+    return [
+        {
+            text: intl.getMessage('upstream_dns_load_balancing'),
+            value: DNS_REQUEST_OPTIONS.LOAD_BALANCING,
+            description: intl.getMessage('upstream_dns_load_balancing_desc'),
+        },
+        {
+            text: intl.getMessage('upstream_dns_parallel_requests'),
+            value: DNS_REQUEST_OPTIONS.PARALLEL,
+            description: intl.getMessage('upstream_dns_parallel_requests_desc'),
+        },
+        {
+            text: intl.getMessage('upstream_dns_fastest_addr'),
+            value: DNS_REQUEST_OPTIONS.FASTEST_ADDR,
+            description: intl.getMessage('upstream_dns_fastest_addr_desc'),
+            warning: intl.getMessage('upstream_dns_fastest_addr_warning'),
+        },
+    ];
 };

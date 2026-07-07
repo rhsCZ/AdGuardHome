@@ -4,7 +4,7 @@ import { dnsConfigState, setDnsConfig } from 'panel/stores/dnsConfig';
 import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Radio } from 'panel/common/controls/Radio';
-import { getUpstreamModeOptions } from 'panel/helpers/constants';
+import { getUpstreamModeOptions } from '../../helpers';
 import theme from 'panel/lib/theme';
 
 import s from './UpstreamModeDialog.module.pcss';
