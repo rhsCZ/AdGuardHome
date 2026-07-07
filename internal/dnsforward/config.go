@@ -724,10 +724,23 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) (err e
 
 	tlsCert := proxyConf.TLSConfig.Certificates[0]
 
+	err = s.SetDNSNames(ctx, tlsCert)
+
+	return errors.Annotate(err, "setting dns names: %w")
+}
+
+// SetDNSNames sets DNS names to Server from tlsCert.  tlsCert must be valid.
+func (s *Server) SetDNSNames(
+	ctx context.Context,
+	tlsCert tls.Certificate,
+) (err error) {
 	cert, err := x509.ParseCertificate(tlsCert.Certificate[0])
 	if err != nil {
-		return fmt.Errorf("x509.ParseCertificate(): %w", err)
+		return fmt.Errorf("parsing tls certificate as x509: %w", err)
 	}
+
+	s.serverLock.Lock()
+	defer s.serverLock.Unlock()
 
 	s.hasIPAddrs = aghtls.CertificateHasIP(cert)
 
@@ -792,7 +805,12 @@ func (s *Server) replaceGetCertificate(orig *tls.Config) {
 	origGetCert := orig.GetCertificate
 
 	orig.GetCertificate = func(chi *tls.ClientHelloInfo) (cert *tls.Certificate, err error) {
-		if s.conf.TLSConf.StrictSNICheck && !anyNameMatches(s.dnsNames, chi.ServerName) {
+		s.serverLock.RLock()
+		dnsNames := s.dnsNames
+		strictSNICheck := s.conf.TLSConf.StrictSNICheck
+		s.serverLock.RUnlock()
+
+		if strictSNICheck && !anyNameMatches(dnsNames, chi.ServerName) {
 			s.logger.Warn(
 				"unknown SNI in Client Hello",
 				"server_name", chi.ServerName,

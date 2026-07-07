@@ -241,6 +241,10 @@ func NewServer(p DNSCreateParams) (s *Server, err error) {
 		p.Anonymizer = aghnet.NewIPMut(nil)
 	}
 
+	if p.TLSConfigProvider == nil {
+		p.TLSConfigProvider = aghtls.EmptyTLSConfigProvider{}
+	}
+
 	var etcHosts upstream.Resolver
 	if p.EtcHosts != nil {
 		etcHosts = upstream.NewHostsResolver(p.EtcHosts)

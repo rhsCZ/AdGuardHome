@@ -122,7 +122,7 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 			panic(err)
 		}
 
-		m.logger.InfoContext(ctx, "overriding ciphers", "ciphers", config.TLS.OverrideTLSCiphers)
+		m.logger.InfoContext(ctx, "overriding ciphers", "ciphers", conf.tlsSettings.OverrideTLSCiphers)
 	} else {
 		m.logger.InfoContext(ctx, "using default ciphers")
 	}
@@ -154,7 +154,7 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 	if err != nil {
 		m.extTLSConf.Enabled = false
 
-		return m, err
+		return m, fmt.Errorf("parsing tls certificate: %w", err)
 	}
 
 	m.tlsConf = &tls.Config{
@@ -168,6 +168,30 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 	m.setCertFileTime(ctx)
 
 	return m, nil
+}
+
+// checkIfValidStatus checks if status is valid.  If it is valid, certErr is set
+// to nil.  Otherwise, certErr is returned as is.  status must not be nil.
+func (m *tlsManager) checkIfValidStatus(
+	ctx context.Context,
+	status *tlsConfigStatus,
+	certErr error,
+) (err error) {
+	if certErr != nil {
+		status.WarningValidation = certErr.Error()
+		if status.ValidCert && status.ValidKey && status.ValidPair {
+			// Do not return warnings since those aren't critical, just log.
+			m.logger.WarnContext(
+				ctx,
+				"error while loading TLS configuration",
+				slogutil.KeyError, certErr,
+			)
+
+			certErr = nil
+		}
+	}
+
+	return certErr
 }
 
 // setWebAPI stores the provided web API.  It must be called before
@@ -286,6 +310,17 @@ func (m *tlsManager) reload(ctx context.Context) {
 		return
 	}
 
+	err = globalContext.dnsServer.SetDNSNames(ctx, m.tlsConf.Certificates[0])
+	if err != nil {
+		m.logger.WarnContext(
+			ctx,
+			"failed to update dns names from tls certificate",
+			slogutil.KeyError, err,
+		)
+
+		return
+	}
+
 	extTLSConf.Status = *status
 
 	m.extTLSConf = &extTLSConf
@@ -308,19 +343,7 @@ func (m *tlsManager) loadTLSConfig(
 	status *tlsConfigStatus,
 ) (err error) {
 	defer func() {
-		if err != nil {
-			status.WarningValidation = err.Error()
-			if status.ValidCert && status.ValidKey && status.ValidPair {
-				// Do not return warnings since those aren't critical, just log.
-				m.logger.WarnContext(
-					ctx,
-					"error while loading TLS configuration",
-					slogutil.KeyError, err,
-				)
-
-				err = nil
-			}
-		}
+		err = m.checkIfValidStatus(ctx, status, err)
 	}()
 
 	err = loadCertificateChainData(extTLSConf)
@@ -867,7 +890,9 @@ func (m *tlsManager) onGetCertificate(chi *tls.ClientHelloInfo) (cert *tls.Certi
 		return nil, nil
 	}
 
-	return &m.tlsConf.Certificates[0], nil
+	tlsCert := m.tlsConf.Certificates[0]
+
+	return &tlsCert, nil
 }
 
 // updateTLSCert loads and updates a TLS certificate for m.tlsConf.  If
