@@ -725,7 +725,7 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) (err e
 
 	tlsCert := proxyConf.TLSConfig.Certificates[0]
 
-	err = s.SetDNSNames(ctx, tlsCert)
+	err = s.setDNSNamesLocked(ctx, tlsCert)
 
 	return errors.Annotate(err, "setting dns names: %w")
 }
@@ -735,13 +735,22 @@ func (s *Server) SetDNSNames(
 	ctx context.Context,
 	tlsCert tls.Certificate,
 ) (err error) {
+	s.serverLock.Lock()
+	defer s.serverLock.Unlock()
+
+	return s.setDNSNamesLocked(ctx, tlsCert)
+}
+
+// setDNSNamesLocked sets DNS names to Server from tlsCert without acquiring
+// the lock.  Caller must hold s.serverLock for writing.  tlsCert must be valid.
+func (s *Server) setDNSNamesLocked(
+	ctx context.Context,
+	tlsCert tls.Certificate,
+) (err error) {
 	cert, err := x509.ParseCertificate(tlsCert.Certificate[0])
 	if err != nil {
 		return fmt.Errorf("parsing tls certificate as x509: %w", err)
 	}
-
-	s.serverLock.Lock()
-	defer s.serverLock.Unlock()
 
 	s.hasIPAddrs = aghtls.CertificateHasIP(cert)
 
