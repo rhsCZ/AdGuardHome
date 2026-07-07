@@ -53,7 +53,6 @@ export const Settings = () => {
     const statsRetentionSummary = createMemo(() => getRetentionSummary(statsState.interval));
 
     const safesearchSummary = createMemo(() => {
-        if (!safesearchEnabled()) return '';
         const ss = safesearch();
         if (!ss) return '';
         const selected = Object.keys(SAFE_SEARCH_PROVIDERS)
@@ -63,14 +62,12 @@ export const Settings = () => {
     });
 
     const logsIgnoredSummary = createMemo(() => {
-        if (!queryLogsState.ignored_enabled) return '';
         const ignored = queryLogsState.ignored;
         if (!ignored || ignored.length === 0) return '';
         return ignored.join(', ');
     });
 
     const statsIgnoredSummary = createMemo(() => {
-        if (!statsState.ignored_enabled) return '';
         const ignored = statsState.ignored;
         if (!ignored || ignored.length === 0) return '';
         return ignored.join(', ');
