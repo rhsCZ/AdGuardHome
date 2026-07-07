@@ -32,7 +32,9 @@ const CACHE_DIALOG_CONFIG: Record<
         description: () => intl.getMessage('dns_cache_size_desc'),
         label: () => intl.getMessage('dns_cache_size_label'),
         validate: (v) =>
-            validateRequiredValue(v) || validateBetween(Number(v), UINT32_RANGE.MIN, UINT32_RANGE.MAX) || '',
+            validateRequiredValue(v) ||
+            validateBetween(Number(v), UINT32_RANGE.MIN, UINT32_RANGE.MAX) ||
+            '',
     },
     cache_ttl_min: {
         title: () => intl.getMessage('dns_override_min_ttl_title'),
@@ -40,7 +42,9 @@ const CACHE_DIALOG_CONFIG: Record<
         label: () => intl.getMessage('dns_override_min_ttl_label'),
         placeholder: () => intl.getMessage('dns_override_min_ttl_placeholder'),
         validate: (v) =>
-            validateRequiredValue(v) || validateBetween(Number(v), UINT32_RANGE.MIN, UINT32_RANGE.MAX) || '',
+            validateRequiredValue(v) ||
+            validateBetween(Number(v), UINT32_RANGE.MIN, UINT32_RANGE.MAX) ||
+            '',
     },
     cache_ttl_max: {
         title: () => intl.getMessage('dns_override_max_ttl_title'),
