@@ -56,11 +56,7 @@ export const Radio = <T extends number | string | boolean = string>(props: Props
                                 class={cn(s.icon, { [s.active]: props.value === o.value })}
                             />
                         </div>
-                        <div
-                            class={cn(s.text, {
-                                [props.textClass!]: props.textClass,
-                            })}
-                        >
+                        <div class={s.text}>
                             <div>{o.text}</div>
                             <Show when={o.description}>
                                 <div class={cn(theme.text.t4, s.description)}>{o.description}</div>
