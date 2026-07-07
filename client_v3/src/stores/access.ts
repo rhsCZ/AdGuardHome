@@ -56,7 +56,7 @@ export const setAccessList = async (values: any) => {
 
         await apiClient.setAccessList(config);
         setState({ ...values, processingSet: false });
-        addSuccessToast(intl.getMessage('access_settings_saved_toast'));
+        addSuccessToast(intl.getMessage('settings_notify_changes_saved'));
     } catch (error) {
         addErrorToast({ error });
         setState('processingSet', false);
