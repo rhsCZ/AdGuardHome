@@ -164,15 +164,16 @@ func (iface *dhcpInterfaceV6) handleRequest(
 		return respond6(fd, resp)
 	}
 
+	var ianaOpt layers.DHCPv6Option
+
 	lease, err := iface.leaseForRequest(ctx, req, fd.ether.SrcMAC)
 	if err != nil {
-		respIANA := newIANAWithStatus(iana.ID, layers.DHCPv6StatusCodeNoAddrsAvail)
-		resp.Options = iface.newRequestRespOpts(fd, req, cliID, respIANA)
-
-		return respond6(fd, resp)
+		ianaOpt = newIANAWithStatus(iana.ID, layers.DHCPv6StatusCodeNoAddrsAvail)
+	} else {
+		ianaOpt = iface.iaNAFromLease(lease, iana.ID)
 	}
 
-	resp.Options = iface.newRequestRespOpts(fd, req, cliID, iface.iaNAFromLease(lease, iana.ID))
+	resp.Options = iface.newRequestRespOpts(fd, req, cliID, ianaOpt)
 
 	return respond6(fd, resp)
 }

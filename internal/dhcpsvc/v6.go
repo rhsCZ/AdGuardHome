@@ -502,7 +502,10 @@ func (iface *dhcpInterfaceV6) firstIANA(
 }
 
 // newSolicitRespOpts returns the common option list for Advertise and
-// rapid-commit Reply responses to a Solicit request.  cliID must not be nil.
+// rapid-commit Reply responses to a Solicit request.  Zero iaid creates an
+// option with Status Code NoAddrsAvail.  rapidCommit defines whether the
+// response should include the Rapid Commit option.  fd, req, cliID, and lease
+// must not be nil.
 func (iface *dhcpInterfaceV6) newSolicitRespOpts(
 	fd *frameData6,
 	req *layers.DHCPv6,
@@ -537,7 +540,8 @@ func (iface *dhcpInterfaceV6) newSolicitRespOpts(
 }
 
 // newRequestRespOpts returns the common option list for Reply responses to a
-// Request message.  cliID must not be nil.
+// Request message.  fd, req, and cliID must not be nil.  iana must be a valid
+// IA_NA option.
 //
 // TODO(e.burkov):  Keep the Reply option set aligned with the current Advertise
 // response shape until the wider DHCPv6 implementation is completed.
@@ -600,6 +604,13 @@ func (iface *dhcpInterfaceV6) leaseForRequest(
 
 	lease, ok := iface.common.leases[key]
 	if ok {
+		err = iface.commit(ctx, req, lease)
+		if err != nil {
+			l.WarnContext(ctx, "committing existing lease", slogutil.KeyError, err)
+
+			return nil, fmt.Errorf("committing existing lease for ip %s: %w", lease.IP, err)
+		}
+
 		return lease, nil
 	}
 

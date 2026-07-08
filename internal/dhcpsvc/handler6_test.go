@@ -9,6 +9,7 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
+	"github.com/AdguardTeam/golibs/testutil/servicetest"
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/stretchr/testify/assert"
@@ -175,10 +176,11 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	notOnLinkAddr := netip.MustParseAddr(testAnotherRangeStartV6Str)
 
 	testCases := []struct {
-		name     string
-		in       gopacket.Packet
-		solicit  gopacket.Packet
-		wantOpts layers.DHCPv6Options
+		name       string
+		in         gopacket.Packet
+		solicit    gopacket.Packet
+		wantOpts   layers.DHCPv6Options
+		wantChange bool
 	}{{
 		name:    "success",
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
@@ -190,6 +192,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: true,
 	}, {
 		name:    "not_on_link",
 		in:      newDHCPv6REQUEST(t, testHWUnknown, notOnLinkAddr),
@@ -201,6 +204,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: false,
 	}, {
 		name:    "existing_static",
 		in:      newDHCPv6REQUEST(t, testHWStatic, testIPv6Static),
@@ -212,6 +216,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: true,
 	}, {
 		name:    "no_iana",
 		in:      newDHCPv6REQUEST(t, testHWUnknown, netip.Addr{}),
@@ -222,6 +227,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: false,
 	}, {
 		name:    "preceding_solicit",
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
@@ -233,6 +239,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: true,
 	}, {
 		name:    "preceding_solicit_rapid_commit",
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
@@ -244,6 +251,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
+		wantChange: true,
 	}}
 
 	for _, tc := range testCases {
@@ -254,13 +262,16 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			t.Parallel()
 
 			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
-			startTestDHCPServer(t, &dhcpsvc.Config{
+			srv := newTestDHCPServer(t, &dhcpsvc.Config{
 				Interfaces:           testIPv6InterfacesConf,
 				NetworkDeviceManager: ndMgr,
 				Logger:               testLogger,
 				DBFilePath:           dbFilePath,
 				Enabled:              true,
 			})
+			servicetest.RequireRun(t, srv, testTimeout)
+
+			leases := srv.Leases()
 
 			if tc.solicit != nil {
 				testutil.RequireSend(t, inCh, tc.solicit, testTimeout)
@@ -272,6 +283,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			testutil.RequireSend(t, inCh, tc.in, testTimeout)
 
 			assertValidResponse6(t, req, outCh, tc.wantOpts)
+			assertLeases(t, leases, srv, tc.wantChange)
 		})
 	}
 }

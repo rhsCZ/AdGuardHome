@@ -2,11 +2,15 @@ package dhcpsvc
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/netip"
 	"slices"
 
+	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
+	"github.com/AdguardTeam/golibs/netutil"
+	"github.com/AdguardTeam/golibs/validate"
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 )
@@ -72,10 +76,10 @@ func newFrameData4(
 		return nil
 	}
 
-	etherLayer, ok := pkt.Layer(layers.LayerTypeEthernet).(*layers.Ethernet)
-	if !ok {
+	ether, err := ethernetFromPacket(pkt, layers.EthernetTypeIPv4)
+	if err != nil {
 		actual := pkt.Layers()
-		logger.DebugContext(ctx, "skipping non-ethernet packet", "layers", actual)
+		logger.DebugContext(ctx, "skipping packet", slogutil.KeyError, err, "layers", actual)
 
 		return nil
 	}
@@ -94,7 +98,7 @@ func newFrameData4(
 	}
 
 	return &frameData4{
-		ether:     etherLayer,
+		ether:     ether,
 		ip:        ipLayer,
 		device:    dev,
 		localAddr: addr,
@@ -118,10 +122,10 @@ func newFrameData6(
 		return nil
 	}
 
-	etherLayer, ok := pkt.Layer(layers.LayerTypeEthernet).(*layers.Ethernet)
-	if !ok {
+	ether, err := ethernetFromPacket(pkt, layers.EthernetTypeIPv6)
+	if err != nil {
 		actual := pkt.Layers()
-		logger.DebugContext(ctx, "skipping non-ethernet packet", "layers", actual)
+		logger.DebugContext(ctx, "skipping packet", slogutil.KeyError, err, "layers", actual)
 
 		return nil
 	}
@@ -140,11 +144,45 @@ func newFrameData6(
 	}
 
 	return &frameData6{
-		ether:     etherLayer,
+		ether:     ether,
 		ip:        ipLayer,
 		duid:      duid,
 		duidData:  duid.Encode(),
 		device:    dev,
 		localAddr: addr,
 	}
+}
+
+// ethernetFromPacket extracts the Ethernet layer from the given packet and
+// validates its contents.  pkt must not be nil, expType is the expected type of
+// the Ethernet layer.
+func ethernetFromPacket(
+	pkt gopacket.Packet,
+	expType layers.EthernetType,
+) (ether *layers.Ethernet, err error) {
+	defer func() { err = errors.Annotate(err, "ethernet layer: %w") }()
+
+	ether, ok := pkt.Layer(layers.LayerTypeEthernet).(*layers.Ethernet)
+	if !ok {
+		return nil, errors.ErrNoValue
+	}
+
+	var errs []error
+
+	err = netutil.ValidateMAC(ether.SrcMAC)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("source mac: %w", err))
+	}
+
+	err = netutil.ValidateMAC(ether.DstMAC)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("destination mac: %w", err))
+	}
+
+	err = validate.Equal("type", ether.EthernetType, expType)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("ethernet type: %w", err))
+	}
+
+	return ether, errors.Join(errs...)
 }

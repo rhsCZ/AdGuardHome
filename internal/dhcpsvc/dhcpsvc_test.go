@@ -300,6 +300,8 @@ func newTestPacket(
 // assertLeases asserts that the leases returned by srv are equal to orig if
 // wantChanged is false and not equal if wantChanged is true.  The assertion is
 // performed 10 times during half of [testTimeout].
+//
+// TODO(e.burkov):  Replace the lease storage with interface and test properly.
 func assertLeases(tb testing.TB, orig []*dhcpsvc.Lease, srv dhcpsvc.Interface, wantChanged bool) {
 	tb.Helper()
 
