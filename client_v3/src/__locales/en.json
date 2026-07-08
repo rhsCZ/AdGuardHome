@@ -214,7 +214,7 @@
   "settings_domain_names": "Domain names, one per line",
   "settings_rule_syntax": "Rule syntax",
   "form_error_required": "Fill out this field",
-  "form_value_value_between_error": "Enter a value between %min_value% and %max_value%",
+  "form_value_value_from_error": "Enter a value from %min_value% and %max_value%",
   "form_value_value_min_error": "Enter a value of %min_value% or greater",
   "save": "Save",
   "cancel": "Cancel",
