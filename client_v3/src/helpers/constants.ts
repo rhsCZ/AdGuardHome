@@ -1,4 +1,3 @@
-
 export const R_URL_REQUIRES_PROTOCOL = /^https?:\/\/[^/\s]+(\/.*)?$/;
 
 // matches hostname or *.wildcard
@@ -188,6 +187,7 @@ export const FILTERS_URLS = {
 export const ENCRYPTION_SOURCE = {
     PATH: 'path',
     CONTENT: 'content',
+    SAVED: 'saved',
 };
 
 export const FILTERED = 'Filtered';
