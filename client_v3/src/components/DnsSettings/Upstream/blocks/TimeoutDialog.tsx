@@ -20,9 +20,10 @@ export const TimeoutDialog = (props: Props) => {
         () => dnsConfigState.upstream_timeout,
         {
             validate: (v) =>
-                validateMinValue(v, UPSTREAM_TIMEOUT.MIN) ||
-                validateMaxValue(v, UPSTREAM_TIMEOUT.MAX) ||
-                '',
+                (Number.isNaN(v)
+                    ? intl.getMessage('form_error_required')
+                    : validateMinValue(v, UPSTREAM_TIMEOUT.MIN) ||
+                      validateMaxValue(v, UPSTREAM_TIMEOUT.MAX)) || '',
         },
     );
 
@@ -46,7 +47,11 @@ export const TimeoutDialog = (props: Props) => {
                     type="number"
                     value={field.value()}
                     onChange={(e: Event) =>
-                        field.setValue(Number((e.target as HTMLInputElement).value))
+                        field.setValue(
+                            (e.target as HTMLInputElement).value === ''
+                                ? NaN
+                                : Number((e.target as HTMLInputElement).value),
+                        )
                     }
                     onBlur={() => field.validate()}
                     id="upstream_timeout"

@@ -269,14 +269,60 @@ export const validateIp = (value?: string): ValidationResult => {
 export const validateIpPerLine = (value: string): string | undefined => {
     if (!value) return undefined;
     const lines = value.split('\n');
+    const invalidLines: number[] = [];
     for (let i = 0; i < lines.length; i += 1) {
         const line = lines[i].trim();
         if (line) {
             const error = validateIp(line);
-            if (error) return error;
+            if (error) invalidLines.push(i + 1);
         }
     }
-    return undefined;
+    if (invalidLines.length === 0) return undefined;
+    if (invalidLines.length === 1 && lines.length === 1) {
+        return intl.getMessage('form_error_format');
+    }
+    if (invalidLines.length === 1) {
+        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
+    }
+    return intl.getMessage('form_error_format_lines', {
+        lines: invalidLines.join(', '),
+    });
+};
+
+/**
+ * Validates that each non-empty line is a valid access client entry:
+ * an IP address, CIDR range, or ClientID.
+ *
+ * @example validateClientsPerLine("192.168.1.1")            // undefined (valid)
+ * @example validateClientsPerLine("my-client-id")           // undefined (valid)
+ * @example validateClientsPerLine("bad entry!")             // "Invalid format"
+ */
+export const validateClientsPerLine = (value: string): string | undefined => {
+    if (!value) return undefined;
+    const lines = value.split('\n');
+    const invalidLines: number[] = [];
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        if (line) {
+            const isValidClient =
+                R_IPV4.test(line) ||
+                R_IPV6.test(line) ||
+                R_CIDR.test(line) ||
+                R_CIDR_IPV6.test(line) ||
+                R_CLIENT_ID.test(line);
+            if (!isValidClient) invalidLines.push(i + 1);
+        }
+    }
+    if (invalidLines.length === 0) return undefined;
+    if (invalidLines.length === 1 && lines.length === 1) {
+        return intl.getMessage('form_error_format');
+    }
+    if (invalidLines.length === 1) {
+        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
+    }
+    return intl.getMessage('form_error_format_lines', {
+        lines: invalidLines.join(', '),
+    });
 };
 
 /**
@@ -561,6 +607,9 @@ export const validateHostname = (value?: string): ValidationResult => {
 const R_COMMENT = /^\s*#/;
 const R_HAS_ADDRESS = /[.:]/;
 
+// A valid blocked_hosts entry contains at least one dot.
+const R_HAS_DOT = /[.]/;
+
 /**
  * Validates upstream server lines. Each line must contain a dot or colon.
  *
@@ -585,11 +634,47 @@ export const validateUpstreams = (value: string): string | undefined => {
         return undefined;
     }
 
-    if (invalidLines.length === 1) {
-        return intl.getMessage('form_error_upstream_format', { line: invalidLines[0] });
+    if (invalidLines.length === 1 && lines.length === 1) {
+        return intl.getMessage('form_error_format');
     }
 
-    return intl.getMessage('form_error_upstream_format_multi', {
+    if (invalidLines.length === 1) {
+        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
+    }
+
+    return intl.getMessage('form_error_format_lines', {
+        lines: invalidLines.join(', '),
+    });
+};
+
+/**
+ * Validates that each non-empty, non-comment line in a blocked_hosts
+ * entry contains a dot (domain, wildcard, or AdGuard URL filter rule).
+ *
+ * @example validateDomainsPerLine("example.org")              // undefined (valid)
+ * @example validateDomainsPerLine("*.example.org")            // undefined (valid)
+ * @example validateDomainsPerLine("||example.org^")           // undefined (valid)
+ * @example validateDomainsPerLine("# comment")               // undefined (comments ok)
+ * @example validateDomainsPerLine("notadomain")              // "Invalid format"
+ */
+export const validateDomainsPerLine = (value: string): string | undefined => {
+    if (!value) return undefined;
+    const lines = value.split('\n');
+    const invalidLines: number[] = [];
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        if (line && !R_COMMENT.test(line) && !R_HAS_DOT.test(line)) {
+            invalidLines.push(i + 1);
+        }
+    }
+    if (invalidLines.length === 0) return undefined;
+    if (invalidLines.length === 1 && lines.length === 1) {
+        return intl.getMessage('form_error_format');
+    }
+    if (invalidLines.length === 1) {
+        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
+    }
+    return intl.getMessage('form_error_format_lines', {
         lines: invalidLines.join(', '),
     });
 };

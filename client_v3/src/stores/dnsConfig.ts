@@ -146,27 +146,21 @@ export const setDnsConfig = async (
     setState('processingSetConfig', true);
     try {
         const config = { ...values };
-        let hasDnsSettings = false;
 
         if (Object.hasOwn(config, 'bootstrap_dns')) {
             config.bootstrap_dns = splitByNewLine(config.bootstrap_dns);
-            hasDnsSettings = true;
         }
         if (Object.hasOwn(config, 'fallback_dns')) {
             config.fallback_dns = splitByNewLine(config.fallback_dns);
-            hasDnsSettings = true;
         }
         if (Object.hasOwn(config, 'local_ptr_upstreams')) {
             config.local_ptr_upstreams = splitByNewLine(config.local_ptr_upstreams);
-            hasDnsSettings = true;
         }
         if (Object.hasOwn(config, 'upstream_dns')) {
             config.upstream_dns = splitByNewLine(config.upstream_dns);
-            hasDnsSettings = true;
         }
         if (Object.hasOwn(config, 'ratelimit_whitelist')) {
             config.ratelimit_whitelist = splitByNewLine(config.ratelimit_whitelist);
-            hasDnsSettings = true;
         }
 
         await apiClient.setDnsConfig(config);
@@ -176,8 +170,6 @@ export const setDnsConfig = async (
             // Toggle switches — no toast needed
         } else if (opts?.toastMessage) {
             addSuccessToast(opts.toastMessage);
-        } else if (hasDnsSettings) {
-            addSuccessToast(intl.getMessage('updated_upstream_dns_toast'));
         } else {
             addSuccessToast(intl.getMessage('settings_notify_changes_saved'));
         }

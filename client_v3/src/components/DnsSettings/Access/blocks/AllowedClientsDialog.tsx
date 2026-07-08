@@ -4,7 +4,7 @@ import { accessState, setAccessList } from 'panel/stores/access';
 import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Textarea } from 'panel/common/controls/Textarea';
-import { validateIpPerLine } from 'panel/helpers/validators';
+import { validateClientsPerLine } from 'panel/helpers/validators';
 import { useField } from 'panel/hooks/useField';
 import theme from 'panel/lib/theme';
 
@@ -18,7 +18,7 @@ export const AllowedClientsDialog = (props: Props) => {
     const field = useField<string>(
         () => props.open(),
         () => accessState.allowed_clients,
-        { validate: (v) => (v ? validateIpPerLine(v) || '' : '') },
+        { validate: (v) => (v ? validateClientsPerLine(v) || '' : '') },
     );
 
     return (
