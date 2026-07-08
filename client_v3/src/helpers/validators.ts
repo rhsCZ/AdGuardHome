@@ -704,7 +704,7 @@ export const validateMacNotDuplicate =
 
 export const validateBetween = (value: number, min: number, max: number): string | undefined => {
     if (value < min || value > max) {
-        return intl.getMessage('form_value_value_between_error', {
+        return intl.getMessage('form_value_value_from_error', {
             min_value: min.toLocaleString(),
             max_value: max.toLocaleString(),
         });
