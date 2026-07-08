@@ -118,7 +118,7 @@ export const LogTable = (props: Props) => {
                     />
                 </div>
             ),
-            width: 40,
+            width: 48,
             sortable: false,
         },
     ]);

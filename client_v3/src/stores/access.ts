@@ -138,12 +138,8 @@ export const toggleClientBlock = async (
         });
         addSuccessToast(
             disallowed
-                ? intl.getMessage('client_unblocked', {
-                      ip: disallowedRule || ip,
-                  })
-                : intl.getMessage('client_blocked', {
-                      ip: disallowedRule || ip,
-                  }),
+                ? intl.getMessage('client_unblocked_flash')
+                : intl.getMessage('client_blocked_flash'),
         );
     } catch (error) {
         addErrorToast({ error });

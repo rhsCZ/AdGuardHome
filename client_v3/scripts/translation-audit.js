@@ -63,31 +63,26 @@ export const collectTranslationUsageFromSource = (source, filePath) => {
     const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true);
 
     const visit = (node) => {
-        if (!ts.isCallExpression(node)) {
-            ts.forEachChild(node, visit);
-            return;
+        if (ts.isCallExpression(node) && isIntlMethod(node.expression)) {
+            const method = node.expression.name.text;
+            const pos = sourceFile.getLineAndCharacterOfPosition(node.pos);
+            const line = pos.line + 1;
+            const key = getLiteralKey(node.arguments[0]);
+
+            if (key !== null) {
+                staticKeys.push({ filePath, key, line, method });
+            } else {
+                dynamicUsages.push({
+                    expression: formatNodeSource(node, sourceFile),
+                    filePath,
+                    line,
+                    method,
+                });
+            }
         }
 
-        if (!isIntlMethod(node.expression)) {
-            ts.forEachChild(node, visit);
-            return;
-        }
-
-        const method = node.expression.name.text;
-        const pos = sourceFile.getLineAndCharacterOfPosition(node.pos);
-        const line = pos.line + 1;
-        const key = getLiteralKey(node.arguments[0]);
-
-        if (key !== null) {
-            staticKeys.push({ filePath, key, line, method });
-        } else {
-            dynamicUsages.push({
-                expression: formatNodeSource(node, sourceFile),
-                filePath,
-                line,
-                method,
-            });
-        }
+        // Always recurse into children to find nested intl.getMessage() calls
+        ts.forEachChild(node, visit);
     };
 
     ts.forEachChild(sourceFile, visit);
