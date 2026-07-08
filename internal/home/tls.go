@@ -310,17 +310,7 @@ func (m *tlsManager) reload(ctx context.Context) {
 		return
 	}
 
-	err = globalContext.dnsServer.SetDNSNames(ctx, m.tlsConf.Certificates[0])
-	if err != nil {
-		m.logger.WarnContext(
-			ctx,
-			"failed to update dns names from tls certificate",
-			slogutil.KeyError, err,
-		)
-
-		return
-	}
-
+	globalContext.dnsServer.SetDNSNames(ctx, m.tlsConf.Certificates[0])
 	extTLSConf.Status = *status
 
 	m.extTLSConf = &extTLSConf

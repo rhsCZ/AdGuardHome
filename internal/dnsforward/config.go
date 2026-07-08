@@ -383,10 +383,7 @@ func (s *Server) newProxyConfig(ctx context.Context) (conf *proxy.Config, err er
 		return nil, fmt.Errorf("bogus_nxdomain: %w", err)
 	}
 
-	err = s.prepareTLS(ctx, conf)
-	if err != nil {
-		return nil, fmt.Errorf("validating tls: %w", err)
-	}
+	s.prepareTLS(ctx, conf)
 
 	err = s.preparePlain(ctx, conf)
 	if err != nil {
@@ -705,17 +702,18 @@ func (s *Server) prepareDNSCrypt(proxyConf *proxy.Config) {
 	proxyConf.DNSCryptResolverCert = dnsCryptConf.ResolverCert
 }
 
-// prepareTLS sets up the TLS configuration for the DNS proxy.
-func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) (err error) {
+// prepareTLS sets up the TLS configuration for the DNS proxy.  s.serverLock
+// must be locked.  proxyConf must be non-nil and valid.
+func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) {
 	s.prepareDNSCrypt(proxyConf)
 
 	if s.conf.TLSConf.TLSListenAddrs == nil && s.conf.TLSConf.QUICListenAddrs == nil {
-		return nil
+		return
 	}
 
 	proxyConf.TLSConfig = s.tlsConfigProvider.TLSConfig()
 	if proxyConf.TLSConfig == nil || len(proxyConf.TLSConfig.Certificates) == 0 {
-		return nil
+		return
 	}
 
 	proxyConf.TLSListenAddr = s.conf.TLSConf.TLSListenAddrs
@@ -725,56 +723,42 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) (err e
 
 	tlsCert := proxyConf.TLSConfig.Certificates[0]
 
-	err = s.setDNSNamesLocked(ctx, tlsCert)
-
-	return errors.Annotate(err, "setting dns names: %w")
+	s.setDNSNamesLocked(ctx, tlsCert)
 }
 
-// SetDNSNames sets DNS names to Server from tlsCert.  tlsCert must be valid.
-func (s *Server) SetDNSNames(
-	ctx context.Context,
-	tlsCert tls.Certificate,
-) (err error) {
+// SetDNSNames sets DNS names to Server from tlsCert.  tlsCert must be non-nil
+// and valid.
+func (s *Server) SetDNSNames(ctx context.Context, tlsCert tls.Certificate) {
 	s.serverLock.Lock()
 	defer s.serverLock.Unlock()
 
-	return s.setDNSNamesLocked(ctx, tlsCert)
+	s.setDNSNamesLocked(ctx, tlsCert)
 }
 
 // setDNSNamesLocked sets DNS names to Server from tlsCert without acquiring
-// the lock.  Caller must hold s.serverLock for writing.  tlsCert must be valid.
-func (s *Server) setDNSNamesLocked(
-	ctx context.Context,
-	tlsCert tls.Certificate,
-) (err error) {
-	cert, err := x509.ParseCertificate(tlsCert.Certificate[0])
-	if err != nil {
-		return fmt.Errorf("parsing tls certificate as x509: %w", err)
-	}
-
-	s.hasIPAddrs = aghtls.CertificateHasIP(cert)
+// the lock.  tlsCert must be non-nil and valid.  s.serverLock must be locked.
+func (s *Server) setDNSNamesLocked(ctx context.Context, tlsCert tls.Certificate) {
+	s.hasIPAddrs = aghtls.CertificateHasIP(tlsCert.Leaf)
 
 	if s.conf.TLSConf.StrictSNICheck {
-		if len(cert.DNSNames) != 0 {
-			s.dnsNames = cert.DNSNames
+		if len(tlsCert.Leaf.DNSNames) != 0 {
+			s.dnsNames = tlsCert.Leaf.DNSNames
 			s.logger.DebugContext(
 				ctx,
 				"using certificate's SAN as DNS names",
-				"dns_names", cert.DNSNames,
+				"dns_names", tlsCert.Leaf.DNSNames,
 			)
 			slices.Sort(s.dnsNames)
 		} else {
-			s.dnsNames = []string{cert.Subject.CommonName}
+			s.dnsNames = []string{tlsCert.Leaf.Subject.CommonName}
 			s.logger.DebugContext(
 				ctx,
 				"using certificate's CN as DNS name",
 				"common_name",
-				cert.Subject.CommonName,
+				tlsCert.Leaf.Subject.CommonName,
 			)
 		}
 	}
-
-	return nil
 }
 
 // isWildcard returns true if host is a wildcard hostname.
@@ -819,6 +803,10 @@ func (s *Server) replaceGetCertificate(orig *tls.Config) {
 		dnsNames := s.dnsNames
 		strictSNICheck := s.conf.TLSConf.StrictSNICheck
 		s.serverLock.RUnlock()
+
+		if orig.Certificates[0].Leaf == nil {
+			return nil, errors.Error("TLS certificate is not set")
+		}
 
 		if strictSNICheck && !anyNameMatches(dnsNames, chi.ServerName) {
 			s.logger.Warn(
