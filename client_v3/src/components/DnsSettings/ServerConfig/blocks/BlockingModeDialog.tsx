@@ -65,11 +65,11 @@ export const BlockingModeDialog = (props: Props) => {
 
         const payload: Record<string, unknown> = {
             blocking_mode: blockingMode(),
+            blocked_response_ttl: ttl.value(),
         };
         if (blockingMode() === BLOCKING_MODES.custom_ip) {
             payload.blocking_ipv4 = blockingIpv4.value();
             payload.blocking_ipv6 = blockingIpv6.value();
-            payload.blocked_response_ttl = ttl.value();
         }
         setDnsConfig(payload);
         props.onClose();
