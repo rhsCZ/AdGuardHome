@@ -40,6 +40,13 @@ export const EdnsDialog = (props: Props) => {
         },
     );
 
+    // Clear custom IP error when switching away from custom mode
+    createEffect(() => {
+        if (!ednsCsUseCustom()) {
+            ednsCsCustomIp.setError('');
+        }
+    });
+
     const handleSubmit = () => {
         // Bugfix: submit-time validation
         if (ednsCsUseCustom() && ednsCsCustomIp.validate()) return;

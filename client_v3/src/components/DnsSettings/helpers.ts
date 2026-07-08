@@ -29,13 +29,13 @@ export const getRateLimitSummary = (ratelimit: number): string => {
 
 export const getBlockingModeSummary = (mode: string): string => {
     switch (mode) {
-        case 'refused':
+        case BLOCKING_MODES.refused:
             return 'REFUSED';
-        case 'nxdomain':
+        case BLOCKING_MODES.nxdomain:
             return 'NXDOMAIN';
-        case 'null_ip':
+        case BLOCKING_MODES.null_ip:
             return intl.getMessage('dns_blocking_mode_null_ip');
-        case 'custom_ip':
+        case BLOCKING_MODES.custom_ip:
             return intl.getMessage('dns_blocking_mode_custom_ip');
         default:
             return intl.getMessage('dns_blocking_mode_default');

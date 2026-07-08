@@ -51,10 +51,12 @@ export const BlockingModeDialog = (props: Props) => {
         () => props.open(),
         () => dnsConfigState.blocked_response_ttl,
         {
-            validate: (v) =>
-                validateRequiredValue(String(v)) ||
-                validateBetween(v, UINT32_RANGE.MIN, UINT32_RANGE.MAX) ||
-                '',
+            validate: (v) => {
+                if (Number.isNaN(v)) {
+                    return intl.getMessage('form_error_required');
+                }
+                return validateBetween(v, UINT32_RANGE.MIN, UINT32_RANGE.MAX) || '';
+            },
         },
     );
 
@@ -65,11 +67,11 @@ export const BlockingModeDialog = (props: Props) => {
 
         const payload: Record<string, unknown> = {
             blocking_mode: blockingMode(),
+            blocked_response_ttl: ttl.value(),
         };
         if (blockingMode() === BLOCKING_MODES.custom_ip) {
             payload.blocking_ipv4 = blockingIpv4.value();
             payload.blocking_ipv6 = blockingIpv6.value();
-            payload.blocked_response_ttl = ttl.value();
         }
         setDnsConfig(payload);
         props.onClose();
@@ -169,7 +171,11 @@ export const BlockingModeDialog = (props: Props) => {
                     placeholder={intl.getMessage('dns_blocking_mode_ttl_placeholder')}
                     value={ttl.value()}
                     onChange={(e: Event) =>
-                        ttl.setValue(Number((e.target as HTMLInputElement).value))
+                        ttl.setValue(
+                            (e.target as HTMLInputElement).value === ''
+                                ? NaN
+                                : Number((e.target as HTMLInputElement).value),
+                        )
                     }
                     onBlur={() => ttl.validate()}
                     min={UINT32_RANGE.MIN}

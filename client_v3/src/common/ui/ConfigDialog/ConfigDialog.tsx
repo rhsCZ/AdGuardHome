@@ -19,6 +19,7 @@ type Props = {
     footer?: JSX.Element;
     description?: string | JSX.Element;
     hideSubmit?: boolean;
+    buttonText?: string;
 };
 
 export const ConfigDialog = (props: Props) => {
@@ -46,7 +47,7 @@ export const ConfigDialog = (props: Props) => {
                         data-testid="config-dialog-save"
                         onClick={props.onSubmit}
                     >
-                        {intl.getMessage('save')}
+                        {props.buttonText || intl.getMessage('save')}
                     </Button>
                 </Show>
             </div>

@@ -5,7 +5,7 @@ import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Input } from 'panel/common/controls/Input';
 import { RATE_LIMIT } from 'panel/helpers/constants';
-import { validateRequiredValue, validateMaxValue } from 'panel/helpers/validators';
+import { validateRequiredValue, validateBetween } from 'panel/helpers/validators';
 import { useField } from 'panel/hooks/useField';
 import theme from 'panel/lib/theme';
 
@@ -21,7 +21,9 @@ export const RateLimitDialog = (props: Props) => {
         () => dnsConfigState.ratelimit,
         {
             validate: (v) =>
-                validateRequiredValue(String(v)) || validateMaxValue(v, RATE_LIMIT.MAX) || '',
+                validateRequiredValue(String(v)) ||
+                validateBetween(v, RATE_LIMIT.MIN, RATE_LIMIT.MAX) ||
+                '',
         },
     );
 
@@ -59,6 +61,7 @@ export const RateLimitDialog = (props: Props) => {
                     min={RATE_LIMIT.MIN}
                     max={RATE_LIMIT.MAX}
                     errorMessage={field.error()}
+                    size="large"
                 />
             </div>
         </ConfigDialog>

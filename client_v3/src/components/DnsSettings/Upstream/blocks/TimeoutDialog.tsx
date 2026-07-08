@@ -4,7 +4,7 @@ import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Input } from 'panel/common/controls/Input';
 import { UPSTREAM_TIMEOUT } from 'panel/helpers/constants';
-import { validateMinValue, validateMaxValue } from 'panel/helpers/validators';
+import { validateBetween } from 'panel/helpers/validators';
 import { useField } from 'panel/hooks/useField';
 import theme from 'panel/lib/theme';
 
@@ -20,16 +20,16 @@ export const TimeoutDialog = (props: Props) => {
         () => dnsConfigState.upstream_timeout,
         {
             validate: (v) =>
-                validateMinValue(v, UPSTREAM_TIMEOUT.MIN) ||
-                validateMaxValue(v, UPSTREAM_TIMEOUT.MAX) ||
-                '',
+                (Number.isNaN(v)
+                    ? intl.getMessage('form_error_required')
+                    : validateBetween(v, UPSTREAM_TIMEOUT.MIN, UPSTREAM_TIMEOUT.MAX)) || '',
         },
     );
 
     return (
         <ConfigDialog
             open={props.open()}
-            title={intl.getMessage('dns_upstream_timeout_title')}
+            title={intl.getMessage('dns_upstream_timeout')}
             description={intl.getMessage('dns_upstream_timeout_desc')}
             onClose={props.onClose}
             onSubmit={() => {
@@ -46,7 +46,11 @@ export const TimeoutDialog = (props: Props) => {
                     type="number"
                     value={field.value()}
                     onChange={(e: Event) =>
-                        field.setValue(Number((e.target as HTMLInputElement).value))
+                        field.setValue(
+                            (e.target as HTMLInputElement).value === ''
+                                ? NaN
+                                : Number((e.target as HTMLInputElement).value),
+                        )
                     }
                     onBlur={() => field.validate()}
                     id="upstream_timeout"
@@ -55,6 +59,7 @@ export const TimeoutDialog = (props: Props) => {
                     min={UPSTREAM_TIMEOUT.MIN}
                     max={UPSTREAM_TIMEOUT.MAX}
                     errorMessage={field.error()}
+                    size="large"
                 />
             </div>
         </ConfigDialog>

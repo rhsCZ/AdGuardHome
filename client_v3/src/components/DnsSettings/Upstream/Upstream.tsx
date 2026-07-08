@@ -80,7 +80,7 @@ export const Upstream = () => {
                 variant="link"
                 id="bootstrap_servers"
                 title={intl.getMessage('dns_bootstrap_servers')}
-                description={intl.getMessage('dns_bootstrap_servers_desc')}
+                description={intl.getMessage('dns_bootstrap_dns_desc')}
                 value={bootstrapServersValue()}
                 onClick={bootstrapDialog.openDialog}
             />
