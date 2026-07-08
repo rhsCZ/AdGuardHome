@@ -56,6 +56,7 @@ export const SubnetPrefixV6Dialog = (props: Props) => {
                     min={IPV6_SUBNET_PREFIX.MIN}
                     max={IPV6_SUBNET_PREFIX.MAX}
                     errorMessage={field.error()}
+                    size="large"
                 />
             </div>
         </ConfigDialog>

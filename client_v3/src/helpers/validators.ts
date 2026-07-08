@@ -702,20 +702,11 @@ export const validateMacNotDuplicate =
         return undefined;
     };
 
-export const validateMaxValue = (value: number, max: number): string | undefined => {
-    if (value > max) {
-        return intl.getMessage('form_value_length_common_error', {
-            max_length: String(max),
-        });
-    }
-    return undefined;
-};
-
 export const validateBetween = (value: number, min: number, max: number): string | undefined => {
     if (value < min || value > max) {
         return intl.getMessage('form_value_value_between_error', {
-            min_value: String(min),
-            max_value: String(max),
+            min_value: min.toLocaleString(),
+            max_value: max.toLocaleString(),
         });
     }
     return undefined;
@@ -724,7 +715,7 @@ export const validateBetween = (value: number, min: number, max: number): string
 export const validateMinValue = (value: number, min: number): string | undefined => {
     if (value < min) {
         return intl.getMessage('form_value_value_min_error', {
-            min_value: String(min),
+            min_value: min.toLocaleString(),
         });
     }
     return undefined;
@@ -750,5 +741,5 @@ export const validateCacheSize = (size: number, enabled: boolean): ValidationRes
     if (size === 0) {
         return intl.getMessage('cache_config_size_validation');
     }
-    return validateMaxValue(size, UINT32_RANGE.MAX);
+    return validateBetween(size, 1, UINT32_RANGE.MAX);
 };

@@ -4,7 +4,7 @@ import intl from 'panel/common/intl';
 import { ConfigDialog } from 'panel/common/ui/ConfigDialog';
 import { Input } from 'panel/common/controls/Input';
 import { UPSTREAM_TIMEOUT } from 'panel/helpers/constants';
-import { validateMinValue, validateMaxValue } from 'panel/helpers/validators';
+import { validateBetween } from 'panel/helpers/validators';
 import { useField } from 'panel/hooks/useField';
 import theme from 'panel/lib/theme';
 
@@ -22,8 +22,7 @@ export const TimeoutDialog = (props: Props) => {
             validate: (v) =>
                 (Number.isNaN(v)
                     ? intl.getMessage('form_error_required')
-                    : validateMinValue(v, UPSTREAM_TIMEOUT.MIN) ||
-                      validateMaxValue(v, UPSTREAM_TIMEOUT.MAX)) || '',
+                    : validateBetween(v, UPSTREAM_TIMEOUT.MIN, UPSTREAM_TIMEOUT.MAX)) || '',
         },
     );
 
@@ -60,6 +59,7 @@ export const TimeoutDialog = (props: Props) => {
                     min={UPSTREAM_TIMEOUT.MIN}
                     max={UPSTREAM_TIMEOUT.MAX}
                     errorMessage={field.error()}
+                    size="large"
                 />
             </div>
         </ConfigDialog>

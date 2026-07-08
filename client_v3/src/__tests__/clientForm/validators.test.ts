@@ -13,7 +13,6 @@ import {
     validatePasswordLength,
     validateIpNotDuplicate,
     validateIpPerLine,
-    validateMaxValue,
     validateBetween,
     validateMinValue,
     validateCacheSize,
@@ -376,12 +375,6 @@ describe('validateIpPerLine', () => {
 });
 
 describe('numeric range validators', () => {
-    it('validateMaxValue returns error when value exceeds max', () => {
-        expect(validateMaxValue(5, 4)).toBeTruthy();
-        expect(validateMaxValue(4, 4)).toBeUndefined();
-        expect(validateMaxValue(0, 4)).toBeUndefined();
-    });
-
     it('validateBetween returns error when value is out of range', () => {
         expect(validateBetween(-1, 0, 32)).toBeTruthy();
         expect(validateBetween(33, 0, 32)).toBeTruthy();
