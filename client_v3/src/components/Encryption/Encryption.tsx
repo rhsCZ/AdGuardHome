@@ -170,7 +170,10 @@ export const Encryption = () => {
                     </Dropdown>
                 </div>
 
-                <Show when={!encryptionState.processing} fallback={<PageLoader />}>
+                <Show
+                    when={tlsStatusLoaded() || !encryptionState.processing}
+                    fallback={<PageLoader />}
+                >
                     <PlainDnsToggle />
 
                     <h2
