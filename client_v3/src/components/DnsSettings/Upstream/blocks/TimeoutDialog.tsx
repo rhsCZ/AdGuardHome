@@ -29,7 +29,7 @@ export const TimeoutDialog = (props: Props) => {
     return (
         <ConfigDialog
             open={props.open()}
-            title={intl.getMessage('dns_upstream_timeout_title')}
+            title={intl.getMessage('dns_upstream_timeout')}
             description={intl.getMessage('dns_upstream_timeout_desc')}
             onClose={props.onClose}
             onSubmit={() => {
