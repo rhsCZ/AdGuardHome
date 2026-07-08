@@ -140,7 +140,10 @@ export const Encryption = () => {
     };
 
     const resetMenu = (
-        <div class={cn(theme.dropdown.item, theme.dropdown.item_danger)} onClick={handleResetClick}>
+        <div
+            class={cn(theme.dropdown.item, theme.dropdown.item_danger, theme.dropdown.item_large)}
+            onClick={handleResetClick}
+        >
             {intl.getMessage('reset_dns_protocols')}
         </div>
     );

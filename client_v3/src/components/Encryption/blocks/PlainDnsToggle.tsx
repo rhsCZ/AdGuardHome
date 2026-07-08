@@ -1,4 +1,4 @@
-import { createSignal, Show } from 'solid-js';
+import { createSignal, createEffect, Show } from 'solid-js';
 import { SettingRow } from 'panel/common/ui/SettingRow';
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import intl from 'panel/common/intl';
@@ -6,9 +6,17 @@ import { encryptionState, setTlsConfig } from 'panel/stores/encryption';
 
 export const PlainDnsToggle = () => {
     const [confirmDisable, setConfirmDisable] = createSignal(false);
+    const [localChecked, setLocalChecked] = createSignal(encryptionState.serve_plain_dns);
     const enc = () => encryptionState;
 
-    // LOCKED when encryption is not enabled or cert/key are not present
+    // Sync localChecked from store when the dialog is not open,
+    // so external changes (e.g. reset, removeCert) are reflected.
+    createEffect(() => {
+        if (!confirmDisable()) {
+            setLocalChecked(enc().serve_plain_dns);
+        }
+    });
+
     const fullyConfigured = () => {
         const hasCert = !!(enc().certificate_chain || enc().certificate_path);
         const hasKey = !!(enc().private_key || enc().private_key_path || enc().private_key_saved);
@@ -18,12 +26,14 @@ export const PlainDnsToggle = () => {
     const locked = () => !fullyConfigured();
 
     const onChange = (checked: boolean) => {
-        if (locked()) return; // LOCKED: NO-OP
+        if (locked()) return;
         if (checked) {
             setTlsConfig({ serve_plain_dns: true });
-            return; // re-enable → immediate auto-save
+            return;
         }
-        setConfirmDisable(true); // disable → confirmation modal
+        // Don't update localChecked — the switch stays visually on
+        // until the user confirms in the modal.
+        setConfirmDisable(true);
     };
 
     return (
@@ -33,7 +43,7 @@ export const PlainDnsToggle = () => {
                 variant="switch"
                 title={intl.getMessage('encryption_plain_dns')}
                 description={intl.getMessage('encryption_plain_dns_desc')}
-                checked={enc().serve_plain_dns}
+                checked={localChecked()}
                 disabled={locked()}
                 onChange={onChange}
             />

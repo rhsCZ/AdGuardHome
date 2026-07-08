@@ -11,6 +11,8 @@ export const TlsCertSection = () => {
 
     const removeCert = () => {
         setTlsConfig({
+            enabled: false,
+            serve_plain_dns: true,
             certificate_chain: '',
             private_key: '',
             certificate_path: '',
