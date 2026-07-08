@@ -15,9 +15,11 @@ func TestGenAnswerHTTPS_andSVCB(t *testing.T) {
 	// Preconditions.
 
 	s := createTestServer(
-		t, &filtering.Config{
+		t,
+		&filtering.Config{
 			BlockingMode: filtering.BlockingModeDefault,
-		}, ServerConfig{
+		},
+		ServerConfig{
 			TLSConf: &TLSConfig{},
 			Config: Config{
 				UpstreamMode:     UpstreamModeLoadBalance,

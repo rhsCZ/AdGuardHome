@@ -333,31 +333,28 @@ func TestServer_ProcessDDRQuery(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			srvConf := ServerConfig{
-				Config: Config{
-					HandleDDR:        tc.ddrEnabled,
-					UpstreamMode:     UpstreamModeLoadBalance,
-					EDNSClientSubnet: &EDNSClientSubnet{Enabled: false},
-					ClientsContainer: EmptyClientsContainer{},
-				},
-				TLSConf: &TLSConfig{
-					ServerName:       ddrTestDomainName,
-					TLSListenAddrs:   tc.addrsDoT,
-					HTTPSListenAddrs: tc.addrsDoH,
-					QUICListenAddrs:  tc.addrsDoQ,
-				},
-				ServePlainDNS: true,
-			}
-
 			s := createTestServer(
 				t,
 				&filtering.Config{
 					BlockingMode: filtering.BlockingModeDefault,
 				},
-				srvConf,
+				ServerConfig{
+					Config: Config{
+						HandleDDR:        tc.ddrEnabled,
+						UpstreamMode:     UpstreamModeLoadBalance,
+						EDNSClientSubnet: &EDNSClientSubnet{Enabled: false},
+						ClientsContainer: EmptyClientsContainer{},
+					},
+					TLSConf: &TLSConfig{
+						ServerName:       ddrTestDomainName,
+						TLSListenAddrs:   tc.addrsDoT,
+						HTTPSListenAddrs: tc.addrsDoH,
+						QUICListenAddrs:  tc.addrsDoQ,
+					},
+					ServePlainDNS: true,
+				},
 				tlsConfProvider,
 			)
-
 			// TODO(e.burkov):  Generate a certificate actually containing the
 			// IP addresses.
 			s.hasIPAddrs = true

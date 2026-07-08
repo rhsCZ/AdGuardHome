@@ -36,9 +36,11 @@ func TestServer_FilterDNSRewrite(t *testing.T) {
 
 	// Helper functions and entities.
 	srv := createTestServer(
-		t, &filtering.Config{
+		t,
+		&filtering.Config{
 			BlockingMode: filtering.BlockingModeDefault,
-		}, ServerConfig{
+		},
+		ServerConfig{
 			TLSConf: &TLSConfig{},
 			Config: Config{
 				UpstreamMode:     UpstreamModeLoadBalance,
@@ -49,6 +51,7 @@ func TestServer_FilterDNSRewrite(t *testing.T) {
 		},
 		testTLSConfigProvider,
 	)
+
 	makeQ := func(qtype rules.RRType) (req *dns.Msg) {
 		return &dns.Msg{
 			Question: []dns.Question{{

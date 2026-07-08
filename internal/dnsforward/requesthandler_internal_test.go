@@ -244,9 +244,11 @@ func TestServer_ServeDNS_restrictLocal(t *testing.T) {
 	localUpsAddr := aghtest.StartLocalhostUpstream(t, localUpsHdlr).String()
 
 	s := createTestServer(
-		t, &filtering.Config{
+		t,
+		&filtering.Config{
 			BlockingMode: filtering.BlockingModeDefault,
-		}, ServerConfig{
+		},
+		ServerConfig{
 			UDPListenAddrs: []*net.UDPAddr{{}},
 			TCPListenAddrs: []*net.TCPAddr{{}},
 			TLSConf:        &TLSConfig{},

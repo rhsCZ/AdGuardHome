@@ -388,10 +388,12 @@ func TestServer_HandleTestUpstreamDNS(t *testing.T) {
 	require.NoError(t, err)
 
 	srv := createTestServer(
-		t, &filtering.Config{
+		t,
+		&filtering.Config{
 			BlockingMode: filtering.BlockingModeDefault,
 			EtcHosts:     hc,
-		}, ServerConfig{
+		},
+		ServerConfig{
 			UDPListenAddrs:  []*net.UDPAddr{{}},
 			TCPListenAddrs:  []*net.TCPAddr{{}},
 			UpstreamTimeout: upsTimeout,

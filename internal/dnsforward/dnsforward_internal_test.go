@@ -933,10 +933,8 @@ func TestBlockCNAMEProtectionEnabled(t *testing.T) {
 			TCPListenAddrs: []*net.TCPAddr{{}},
 			TLSConf:        &TLSConfig{},
 			Config: Config{
-				UpstreamMode: UpstreamModeLoadBalance,
-				EDNSClientSubnet: &EDNSClientSubnet{
-					Enabled: false,
-				},
+				UpstreamMode:     UpstreamModeLoadBalance,
+				EDNSClientSubnet: &EDNSClientSubnet{Enabled: false},
 				ClientsContainer: EmptyClientsContainer{},
 			},
 			ServePlainDNS: true,
@@ -1113,10 +1111,12 @@ func TestNullBlockedRequest(t *testing.T) {
 		},
 		ServePlainDNS: true,
 	}
-	s := createTestServer(t, &filtering.Config{
-		ProtectionEnabled: true,
-		BlockingMode:      filtering.BlockingModeNullIP,
-	}, forwardConf, testTLSConfigProvider)
+	s := createTestServer(
+		t,
+		&filtering.Config{ProtectionEnabled: true, BlockingMode: filtering.BlockingModeNullIP},
+		forwardConf,
+		testTLSConfigProvider,
+	)
 	startDeferStop(t, s)
 	addr := s.dnsProxy.Addr(proxy.ProtoUDP)
 

@@ -334,9 +334,11 @@ func TestServer_dns64WithDisabledRDNS(t *testing.T) {
 	localUpsAddr := aghtest.StartLocalhostUpstream(t, panicHdlr).String()
 
 	s := createTestServer(
-		t, &filtering.Config{
+		t,
+		&filtering.Config{
 			BlockingMode: filtering.BlockingModeDefault,
-		}, ServerConfig{
+		},
+		ServerConfig{
 			UDPListenAddrs: []*net.UDPAddr{{}},
 			TCPListenAddrs: []*net.TCPAddr{{}},
 			UseDNS64:       true,

@@ -217,9 +217,11 @@ func TestServer_middlewareUDP(t *testing.T) {
 			t.Parallel()
 
 			s := createTestServer(
-				t, &filtering.Config{
+				t,
+				&filtering.Config{
 					BlockingMode: filtering.BlockingModeDefault,
-				}, ServerConfig{
+				},
+				ServerConfig{
 					UDPListenAddrs: []*net.UDPAddr{{}},
 					TCPListenAddrs: []*net.TCPAddr{{}},
 					TLSConf:        &TLSConfig{},
