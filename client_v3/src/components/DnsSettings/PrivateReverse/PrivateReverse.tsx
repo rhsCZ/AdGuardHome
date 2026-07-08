@@ -1,3 +1,4 @@
+import { createMemo } from 'solid-js';
 import cn from 'clsx';
 
 import {
@@ -11,6 +12,7 @@ import { SettingRow } from 'panel/common/ui/SettingRow';
 import { RoutePath } from 'panel/components/Routes/Paths';
 import { useDialogOpen } from 'panel/hooks/useField';
 import { PrivateReverseServersDialog } from '../Upstream/blocks/PrivateReverseServersDialog';
+import { getUpstreamServersSummary } from '../helpers';
 import theme from 'panel/lib/theme';
 
 import s from './PrivateReverse.module.pcss';
@@ -20,18 +22,24 @@ export const PrivateReverse = () => {
 
     const processing = () => dnsConfigState.processingSetConfig;
 
+    const privateReverseValue = createMemo(() =>
+        getUpstreamServersSummary(dnsConfigState.local_ptr_upstreams),
+    );
+
     return (
         <div class={cn(theme.layout.container, s.container)}>
             <div class={cn(theme.layout.containerIn, theme.layout.containerIn_one_col)}>
-                <Breadcrumbs
-                    parentLinks={[
-                        {
-                            path: RoutePath.Dns,
-                            title: intl.getMessage('dns_settings'),
-                        },
-                    ]}
-                    currentTitle={intl.getMessage('dns_private_reverse_resolvers')}
-                />
+                <div class={s.breadcrumbs}>
+                    <Breadcrumbs
+                        parentLinks={[
+                            {
+                                path: RoutePath.Dns,
+                                title: intl.getMessage('dns_settings'),
+                            },
+                        ]}
+                        currentTitle={intl.getMessage('dns_private_reverse_resolvers')}
+                    />
+                </div>
 
                 <div class={s.form}>
                     <SettingRow
@@ -59,6 +67,7 @@ export const PrivateReverse = () => {
                         id="private_reverse_servers"
                         title={intl.getMessage('dns_private_reverse_servers_title')}
                         description={intl.getMessage('dns_private_reverse_servers_desc')}
+                        value={privateReverseValue()}
                         onClick={serversDialog.openDialog}
                     />
 
