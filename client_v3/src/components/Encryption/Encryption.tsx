@@ -67,7 +67,6 @@ export const Encryption = () => {
     const handleEncryptedDnsChange = (checked: boolean) => {
         if (!checked) {
             setEncryptionEnabled(false);
-            resetValidationStatus();
             setTlsConfig(
                 {
                     enabled: false,
