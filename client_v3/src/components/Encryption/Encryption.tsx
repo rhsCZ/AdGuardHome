@@ -195,10 +195,7 @@ export const Encryption = () => {
                     </Dropdown>
                 </div>
 
-                <Show
-                    when={tlsStatusLoaded()}
-                    fallback={<PageLoader />}
-                >
+                <Show when={tlsStatusLoaded()} fallback={<PageLoader />}>
                     <PlainDnsToggle />
 
                     <h2
