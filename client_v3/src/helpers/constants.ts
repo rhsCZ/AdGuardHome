@@ -171,6 +171,7 @@ export const MENU_URLS = {
 export const SETTINGS_URLS = {
     encryption: '/encryption',
     dhcp: '/dhcp',
+    dhcpLeases: '/dhcp/leases',
     dns: '/dns',
     settings: '/settings',
     clients: '/clients',

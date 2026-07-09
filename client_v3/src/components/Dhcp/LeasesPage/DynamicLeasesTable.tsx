@@ -9,28 +9,35 @@ import { Dropdown } from 'panel/common/ui/Dropdown';
 
 import s from './LeasesTable.module.pcss';
 
-type StaticLease = {
+type DynamicLease = {
     mac: string;
     ip: string;
     hostname: string;
+    expires?: string;
 };
 
 type Props = {
-    staticLeases: StaticLease[];
-    processingDeleting: boolean;
+    leases: DynamicLease[];
     processingUpdating: boolean;
-    onEdit: (lease: StaticLease) => void;
-    onDelete: (lease: StaticLease) => void;
+    processingDeleting: boolean;
+    onEdit: (lease: DynamicLease) => void;
+    onDelete: (lease: DynamicLease) => void;
+    onMakeStatic: (lease: DynamicLease) => void;
     onRefresh: () => void;
 };
 
 const pageSize = 7;
 
-export const StaticLeasesTable = (props: Props) => {
+export const DynamicLeasesTable = (props: Props) => {
     const [openMenuId, setOpenMenuId] = createSignal<string | null>(null);
 
-    const handleEdit = (row: StaticLease) => {
+    const handleEdit = (row: DynamicLease) => {
         props.onEdit(row);
+        setOpenMenuId(null);
+    };
+
+    const handleMakeStatic = (row: DynamicLease) => {
+        props.onMakeStatic(row);
         setOpenMenuId(null);
     };
 
@@ -39,12 +46,12 @@ export const StaticLeasesTable = (props: Props) => {
         setOpenMenuId(null);
     };
 
-    const handleDelete = (row: StaticLease) => {
+    const handleDelete = (row: DynamicLease) => {
         props.onDelete(row);
         setOpenMenuId(null);
     };
 
-    const columns = createMemo<TableColumn<StaticLease>[]>(() => [
+    const columns = createMemo<TableColumn<DynamicLease>[]>(() => [
         {
             key: 'mac',
             header: {
@@ -110,8 +117,8 @@ export const StaticLeasesTable = (props: Props) => {
             },
             accessor: 'mac',
             sortable: false,
-            fitContent: true,
-            render: (_value: unknown, row: StaticLease) => {
+            width: 48,
+            render: (_value: unknown, row: DynamicLease) => {
                 const rowId = `${row.mac}-${row.ip}`;
                 return (
                     <div class={theme.table.cell}>
@@ -124,7 +131,7 @@ export const StaticLeasesTable = (props: Props) => {
                                     class={theme.table.action}
                                     title={intl.getMessage('edit_table_action')}
                                     aria-label={intl.getMessage('edit_table_action')}
-                                    data-testid="static-lease-edit-button"
+                                    data-testid="dynamic-lease-edit-button"
                                     data-table-action
                                 >
                                     <Icon icon="edit" color="gray" />
@@ -135,11 +142,26 @@ export const StaticLeasesTable = (props: Props) => {
 
                                 <button
                                     type="button"
+                                    onClick={() => props.onMakeStatic(row)}
+                                    class={theme.table.action}
+                                    title={intl.getMessage('make_static')}
+                                    aria-label={intl.getMessage('make_static')}
+                                    data-testid="dynamic-lease-make-static-button"
+                                    data-table-action
+                                >
+                                    <Icon icon="plus" color="gray" />
+                                    <span class={theme.table.actionLabel}>
+                                        {intl.getMessage('make_static')}
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
                                     onClick={() => props.onRefresh()}
                                     class={theme.table.action}
                                     title={intl.getMessage('refresh_btn')}
                                     aria-label={intl.getMessage('refresh_btn')}
-                                    data-testid="static-lease-refresh-button"
+                                    data-testid="dynamic-lease-refresh-button"
                                     data-table-action
                                 >
                                     <Icon icon="refresh" color="gray" />
@@ -155,7 +177,7 @@ export const StaticLeasesTable = (props: Props) => {
                                     class={cn(theme.table.action, theme.table.action_danger)}
                                     title={intl.getMessage('delete_table_action')}
                                     aria-label={intl.getMessage('delete_table_action')}
-                                    data-testid="static-lease-delete-button"
+                                    data-testid="dynamic-lease-delete-button"
                                     data-table-action
                                 >
                                     <Icon icon="delete" color="red" />
@@ -174,6 +196,12 @@ export const StaticLeasesTable = (props: Props) => {
                                                 onClick={() => handleEdit(row)}
                                             >
                                                 {intl.getMessage('edit_table_action')}
+                                            </div>
+                                            <div
+                                                class={theme.dropdown.item}
+                                                onClick={() => handleMakeStatic(row)}
+                                            >
+                                                {intl.getMessage('make_static')}
                                             </div>
                                             <div
                                                 class={theme.dropdown.item}
@@ -202,8 +230,9 @@ export const StaticLeasesTable = (props: Props) => {
                                 >
                                     <button
                                         type="button"
-                                        class={s.actionButton}
-                                        data-testid="static-lease-actions-dropdown"
+                                        class={cn(theme.table.action, s.actionButton)}
+                                        data-testid="dynamic-lease-actions-dropdown"
+                                        data-table-action
                                     >
                                         <Icon icon="bullets" color="gray" />
                                     </button>
@@ -218,19 +247,19 @@ export const StaticLeasesTable = (props: Props) => {
 
     return (
         <Table
-            data={props.staticLeases}
-            class={s.staticTable}
+            data={props.leases}
+            class={s.dynamicTable}
             columns={columns()}
             emptyTable={
                 <div class={s.emptyTableContent}>
                     <Icon icon="not_found_search" color="gray" class={s.emptyTableIcon} />
                     <div class={cn(theme.text.t3, s.emptyTableDesc)}>
-                        {intl.getMessage('dhcp_static_leases_not_found')}
+                        {intl.getMessage('dhcp_leases_not_found')}
                     </div>
                 </div>
             }
             pageSize={pageSize}
-            getRowId={(row: StaticLease) => `${row.mac}-${row.ip}`}
+            getRowId={(row: DynamicLease) => `${row.mac}-${row.ip}`}
         />
     );
 };

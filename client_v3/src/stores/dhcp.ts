@@ -8,6 +8,8 @@ import { enrichWithConcatenatedIpAddresses } from 'panel/helpers/helpers';
 
 type Lease = { hostname: string; ip: string; mac: string };
 
+export type LeaseModalType = 'ADD_LEASE' | 'EDIT_LEASE' | 'MAKE_STATIC';
+
 type DhcpState = {
     processing: boolean;
     processingStatus: boolean;
@@ -36,7 +38,7 @@ type DhcpState = {
     staticLeases: Lease[];
     isModalOpen: boolean;
     leaseModalConfig: Lease | undefined;
-    modalType: string;
+    modalType: LeaseModalType | '';
     dhcp_available: boolean;
     staticIpError: boolean;
     interfaces?: Record<string, any>;
@@ -220,9 +222,6 @@ export const toggleDhcp = async (config?: any) => {
         const payload = { ...values, enabled };
         await apiClient.setDhcpConfig(payload);
         setState({ enabled, check: null, processingConfig: false });
-        addSuccessToast(
-            enabled ? intl.getMessage('enabled_dhcp') : intl.getMessage('disabled_dhcp'),
-        );
     } catch (error) {
         addErrorToast({ error });
         setState('processingConfig', false);
@@ -255,7 +254,7 @@ export const resetDhcpLeases = async () => {
     }
 };
 
-export const toggleLeaseModal = (modalType?: string, leaseConfig?: Lease) => {
+export const toggleLeaseModal = (modalType?: LeaseModalType, leaseConfig?: Lease) => {
     setState({
         isModalOpen: !state.isModalOpen,
         modalType: modalType || '',
