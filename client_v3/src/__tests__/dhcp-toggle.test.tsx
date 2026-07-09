@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@solidjs/testing-library';
-import { DhcpToggle } from 'panel/components/Dhcp/DhcpToggle';
+import { DhcpToggle } from 'panel/components/Dhcp/blocks/DhcpToggle';
 
 const mocks = vi.hoisted(() => ({
     toggleDhcp: vi.fn(),
