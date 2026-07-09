@@ -42,12 +42,15 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Fixed
 
+- Blocked requests do not contain an EDNS(0) OPT record ([#8183]).
+
 - Invalid AA flag in DNS responses ([#7955]).
 
 - The parsing of the `ech` parameter in DNS rewrite rules for the HTTPS record type ([#8276]).
 
 - Blocked services check on the Custom filtering rules page does not work properly without specifying of a client.
 
+[#8183]:     https://github.com/AdguardTeam/AdGuardHome/issues/8183
 [#7955]:     https://github.com/AdguardTeam/AdGuardHome/issues/7955
 [#8276]:     https://github.com/AdguardTeam/AdGuardHome/issues/8276
 [go-1.26.4]: https://groups.google.com/g/golang-announce/c/tKs3rmcBcKw

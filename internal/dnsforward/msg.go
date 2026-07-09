@@ -21,6 +21,11 @@ func (*Server) reply(req *dns.Msg, code int) (resp *dns.Msg) {
 	resp = (&dns.Msg{}).SetRcode(req, code)
 	resp.RecursionAvailable = true
 
+	opt := req.IsEdns0()
+	if opt != nil {
+		resp.SetEdns0(opt.UDPSize(), opt.Do())
+	}
+
 	return resp
 }
 
@@ -404,7 +409,10 @@ func (s *Server) NewMsgSERVFAIL(req *dns.Msg) (resp *dns.Msg) {
 // NewMsgNOTIMPLEMENTED implements the [proxy.MessageConstructor] interface for
 // *Server.
 func (s *Server) NewMsgNOTIMPLEMENTED(req *dns.Msg) (resp *dns.Msg) {
-	resp = s.reply(req, dns.RcodeNotImplemented)
+	// NOTE: [Server.reply] must not be used there, because it appends an EDNS0
+	// OPT record to the reply.
+	resp = (&dns.Msg{}).SetRcode(req, dns.RcodeNotImplemented)
+	resp.RecursionAvailable = true
 
 	// Most of the Internet and especially the inner core has an MTU of at least
 	// 1500 octets.  Maximum DNS/UDP payload size for IPv6 on MTU 1500 ethernet
