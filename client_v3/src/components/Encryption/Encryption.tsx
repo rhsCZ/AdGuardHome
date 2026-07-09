@@ -8,12 +8,7 @@ import { PageLoader } from 'panel/common/ui/Loader';
 import { PlusButton } from 'panel/common/ui/PlusButton';
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
-import {
-    getTlsStatus,
-    encryptionState,
-    setTlsConfig,
-    resetValidationStatus,
-} from 'panel/stores/encryption';
+import { getTlsStatus, encryptionState, setTlsConfig } from 'panel/stores/encryption';
 import { ENCRYPTION_SOURCE } from 'panel/helpers/constants';
 
 import { createDebouncedValidator } from './blocks/helpers';
