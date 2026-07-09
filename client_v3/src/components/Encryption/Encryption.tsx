@@ -34,6 +34,22 @@ export const Encryption = () => {
 
     const [tlsStatusLoaded, setTlsStatusLoaded] = createSignal(false);
 
+    /**
+     * Shadows encryptionState.enabled with {@code equals: false} so we can
+     * force a DOM re-sync even when the value is unchanged (e.g. reverting
+     * after a modal opens without saving).  Synced from store only when
+     * {@code processingConfig} is false to avoid flashing during async save.
+     */
+    const [encryptionEnabled, setEncryptionEnabled] = createSignal(false, {
+        equals: false,
+    });
+
+    createEffect(() => {
+        if (!encryptionState.processingConfig) {
+            setEncryptionEnabled(encryptionState.enabled);
+        }
+    });
+
     const [validateConfig, cancelValidation] = createDebouncedValidator();
 
     onMount(async () => {
@@ -49,9 +65,9 @@ export const Encryption = () => {
         !!(encryptionState.certificate_chain || encryptionState.certificate_path);
 
     const handleEncryptedDnsChange = (checked: boolean) => {
-        resetValidationStatus();
-
         if (!checked) {
+            setEncryptionEnabled(false);
+            resetValidationStatus();
             setTlsConfig(
                 {
                     enabled: false,
@@ -72,6 +88,8 @@ export const Encryption = () => {
         const hasServerName = !!encryptionState.server_name;
 
         // Everything is set up — save the change.
+        // Native input already shows ON from the click; sync effect
+        // confirms on success or reverts on failure.
         if (hasCert && hasKey && hasServerName) {
             setTlsConfig(
                 {
@@ -81,6 +99,10 @@ export const Encryption = () => {
             );
             return;
         }
+
+        // Not saving — force DOM back to unchecked so the switch
+        // doesn't appear ON while encryption is actually OFF.
+        setEncryptionEnabled(false);
 
         // Certificate or key is missing — open the TLS cert wizard (don't save yet).
         if (!hasCert || !hasKey) {
@@ -174,7 +196,7 @@ export const Encryption = () => {
                 </div>
 
                 <Show
-                    when={tlsStatusLoaded() || !encryptionState.processing}
+                    when={tlsStatusLoaded()}
                     fallback={<PageLoader />}
                 >
                     <PlainDnsToggle />
@@ -195,7 +217,7 @@ export const Encryption = () => {
                         variant="switch"
                         title={intl.getMessage('encryption_encrypted_dns')}
                         description={intl.getMessage('encryption_encrypted_dns_desc')}
-                        checked={encryptionState.enabled}
+                        checked={encryptionEnabled()}
                         disabled={encryptionState.processingConfig}
                         onChange={handleEncryptedDnsChange}
                     />

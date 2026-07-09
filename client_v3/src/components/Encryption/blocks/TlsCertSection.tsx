@@ -1,7 +1,7 @@
 import { Show } from 'solid-js';
 import { Icon } from 'panel/common/ui/Icon';
 import intl from 'panel/common/intl';
-import { encryptionState, setTlsConfig, resetValidationStatus } from 'panel/stores/encryption';
+import { encryptionState, setTlsConfig, resetValidationStatus, clearCertOptimistically } from 'panel/stores/encryption';
 import { CertificateStatus, KeyStatus, ValidationStatus } from '../Status';
 import s from '../styles.module.pcss';
 import theme from 'panel/lib/theme';
@@ -10,6 +10,8 @@ export const TlsCertSection = () => {
     const enc = () => encryptionState;
 
     const removeCert = () => {
+        clearCertOptimistically();
+        resetValidationStatus();
         setTlsConfig({
             enabled: false,
             serve_plain_dns: true,
@@ -19,7 +21,6 @@ export const TlsCertSection = () => {
             private_key_path: '',
             private_key_saved: false,
         });
-        resetValidationStatus();
     };
 
     const renderStatus = () => {

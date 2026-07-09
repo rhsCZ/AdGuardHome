@@ -6,7 +6,9 @@ import { encryptionState, setTlsConfig } from 'panel/stores/encryption';
 
 export const PlainDnsToggle = () => {
     const [confirmDisable, setConfirmDisable] = createSignal(false);
-    const [localChecked, setLocalChecked] = createSignal(encryptionState.serve_plain_dns);
+    const [localChecked, setLocalChecked] = createSignal(encryptionState.serve_plain_dns, {
+        equals: false,
+    });
     const enc = () => encryptionState;
 
     // Sync localChecked from store when the dialog is not open,
@@ -31,8 +33,9 @@ export const PlainDnsToggle = () => {
             setTlsConfig({ serve_plain_dns: true });
             return;
         }
-        // Don't update localChecked — the switch stays visually on
-        // until the user confirms in the modal.
+        // Force DOM re-sync before opening the modal.  With equals:false
+        // this re-applies checked={true} to the native input.
+        setLocalChecked((v) => v);
         setConfirmDisable(true);
     };
 
