@@ -63,4 +63,36 @@ describe('validateDomainsPerLine', () => {
             'Invalid format on lines 1, 3',
         );
     });
+
+    it('returns "Invalid format" for single invalid line with trailing newline', () => {
+        expect(validateDomainsPerLine('notadomain\n')).toBe('Invalid format');
+    });
+
+    it('returns "Invalid format" for single invalid line with leading newline', () => {
+        expect(validateDomainsPerLine('\nnotadomain')).toBe('Invalid format');
+    });
+
+    it('returns "Invalid format on lines 1, 2" when both lines invalid', () => {
+        expect(validateDomainsPerLine('nodot1\nnodot2')).toBe('Invalid format on lines 1, 2');
+    });
+
+    it('returns "Invalid format on line 2" when second line invalid in multi-content input', () => {
+        expect(validateDomainsPerLine('example.org\nnodot')).toBe('Invalid format on line 2');
+    });
+
+    it('returns undefined for all-blank input', () => {
+        expect(validateDomainsPerLine('\n\n')).toBeUndefined();
+    });
+
+    it('handles blank line between two invalid lines', () => {
+        expect(validateDomainsPerLine('nodot1\n\nnodot2')).toBe('Invalid format on lines 1, 3');
+    });
+
+    it('returns "Invalid format" for comment-then-invalid (one content line)', () => {
+        expect(validateDomainsPerLine('# comment\nnotadomain')).toBe('Invalid format');
+    });
+
+    it('returns "Invalid format" for invalid-then-comment (one content line)', () => {
+        expect(validateDomainsPerLine('notadomain\n# comment')).toBe('Invalid format');
+    });
 });

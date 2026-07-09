@@ -261,24 +261,45 @@ export const validateIp = (value?: string): ValidationResult => {
 };
 
 /**
- * Validates that each non-empty line is a valid IP address.
+ * Generic per-line validator. Splits input by newlines, skips empty lines
+ * (and optionally comment lines via `isContent`), then validates each
+ * content line with `isValid`. Returns an appropriate i18n error message
+ * based on how many content lines exist and how many are invalid.
  *
- * @example validateIpPerLine("192.168.1.1\n10.0.0.1")  // undefined (valid)
- * @example validateIpPerLine("bad")                      // "Invalid IP address"
+ * Message logic:
+ * - 0 invalid  → undefined (valid)
+ * - 1 content line, 1 invalid → generic "Invalid format"
+ * - Multiple content lines, 1 invalid → "Invalid format on line N"
+ * - Multiple invalid → "Invalid format on lines N, M, ..."
+ *
+ * @param value    - The textarea content
+ * @param isValid  - Returns true if the line is valid
+ * @param isContent - Returns true if the line should be validated
+ *                   (defaults to all non-empty lines)
  */
-export const validateIpPerLine = (value: string): string | undefined => {
+const validatePerLine = (
+    value: string,
+    isValid: (line: string) => boolean,
+    isContent: (line: string) => boolean = () => true,
+): string | undefined => {
     if (!value) return undefined;
     const lines = value.split('\n');
     const invalidLines: number[] = [];
+    let contentLineCount = 0;
+
     for (let i = 0; i < lines.length; i += 1) {
         const line = lines[i].trim();
-        if (line) {
-            const error = validateIp(line);
-            if (error) invalidLines.push(i + 1);
+        if (!line) continue;
+        if (!isContent(line)) continue;
+
+        contentLineCount += 1;
+        if (!isValid(line)) {
+            invalidLines.push(i + 1);
         }
     }
+
     if (invalidLines.length === 0) return undefined;
-    if (invalidLines.length === 1 && lines.length === 1) {
+    if (invalidLines.length === 1 && contentLineCount === 1) {
         return intl.getMessage('form_error_format');
     }
     if (invalidLines.length === 1) {
@@ -290,6 +311,15 @@ export const validateIpPerLine = (value: string): string | undefined => {
 };
 
 /**
+ * Validates that each non-empty line is a valid IP address.
+ *
+ * @example validateIpPerLine("192.168.1.1\n10.0.0.1")  // undefined (valid)
+ * @example validateIpPerLine("bad")                      // "Invalid IP address"
+ */
+export const validateIpPerLine = (value: string): string | undefined =>
+    validatePerLine(value, (line) => validateIp(line) === undefined);
+
+/**
  * Validates that each non-empty line is a valid access client entry:
  * an IP address, CIDR range, or ClientID.
  *
@@ -297,33 +327,13 @@ export const validateIpPerLine = (value: string): string | undefined => {
  * @example validateClientsPerLine("my-client-id")           // undefined (valid)
  * @example validateClientsPerLine("bad entry!")             // "Invalid format"
  */
-export const validateClientsPerLine = (value: string): string | undefined => {
-    if (!value) return undefined;
-    const lines = value.split('\n');
-    const invalidLines: number[] = [];
-    for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i].trim();
-        if (line) {
-            const isValidClient =
-                R_IPV4.test(line) ||
-                R_IPV6.test(line) ||
-                R_CIDR.test(line) ||
-                R_CIDR_IPV6.test(line) ||
-                R_CLIENT_ID.test(line);
-            if (!isValidClient) invalidLines.push(i + 1);
-        }
-    }
-    if (invalidLines.length === 0) return undefined;
-    if (invalidLines.length === 1 && lines.length === 1) {
-        return intl.getMessage('form_error_format');
-    }
-    if (invalidLines.length === 1) {
-        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
-    }
-    return intl.getMessage('form_error_format_lines', {
-        lines: invalidLines.join(', '),
-    });
-};
+export const validateClientsPerLine = (value: string): string | undefined =>
+    validatePerLine(value, (line) =>
+        R_IPV4.test(line) ||
+        R_IPV6.test(line) ||
+        R_CIDR.test(line) ||
+        R_CIDR_IPV6.test(line) ||
+        R_CLIENT_ID.test(line));
 
 /**
  * Validates a MAC address format.
@@ -617,35 +627,12 @@ const R_HAS_DOT = /[.]/;
  * @example validateUpstreams("# comment\n1.1.1.1")        // undefined (comments ok)
  * @example validateUpstreams("not-a-server")               // "Invalid upstream"
  */
-export const validateUpstreams = (value: string): string | undefined => {
-    if (!value) {
-        return undefined;
-    }
-    const lines = value.split('\n');
-    const invalidLines: number[] = [];
-    for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i].trim();
-        if (line && !R_COMMENT.test(line) && !R_HAS_ADDRESS.test(line)) {
-            invalidLines.push(i + 1);
-        }
-    }
-
-    if (invalidLines.length === 0) {
-        return undefined;
-    }
-
-    if (invalidLines.length === 1 && lines.length === 1) {
-        return intl.getMessage('form_error_format');
-    }
-
-    if (invalidLines.length === 1) {
-        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
-    }
-
-    return intl.getMessage('form_error_format_lines', {
-        lines: invalidLines.join(', '),
-    });
-};
+export const validateUpstreams = (value: string): string | undefined =>
+    validatePerLine(
+        value,
+        (line) => R_HAS_ADDRESS.test(line),
+        (line) => !R_COMMENT.test(line),
+    );
 
 /**
  * Validates that each non-empty, non-comment line in a blocked_hosts
@@ -657,27 +644,12 @@ export const validateUpstreams = (value: string): string | undefined => {
  * @example validateDomainsPerLine("# comment")               // undefined (comments ok)
  * @example validateDomainsPerLine("notadomain")              // "Invalid format"
  */
-export const validateDomainsPerLine = (value: string): string | undefined => {
-    if (!value) return undefined;
-    const lines = value.split('\n');
-    const invalidLines: number[] = [];
-    for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i].trim();
-        if (line && !R_COMMENT.test(line) && !R_HAS_DOT.test(line)) {
-            invalidLines.push(i + 1);
-        }
-    }
-    if (invalidLines.length === 0) return undefined;
-    if (invalidLines.length === 1 && lines.length === 1) {
-        return intl.getMessage('form_error_format');
-    }
-    if (invalidLines.length === 1) {
-        return intl.getMessage('form_error_format_line', { line: invalidLines[0] });
-    }
-    return intl.getMessage('form_error_format_lines', {
-        lines: invalidLines.join(', '),
-    });
-};
+export const validateDomainsPerLine = (value: string): string | undefined =>
+    validatePerLine(
+        value,
+        (line) => R_HAS_DOT.test(line),
+        (line) => !R_COMMENT.test(line),
+    );
 
 interface LeaseEntry {
     ip: string;
