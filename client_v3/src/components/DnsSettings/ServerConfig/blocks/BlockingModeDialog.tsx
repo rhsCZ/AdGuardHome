@@ -119,8 +119,8 @@ export const BlockingModeDialog = (props: Props) => {
                             }
                             placeholder={intl.getMessage('dns_blocking_mode_ipv4_placeholder')}
                             value={blockingIpv4.value()}
-                            onChange={(e: Event) =>
-                                blockingIpv4.setValue((e.target as HTMLInputElement).value)
+                            onChange={(e) =>
+                                blockingIpv4.setValue(e.target.value)
                             }
                             onBlur={() => blockingIpv4.validate()}
                             errorMessage={blockingIpv4.error()}
@@ -144,8 +144,8 @@ export const BlockingModeDialog = (props: Props) => {
                             }
                             placeholder={intl.getMessage('dns_blocking_mode_ipv6_placeholder')}
                             value={blockingIpv6.value()}
-                            onChange={(e: Event) =>
-                                blockingIpv6.setValue((e.target as HTMLInputElement).value)
+                            onChange={(e) =>
+                                blockingIpv6.setValue(e.target.value)
                             }
                             onBlur={() => blockingIpv6.validate()}
                             errorMessage={blockingIpv6.error()}
@@ -170,11 +170,11 @@ export const BlockingModeDialog = (props: Props) => {
                     }
                     placeholder={intl.getMessage('dns_blocking_mode_ttl_placeholder')}
                     value={ttl.value()}
-                    onChange={(e: Event) =>
+                    onChange={(e) =>
                         ttl.setValue(
-                            (e.target as HTMLInputElement).value === ''
+                            e.target.value === ''
                                 ? NaN
-                                : Number((e.target as HTMLInputElement).value),
+                                : Number(e.target.value),
                         )
                     }
                     onBlur={() => ttl.validate()}

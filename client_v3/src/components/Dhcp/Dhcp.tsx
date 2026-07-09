@@ -9,7 +9,7 @@ import { SettingRow } from 'panel/common/ui/SettingRow';
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
 import intl from 'panel/common/intl';
 import theme from 'panel/lib/theme';
-import { useDialogOpen } from 'panel/hooks/useField';
+import { useDialog } from 'panel/hooks/useDialog';
 import { SETTINGS_URLS } from 'panel/helpers/constants';
 import {
     dhcpState,
@@ -30,9 +30,9 @@ import s from './styles.module.pcss';
 
 export const Dhcp = () => {
     const navigate = useNavigate();
-    const v4Dialog = useDialogOpen();
-    const v6Dialog = useDialogOpen();
-    const resetDialog = useDialogOpen();
+    const v4Dialog = useDialog();
+    const v6Dialog = useDialog();
+    const resetDialog = useDialog();
 
     const [selectedInterface, setSelectedInterface] = createSignal(dhcpState.interface_name || '');
     const [showAllIps, setShowAllIps] = createSignal(false);
