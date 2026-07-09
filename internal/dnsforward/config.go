@@ -711,24 +711,29 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) {
 		return
 	}
 
+	proxyConf.TLSListenAddr = s.conf.TLSConf.TLSListenAddrs
+	proxyConf.QUICListenAddr = s.conf.TLSConf.QUICListenAddrs
+
 	proxyConf.TLSConfig = s.tlsConfigProvider.TLSConfig()
 	if proxyConf.TLSConfig == nil || len(proxyConf.TLSConfig.Certificates) == 0 {
 		return
 	}
 
-	proxyConf.TLSListenAddr = s.conf.TLSConf.TLSListenAddrs
-	proxyConf.QUICListenAddr = s.conf.TLSConf.QUICListenAddrs
-
 	s.replaceGetCertificate(proxyConf.TLSConfig)
 
 	tlsCert := proxyConf.TLSConfig.Certificates[0]
+	if tlsCert.Leaf == nil {
+		s.logger.WarnContext(ctx, "error while parsing tls certificate: leaf is nil")
 
-	s.setDNSNamesLocked(ctx, tlsCert)
+		return
+	}
+
+	s.setDNSNamesLocked(ctx, &tlsCert)
 }
 
 // SetDNSNames sets DNS names to Server from tlsCert.  tlsCert must be non-nil
 // and valid.
-func (s *Server) SetDNSNames(ctx context.Context, tlsCert tls.Certificate) {
+func (s *Server) SetDNSNames(ctx context.Context, tlsCert *tls.Certificate) {
 	s.serverLock.Lock()
 	defer s.serverLock.Unlock()
 
@@ -737,7 +742,7 @@ func (s *Server) SetDNSNames(ctx context.Context, tlsCert tls.Certificate) {
 
 // setDNSNamesLocked sets DNS names to Server from tlsCert without acquiring
 // the lock.  tlsCert must be non-nil and valid.  s.serverLock must be locked.
-func (s *Server) setDNSNamesLocked(ctx context.Context, tlsCert tls.Certificate) {
+func (s *Server) setDNSNamesLocked(ctx context.Context, tlsCert *tls.Certificate) {
 	s.hasIPAddrs = aghtls.CertificateHasIP(tlsCert.Leaf)
 
 	if s.conf.TLSConf.StrictSNICheck {

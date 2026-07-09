@@ -310,7 +310,14 @@ func (m *tlsManager) reload(ctx context.Context) {
 		return
 	}
 
-	globalContext.dnsServer.SetDNSNames(ctx, m.tlsConf.Certificates[0])
+	tlsCert := m.tlsConf.Certificates[0]
+	if tlsCert.Leaf == nil {
+		m.logger.WarnContext(ctx, "error while parsing tls certificate: leaf is nil")
+
+		return
+	}
+
+	globalContext.dnsServer.SetDNSNames(ctx, &tlsCert)
 	extTLSConf.Status = *status
 
 	m.extTLSConf = &extTLSConf
