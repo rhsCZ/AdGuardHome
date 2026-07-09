@@ -1,7 +1,12 @@
 import { Show } from 'solid-js';
 import { Icon } from 'panel/common/ui/Icon';
 import intl from 'panel/common/intl';
-import { encryptionState, setTlsConfig, resetValidationStatus, clearCertOptimistically } from 'panel/stores/encryption';
+import {
+    encryptionState,
+    setTlsConfig,
+    resetValidationStatus,
+    clearCertOptimistically,
+} from 'panel/stores/encryption';
 import { CertificateStatus, KeyStatus, ValidationStatus } from '../Status';
 import s from '../styles.module.pcss';
 import theme from 'panel/lib/theme';

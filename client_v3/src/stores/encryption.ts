@@ -191,4 +191,20 @@ export const resetValidationStatus = () => {
     });
 };
 
+/**
+ * Optimistically clears cert and key fields in the local store so
+ * consumers reacting to certificate_chain / certificate_path
+ * (e.g. certConfigured()) flip synchronously, avoiding a flash of
+ * stale validation status while the async delete API call is in flight.
+ */
+export const clearCertOptimistically = () => {
+    setState({
+        certificate_chain: '',
+        private_key: '',
+        certificate_path: '',
+        private_key_path: '',
+        private_key_saved: false,
+    });
+};
+
 export const encryptionState = untrack(() => state);
