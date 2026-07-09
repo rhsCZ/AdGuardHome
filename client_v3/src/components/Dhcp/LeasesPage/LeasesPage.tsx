@@ -131,7 +131,9 @@ export const LeasesPage = () => {
                     onTabChange={handleTabChange}
                     variant="filled"
                     class={s.tabs}
-                    contentClass={s.tabContent}
+                    contentClass={cn(s.tabContent, {
+                        [s.tabContent_static]: activeTab() === LEASE_TABS.STATIC,
+                    })}
                     fullWidth
                     tabs={[
                         {

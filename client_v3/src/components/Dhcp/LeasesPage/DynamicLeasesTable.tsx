@@ -26,8 +26,6 @@ type Props = {
     onRefresh: () => void;
 };
 
-const pageSize = 7;
-
 export const DynamicLeasesTable = (props: Props) => {
     const [openMenuId, setOpenMenuId] = createSignal<string | null>(null);
 
@@ -250,15 +248,6 @@ export const DynamicLeasesTable = (props: Props) => {
             data={props.leases}
             class={s.dynamicTable}
             columns={columns()}
-            emptyTable={
-                <div class={s.emptyTableContent}>
-                    <Icon icon="not_found_search" color="gray" class={s.emptyTableIcon} />
-                    <div class={cn(theme.text.t3, s.emptyTableDesc)}>
-                        {intl.getMessage('dhcp_leases_not_found')}
-                    </div>
-                </div>
-            }
-            pageSize={pageSize}
             getRowId={(row: DynamicLease) => `${row.mac}-${row.ip}`}
         />
     );
