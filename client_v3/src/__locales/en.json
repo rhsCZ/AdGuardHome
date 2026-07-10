@@ -788,7 +788,7 @@
   "dhcp_form_subnet_input": "Subnet mask",
   "dhcp_form_range_title": "IP address range",
   "dhcp_form_range_start": "Start IP address",
-  "dhcp_form_lease_title": "DHCP lease time (in seconds)",
+  "dhcp_form_lease_title": "DHCP lease time, in seconds",
   "dhcp_interface_select": "DHCP interface",
   "dhcp_hardware_address_value": "<strong>Hardware address:</strong> %value%",
   "dhcp_ip_addresses_value": "<strong>IP addresses:</strong> %value%",
