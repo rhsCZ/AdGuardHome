@@ -12,7 +12,7 @@ type ToastAction = {
 type ToastNotice = {
     id: string;
     message: any;
-    type: 'error' | 'success' | 'notice';
+    type: 'error' | 'success' | 'notice' | 'warning';
     actionLabel?: string;
     undoId?: string;
     action?: ToastAction;
@@ -76,6 +76,21 @@ export const addSuccessToast = (message: any) => {
         notice.actionLabel = message.actionLabel;
         notice.undoId = message.undoId;
         notice.code = message.code;
+    }
+    setState('notices', (prev) => [...prev, notice]);
+};
+
+export const addWarningToast = (payload: { error: any; options?: any; action?: ToastAction }) => {
+    const { error, options, action } = payload;
+    const message = error instanceof Error ? error.message : String(error);
+    const notice: ToastNotice = {
+        id: nanoid(),
+        message,
+        options,
+        type: 'warning' as const,
+    };
+    if (action) {
+        notice.action = action;
     }
     setState('notices', (prev) => [...prev, notice]);
 };

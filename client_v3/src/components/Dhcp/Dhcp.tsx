@@ -18,7 +18,7 @@ import {
     setDhcpConfig,
     resetDhcp,
 } from 'panel/stores/dhcp';
-import { addErrorToast } from 'panel/stores/toasts';
+import { addWarningToast } from 'panel/stores/toasts';
 
 import { DhcpToggle } from './blocks/DhcpToggle';
 import { InterfaceSelector } from './blocks/InterfaceSelector';
@@ -78,7 +78,7 @@ export const Dhcp = () => {
             check &&
             (check.v4?.other_server?.found === 'yes' || check.v6?.other_server?.found === 'yes')
         ) {
-            addErrorToast({ error: intl.getMessage('dhcp_warning') });
+            addWarningToast({ error: intl.getMessage('dhcp_warning') });
         }
     });
 
