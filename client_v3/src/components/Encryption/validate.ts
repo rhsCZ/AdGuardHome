@@ -76,8 +76,7 @@ export const validateKeyFields = (values: EncryptionFormValues): Record<string, 
 
     if (values.key_source === ENCRYPTION_SOURCE.CONTENT) {
         const keyErr =
-            validateRequiredValue(values.private_key) ||
-            validatePemContent(values.private_key);
+            validateRequiredValue(values.private_key) || validatePemContent(values.private_key);
         if (keyErr) errs.private_key = keyErr;
     } else if (values.key_source === ENCRYPTION_SOURCE.PATH) {
         const keyPathErr =

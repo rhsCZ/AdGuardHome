@@ -1,6 +1,7 @@
 import type { Accessor } from 'solid-js';
 import cn from 'clsx';
 import { Show } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import { Select } from 'panel/common/controls/Select';
 import { Button } from 'panel/common/ui/Button';
 import intl from 'panel/common/intl';
@@ -18,6 +19,7 @@ type Props = {
 const MAX_VISIBLE_IPS = 2;
 
 export const InterfaceSelector = (props: Props) => {
+    const navigate = useNavigate();
     const interfaces = () => dhcpState.interfaces || {};
 
     const selectOptions = () =>
@@ -51,7 +53,7 @@ export const InterfaceSelector = (props: Props) => {
 
     const handleCheck = () => {
         if (props.selectedInterface()) {
-            findActiveDhcp(props.selectedInterface());
+            findActiveDhcp(props.selectedInterface(), navigate);
         }
     };
 
@@ -112,6 +114,7 @@ export const InterfaceSelector = (props: Props) => {
                         variant="primary"
                         size="small"
                         onClick={handleCheck}
+                        disabled={dhcpState.processingDhcp}
                         class={s.button}
                         compact
                     >
