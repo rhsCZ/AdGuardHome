@@ -3,7 +3,7 @@ import cn from 'clsx';
 import intl from 'panel/common/intl';
 import { Icon, IconType } from 'panel/common/ui/Icon';
 import { Link } from 'panel/common/ui/Link';
-import { RoutePath } from 'panel/components/Routes/Paths';
+import { RoutePath, SCROLL_QUERY_KEY } from 'panel/components/Routes/Paths';
 
 import theme from 'panel/lib/theme';
 import s from './EmptyState.module.pcss';
@@ -25,7 +25,7 @@ const getEmptyState = (mode: EmptyStateMode) => {
                     <>
                         {intl.getMessage('query_log_nothing_available_rotation')}
                         <div class={s.enableLinkWrap}>
-                            <Link to={RoutePath.SettingsPage}>{intl.getMessage('enable')}</Link>
+                            <Link to={RoutePath.SettingsPage} query={{ [SCROLL_QUERY_KEY]: 'query-log' }}>{intl.getMessage('enable')}</Link>
                         </div>
                     </>
                 ),
