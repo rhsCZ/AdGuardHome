@@ -21,9 +21,14 @@ const getEmptyState = (mode: EmptyStateMode) => {
         case 'disabled':
         case 'rotation-disabled':
             return {
-                message: intl.getMessage('query_log_nothing_available_rotation', {
-                    a: (text: string) => <Link to={RoutePath.SettingsPage}>{text}</Link>,
-                }),
+                message: (
+                    <>
+                        {intl.getMessage('query_log_nothing_available_rotation')}
+                        <div class={s.enableLinkWrap}>
+                            <Link to={RoutePath.SettingsPage}>{intl.getMessage('enable')}</Link>
+                        </div>
+                    </>
+                ),
                 variant: 'rotation-disabled' as const,
                 icon: 'settings_info' as IconType,
             };

@@ -29,6 +29,14 @@ export const TlsCertSection = () => {
     };
 
     const renderStatus = () => {
+        if (enc().valid_cert && enc().valid_key && !enc().valid_pair) {
+            return (
+                <ValidationStatus
+                    type="error"
+                    message={intl.getMessage('encryption_key_cert_mismatch')}
+                />
+            );
+        }
         if (enc().warning_validation) {
             const isWarning = enc().valid_key && enc().valid_cert && enc().valid_pair;
             return (

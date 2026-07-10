@@ -161,6 +161,7 @@ export const ConfigureRewritesModal = (props: Props) => {
                                     }
                                     onBlur={validateDomainField}
                                     errorMessage={domainError()}
+                                    size="large"
                                 />
                             </div>
 
@@ -184,6 +185,7 @@ export const ConfigureRewritesModal = (props: Props) => {
                                     }
                                     onBlur={validateAnswerField}
                                     errorMessage={answerError()}
+                                    size="large"
                                 />
                             </div>
                         </div>

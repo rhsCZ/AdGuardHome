@@ -328,12 +328,15 @@ export const validateIpPerLine = (value: string): string | undefined =>
  * @example validateClientsPerLine("bad entry!")             // "Invalid format"
  */
 export const validateClientsPerLine = (value: string): string | undefined =>
-    validatePerLine(value, (line) =>
-        R_IPV4.test(line) ||
-        R_IPV6.test(line) ||
-        R_CIDR.test(line) ||
-        R_CIDR_IPV6.test(line) ||
-        R_CLIENT_ID.test(line));
+    validatePerLine(
+        value,
+        (line) =>
+            R_IPV4.test(line) ||
+            R_IPV6.test(line) ||
+            R_CIDR.test(line) ||
+            R_CIDR_IPV6.test(line) ||
+            R_CLIENT_ID.test(line),
+    );
 
 /**
  * Validates a MAC address format.
@@ -444,6 +447,22 @@ export const validateAnswer = (value?: string): ValidationResult => {
 export const validatePath = (value?: string): ValidationResult => {
     if (value && !isValidAbsolutePath(value) && !R_URL_REQUIRES_PROTOCOL.test(value)) {
         return intl.getMessage('form_error_url_format');
+    }
+    return undefined;
+};
+
+const R_PEM_CONTENT =
+    /^(-----BEGIN [A-Z0-9 ]+-----[ \t]*[\r\n]+[A-Za-z0-9+/= \t\r\n]+-----END [A-Z0-9 ]+-----[ \t\r\n]*)+$/;
+
+/**
+ * Validates that a value looks like PEM-encoded content.
+ *
+ * @example validatePemContent("-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----")  // undefined (valid)
+ * @example validatePemContent("not pem content")                                           // "Invalid data"
+ */
+export const validatePemContent = (value?: string): ValidationResult => {
+    if (value && !R_PEM_CONTENT.test(value.trim())) {
+        return intl.getMessage('encryption_invalid_data');
     }
     return undefined;
 };

@@ -163,26 +163,34 @@ export const DhcpV4Modal = (props: Props) => {
                     {intl.getMessage('dhcp_form_range_title')}
                 </span>
                 <div class={s.rangeRow}>
-                    <Input
-                        value={rangeStart()}
-                        onChange={(e: Event) => setRangeStart((e.target as HTMLInputElement).value)}
-                        onBlur={onRangeStartBlur}
-                        id="v4_range_start"
-                        placeholder="192.168.1.2"
-                        disabled={!hasIpv4()}
-                        errorMessage={rangeStartError()}
-                        size="large"
-                    />
-                    <Input
-                        value={rangeEnd()}
-                        onChange={(e: Event) => setRangeEnd((e.target as HTMLInputElement).value)}
-                        onBlur={onRangeEndBlur}
-                        id="v4_range_end"
-                        placeholder="192.168.1.254"
-                        disabled={!hasIpv4()}
-                        errorMessage={rangeEndError()}
-                        size="large"
-                    />
+                    <div>
+                        <Input
+                            value={rangeStart()}
+                            onChange={(e: Event) =>
+                                setRangeStart((e.target as HTMLInputElement).value)
+                            }
+                            onBlur={onRangeStartBlur}
+                            id="v4_range_start"
+                            placeholder="192.168.1.2"
+                            disabled={!hasIpv4()}
+                            errorMessage={rangeStartError()}
+                            size="large"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            value={rangeEnd()}
+                            onChange={(e: Event) =>
+                                setRangeEnd((e.target as HTMLInputElement).value)
+                            }
+                            onBlur={onRangeEndBlur}
+                            id="v4_range_end"
+                            placeholder="192.168.1.254"
+                            disabled={!hasIpv4()}
+                            errorMessage={rangeEndError()}
+                            size="large"
+                        />
+                    </div>
                 </div>
             </div>
             <div class={theme.form.input}>

@@ -140,21 +140,6 @@ export const DynamicLeasesTable = (props: Props) => {
 
                                 <button
                                     type="button"
-                                    onClick={() => props.onMakeStatic(row)}
-                                    class={theme.table.action}
-                                    title={intl.getMessage('make_static')}
-                                    aria-label={intl.getMessage('make_static')}
-                                    data-testid="dynamic-lease-make-static-button"
-                                    data-table-action
-                                >
-                                    <Icon icon="plus" color="gray" />
-                                    <span class={theme.table.actionLabel}>
-                                        {intl.getMessage('make_static')}
-                                    </span>
-                                </button>
-
-                                <button
-                                    type="button"
                                     onClick={() => props.onRefresh()}
                                     class={theme.table.action}
                                     title={intl.getMessage('refresh_btn')}
@@ -165,6 +150,21 @@ export const DynamicLeasesTable = (props: Props) => {
                                     <Icon icon="refresh" color="gray" />
                                     <span class={theme.table.actionLabel}>
                                         {intl.getMessage('refresh_btn')}
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => props.onMakeStatic(row)}
+                                    class={theme.table.action}
+                                    title={intl.getMessage('make_static')}
+                                    aria-label={intl.getMessage('make_static')}
+                                    data-testid="dynamic-lease-make-static-button"
+                                    data-table-action
+                                >
+                                    <Icon icon="plus" color="gray" />
+                                    <span class={theme.table.actionLabel}>
+                                        {intl.getMessage('make_static')}
                                     </span>
                                 </button>
 
@@ -197,15 +197,15 @@ export const DynamicLeasesTable = (props: Props) => {
                                             </div>
                                             <div
                                                 class={theme.dropdown.item}
-                                                onClick={() => handleMakeStatic(row)}
-                                            >
-                                                {intl.getMessage('make_static')}
-                                            </div>
-                                            <div
-                                                class={theme.dropdown.item}
                                                 onClick={() => handleRefresh()}
                                             >
                                                 {intl.getMessage('refresh_btn')}
+                                            </div>
+                                            <div
+                                                class={theme.dropdown.item}
+                                                onClick={() => handleMakeStatic(row)}
+                                            >
+                                                {intl.getMessage('make_static')}
                                             </div>
                                             <div
                                                 class={cn(
