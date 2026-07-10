@@ -90,8 +90,8 @@ export const ConfigureRewritesModal = (props: Props) => {
         const err =
             validateRequiredValue(answer()) ||
             validateAnswer(answer()) ||
-            validateRewriteNotExists(domain(), rewritesState.list, props.rewriteToEdit?.domain) ||
-            validateRewriteNotSame(domain(), answer());
+            validateRewriteNotSame(domain(), answer()) ||
+            validateRewriteNotExists(domain(), rewritesState.list, props.rewriteToEdit?.domain);
         setAnswerError(err || undefined);
         return !err;
     };
