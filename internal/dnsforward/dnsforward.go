@@ -174,10 +174,6 @@ type Server struct {
 	// [upstream.Resolver] interface.
 	bootResolvers []*upstream.UpstreamResolver
 
-	// dnsNames are the DNS names from certificate (SAN) or CN value from
-	// Subject.
-	dnsNames []string
-
 	// conf is the current configuration of the server.
 	conf ServerConfig
 
@@ -204,13 +200,16 @@ const defaultLocalDomainSuffix = "lan"
 
 // DNSCreateParams are parameters to create a new server.
 type DNSCreateParams struct {
-	DNSFilter         *filtering.DNSFilter
-	Stats             stats.Interface
-	QueryLog          querylog.QueryLog
-	DHCPServer        DHCP
-	PrivateNets       netutil.SubnetSet
-	Anonymizer        *aghnet.IPMut
-	EtcHosts          *aghnet.HostsContainer
+	DNSFilter   *filtering.DNSFilter
+	Stats       stats.Interface
+	QueryLog    querylog.QueryLog
+	DHCPServer  DHCP
+	PrivateNets netutil.SubnetSet
+	Anonymizer  *aghnet.IPMut
+	EtcHosts    *aghnet.HostsContainer
+
+	// TLSConfig provider provides TLS configuration for the server.  It must
+	// not be nil.
 	TLSConfigProvider aghtls.TLSConfigProvider
 
 	// Logger is used as a base logger.  It must not be nil.
@@ -241,9 +240,7 @@ func NewServer(p DNSCreateParams) (s *Server, err error) {
 		p.Anonymizer = aghnet.NewIPMut(nil)
 	}
 
-	if p.TLSConfigProvider == nil {
-		p.TLSConfigProvider = aghtls.EmptyTLSConfigProvider{}
-	}
+	p.TLSConfigProvider = cmp.Or[aghtls.TLSConfigProvider](p.TLSConfigProvider, aghtls.EmptyTLSConfigProvider{})
 
 	var etcHosts upstream.Resolver
 	if p.EtcHosts != nil {
@@ -489,8 +486,9 @@ func (s *Server) startLocked(ctx context.Context) error {
 	return err
 }
 
-// Prepare initializes parameters of s using data from conf.  conf must not be
-// nil.
+// Prepare initialises parameters of s using data from conf.  It can be called
+// from outside of the package only while the initialization. conf must be
+// non-nil and valid.
 func (s *Server) Prepare(ctx context.Context, conf *ServerConfig) (err error) {
 	s.conf = *conf
 

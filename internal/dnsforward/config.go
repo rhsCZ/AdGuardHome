@@ -324,6 +324,7 @@ const (
 )
 
 // newProxyConfig creates and validates configuration for the main proxy.
+// s.serverLock must be locked.
 //
 // TODO(d.kolyshev):  Improve maintainability.
 func (s *Server) newProxyConfig(ctx context.Context) (conf *proxy.Config, err error) {
@@ -716,6 +717,8 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) {
 
 	proxyConf.TLSConfig = s.tlsConfigProvider.TLSConfig()
 	if proxyConf.TLSConfig == nil || len(proxyConf.TLSConfig.Certificates) == 0 {
+		s.logger.WarnContext(ctx, "tls configuration is not set or has no certificates")
+
 		return
 	}
 
@@ -728,42 +731,7 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) {
 		return
 	}
 
-	s.setDNSNamesLocked(ctx, &tlsCert)
-}
-
-// SetDNSNames sets DNS names to Server from tlsCert.  tlsCert must be non-nil
-// and valid.
-func (s *Server) SetDNSNames(ctx context.Context, tlsCert *tls.Certificate) {
-	s.serverLock.Lock()
-	defer s.serverLock.Unlock()
-
-	s.setDNSNamesLocked(ctx, tlsCert)
-}
-
-// setDNSNamesLocked sets DNS names to Server from tlsCert without acquiring
-// the lock.  tlsCert must be non-nil and valid.  s.serverLock must be locked.
-func (s *Server) setDNSNamesLocked(ctx context.Context, tlsCert *tls.Certificate) {
 	s.hasIPAddrs = aghtls.CertificateHasIP(tlsCert.Leaf)
-
-	if s.conf.TLSConf.StrictSNICheck {
-		if len(tlsCert.Leaf.DNSNames) != 0 {
-			s.dnsNames = tlsCert.Leaf.DNSNames
-			s.logger.DebugContext(
-				ctx,
-				"using certificate's SAN as DNS names",
-				"dns_names", tlsCert.Leaf.DNSNames,
-			)
-			slices.Sort(s.dnsNames)
-		} else {
-			s.dnsNames = []string{tlsCert.Leaf.Subject.CommonName}
-			s.logger.DebugContext(
-				ctx,
-				"using certificate's CN as DNS name",
-				"common_name",
-				tlsCert.Leaf.Subject.CommonName,
-			)
-		}
-	}
 }
 
 // isWildcard returns true if host is a wildcard hostname.
@@ -804,22 +772,25 @@ func (s *Server) replaceGetCertificate(orig *tls.Config) {
 	origGetCert := orig.GetCertificate
 
 	orig.GetCertificate = func(chi *tls.ClientHelloInfo) (cert *tls.Certificate, err error) {
-		s.serverLock.RLock()
-		dnsNames := s.dnsNames
-		strictSNICheck := s.conf.TLSConf.StrictSNICheck
-		s.serverLock.RUnlock()
-
-		if orig.Certificates[0].Leaf == nil {
-			return nil, errors.Error("TLS certificate is not set")
+		if len(orig.Certificates) == 0 {
+			return nil, errors.Error("tls certificate is not set")
 		}
 
-		if strictSNICheck && !anyNameMatches(dnsNames, chi.ServerName) {
+		tlsCert := orig.Certificates[0]
+
+		if tlsCert.Leaf == nil {
+			return nil, errors.Error("error while parsing tls certificate: leaf is nil")
+		}
+
+		dnsNames := tlsCert.Leaf.DNSNames
+		slices.Sort(dnsNames)
+		if s.conf.TLSConf.StrictSNICheck && !anyNameMatches(dnsNames, chi.ServerName) {
 			s.logger.Warn(
-				"unknown SNI in Client Hello",
+				"unknown sni in Client Hello",
 				"server_name", chi.ServerName,
 			)
 
-			return nil, errors.Error("invalid SNI")
+			return nil, errors.Error("invalid sni")
 		}
 
 		if origGetCert != nil {

@@ -177,18 +177,20 @@ func (m *tlsManager) checkIfValidStatus(
 	status *tlsConfigStatus,
 	certErr error,
 ) (err error) {
-	if certErr != nil {
-		status.WarningValidation = certErr.Error()
-		if status.ValidCert && status.ValidKey && status.ValidPair {
-			// Do not return warnings since those aren't critical, just log.
-			m.logger.WarnContext(
-				ctx,
-				"error while loading TLS configuration",
-				slogutil.KeyError, certErr,
-			)
+	if certErr == nil {
+		return nil
+	}
 
-			certErr = nil
-		}
+	status.WarningValidation = certErr.Error()
+	if status.ValidCert && status.ValidKey && status.ValidPair {
+		// Do not return warnings since those aren't critical, just log.
+		m.logger.WarnContext(
+			ctx,
+			"error while loading tls configuration",
+			slogutil.KeyError, certErr,
+		)
+
+		certErr = nil
 	}
 
 	return certErr
@@ -310,14 +312,6 @@ func (m *tlsManager) reload(ctx context.Context) {
 		return
 	}
 
-	tlsCert := m.tlsConf.Certificates[0]
-	if tlsCert.Leaf == nil {
-		m.logger.WarnContext(ctx, "error while parsing tls certificate: leaf is nil")
-
-		return
-	}
-
-	globalContext.dnsServer.SetDNSNames(ctx, &tlsCert)
 	extTLSConf.Status = *status
 
 	m.extTLSConf = &extTLSConf
