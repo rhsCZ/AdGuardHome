@@ -127,7 +127,6 @@ export const updateRewriteSettings = async (values: any) => {
     try {
         await apiClient.updateRewriteSettings(values);
         setState({ ...values, processingSettings: false });
-        addSuccessToast(intl.getMessage('rewrite_settings_updated'));
     } catch (error) {
         addErrorToast({ error });
         setState('processingSettings', false);

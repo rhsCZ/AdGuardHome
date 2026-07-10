@@ -137,7 +137,12 @@ export const ConfigureRewritesModal = (props: Props) => {
 
     return (
         <ModalWrapper id={props.modalId}>
-            <Dialog visible onClose={handleCancel} title={getTitle(props.modalId)}>
+            <Dialog
+                visible
+                onClose={handleCancel}
+                title={getTitle(props.modalId)}
+                noOverflowContent
+            >
                 <form onSubmit={handleFormSubmit}>
                     <div>
                         <div class={theme.form.group}>
