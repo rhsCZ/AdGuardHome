@@ -551,7 +551,7 @@
   "blocklists_add": "Add blocklists",
   "blocklists_add_desc": "You can select blocklists from the list or add them manually",
   "blocklists_empty": "No blocklists yet — <button>add your first one</button>",
-  "allowlists_desc": "Domains from DNS allowlists will be allowed even if they are in any of the blocklists. AdGuard Home understands basic adblock rules and hosts files syntax",
+  "allowlists_desc": "Domains on these allowlists are allowed even if they are on a blocklist",
   "name_label": "Name",
   "url_label": "URL",
   "rules_label": "Rules",
