@@ -97,7 +97,7 @@ export const DNSRewrites = () => {
     };
 
     return (
-        <div class={theme.layout.container}>
+        <div class={cn(theme.layout.container, s.dnsRewritesContainer)}>
             <div class={theme.layout.containerIn}>
                 <SettingRow
                     variant="switch"
@@ -113,7 +113,7 @@ export const DNSRewrites = () => {
                     class={s.dnsRewritesSettingRow}
                 />
 
-                <div class={s.group}>
+                <div class={cn(s.group, s.buttonGroup)}>
                     <PlusButton onClick={openAddRewiresModal} testId="add-rewrite">
                         {intl.getMessage('rewrite_add')}
                     </PlusButton>

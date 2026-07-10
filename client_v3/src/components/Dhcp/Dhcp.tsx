@@ -141,7 +141,7 @@ export const Dhcp = () => {
                             >
                                 <button
                                     type="button"
-                                    class={theme.form.action}
+                                    class={cn(theme.form.action, s.menuButton)}
                                     aria-label={intl.getMessage('reset_dhcp_settings')}
                                 >
                                     <Icon icon="bullets" />

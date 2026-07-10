@@ -439,6 +439,56 @@ export const validateAnswer = (value?: string): ValidationResult => {
 };
 
 /**
+ * Validates that a DNS rewrite with the given domain doesn't already exist.
+ * When editing, the `currentDomain` is excluded from the duplicate check.
+ *
+ * @example validateRewriteNotExists("example.com", [{ domain: "example.com" }])
+ *          // "This DNS rewrite already exists"
+ * @example validateRewriteNotExists("example.com", [{ domain: "example.com" }], "example.com")
+ *          // undefined (editing the same rewrite)
+ */
+export const validateRewriteNotExists = (
+    domain: string,
+    existingList: Array<{ domain: string }>,
+    currentDomain?: string,
+): ValidationResult => {
+    if (!domain) {
+        return undefined;
+    }
+
+    const isDuplicate = existingList.some(
+        (item) =>
+            item.domain.toLowerCase() === domain.toLowerCase() && item.domain !== currentDomain,
+    );
+
+    if (isDuplicate) {
+        return intl.getMessage('dns_rewrite_exists');
+    }
+
+    return undefined;
+};
+
+/**
+ * Validates that the domain and answer are not the same value.
+ *
+ * @example validateRewriteNotSame("example.com", "example.com")
+ *          // "You can't rewrite to the same domain or wildcard"
+ * @example validateRewriteNotSame("example.com", "192.168.1.1")
+ *          // undefined (valid)
+ */
+export const validateRewriteNotSame = (domain: string, answer: string): ValidationResult => {
+    if (!domain || !answer) {
+        return undefined;
+    }
+
+    if (domain.toLowerCase() === answer.toLowerCase()) {
+        return intl.getMessage('dns_rewrite_same');
+    }
+
+    return undefined;
+};
+
+/**
  * Validates an absolute file path or URL format.
  *
  * @example validatePath("/usr/local/bin")      // undefined (valid)

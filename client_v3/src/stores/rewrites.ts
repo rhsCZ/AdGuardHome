@@ -102,6 +102,7 @@ export const deleteRewrite = async (config: RewriteConfig): Promise<boolean> => 
     try {
         await apiClient.deleteRewrite(config);
         setState('processingDelete', false);
+        addSuccessToast(intl.getMessage('dns_rewrite_removed'));
         await getRewritesList();
         return true;
     } catch (error) {
