@@ -216,6 +216,42 @@ describe('validateKeyFields', () => {
         });
         expect(errs.private_key).toBeTruthy();
     });
+
+    it('rejects non-PEM cert content', () => {
+        const errs = validateCertFields({
+            ...valid,
+            certificate_chain: 'not a pem certificate',
+        });
+        expect(errs.certificate_chain).toBeTruthy();
+    });
+
+    it('rejects non-PEM key content', () => {
+        const errs = validateKeyFields({
+            ...valid,
+            private_key: 'not a pem key',
+        });
+        expect(errs.private_key).toBeTruthy();
+    });
+
+    it('rejects invalid cert path', () => {
+        const errs = validateCertFields({
+            ...valid,
+            certificate_source: ENCRYPTION_SOURCE.PATH,
+            certificate_path: 'relative/path/no/leading/slash',
+            certificate_chain: '',
+        });
+        expect(errs.certificate_path).toBeTruthy();
+    });
+
+    it('rejects invalid key path', () => {
+        const errs = validateKeyFields({
+            ...valid,
+            key_source: ENCRYPTION_SOURCE.PATH,
+            private_key_path: 'relative/path/no/leading/slash',
+            private_key: '',
+        });
+        expect(errs.private_key_path).toBeTruthy();
+    });
 });
 
 describe('validateCertKeyFields', () => {

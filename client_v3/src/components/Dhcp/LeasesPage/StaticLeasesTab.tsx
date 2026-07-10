@@ -6,7 +6,7 @@ import { PlusButton } from 'panel/common/ui/PlusButton';
 import { StaticLeasesTable } from './StaticLeasesTable';
 import { dhcpState, removeStaticLease, toggleLeaseModal, getDhcpStatus } from 'panel/stores/dhcp';
 
-import s from './styles.module.pcss';
+import s from './LeasesPage.module.pcss';
 
 type LeaseData = {
     mac: string;

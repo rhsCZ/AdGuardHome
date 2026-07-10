@@ -23,7 +23,7 @@ import { StaticLeasesTab } from './StaticLeasesTab';
 import { DynamicLeasesTab } from './DynamicLeasesTab';
 import { StaticLeaseModal } from './StaticLeaseModal';
 
-import s from './styles.module.pcss';
+import s from './LeasesPage.module.pcss';
 
 const LEASE_TABS = {
     STATIC: 'static',

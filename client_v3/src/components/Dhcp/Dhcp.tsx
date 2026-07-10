@@ -110,8 +110,12 @@ export const Dhcp = () => {
                 <Show when={isLoaded()} fallback={<PageLoader />}>
                     <Show when={!dhcpState.dhcp_available}>
                         <div class={s.unavailable}>
-                            <h2 class={theme.title.h4}>{intl.getMessage('unavailable_dhcp')}</h2>
-                            <p class={theme.text.t2}>{intl.getMessage('unavailable_dhcp_desc')}</p>
+                            <h1 class={cn(theme.title.h4, theme.title.h3_tablet)}>
+                                {intl.getMessage('unavailable_dhcp')}
+                            </h1>
+                            <div class={theme.text.t2}>
+                                {intl.getMessage('unavailable_dhcp_desc')}
+                            </div>
                         </div>
                     </Show>
 
