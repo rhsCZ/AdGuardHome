@@ -328,12 +328,16 @@ test.describe('Inactivity Schedule Page', () => {
     });
 
     test('should display breadcrumbs with link back to blocked services', async ({ page }) => {
-        const breadcrumb = page.getByTestId('inactivity-schedule-breadcrumbs').getByRole('link', { name: 'Blocked services' });
+        const breadcrumb = page
+            .getByTestId('inactivity-schedule-breadcrumbs')
+            .getByRole('link', { name: 'Blocked services' });
         await expect(breadcrumb).toBeVisible();
     });
 
     test('should navigate back via breadcrumbs', async ({ page }) => {
-        const breadcrumb = page.getByTestId('inactivity-schedule-breadcrumbs').getByRole('link', { name: 'Blocked services' });
+        const breadcrumb = page
+            .getByTestId('inactivity-schedule-breadcrumbs')
+            .getByRole('link', { name: 'Blocked services' });
         await breadcrumb.click();
 
         await expect(page).toHaveURL(/#blocked_services$/);
@@ -546,10 +550,10 @@ test.describe('Inactivity Schedule Page', () => {
 });
 
 test.describe('Blocked Services - Schedule Integration', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
-
     // TODO(ik): fragile tests, need to rewrite later
-    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
+
+    test.beforeEach(async ({ page }) => {
         await login(page);
         await setupMocks(page);
     });
@@ -622,7 +626,9 @@ test.describe('Blocked Services - Schedule Integration', () => {
         await expect(page).toHaveURL(/#blocked_services\/schedule/);
 
         // Navigate back via breadcrumbs
-        const breadcrumb = page.getByTestId('inactivity-schedule-breadcrumbs').getByRole('link', { name: 'Blocked services' });
+        const breadcrumb = page
+            .getByTestId('inactivity-schedule-breadcrumbs')
+            .getByRole('link', { name: 'Blocked services' });
         await breadcrumb.click();
 
         await expect(page).toHaveURL(/#blocked_services$/);
