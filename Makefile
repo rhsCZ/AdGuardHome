@@ -7,7 +7,7 @@
 # This comment is used to simplify checking local copies of the Makefile.  Bump
 # this number every time a significant change is made to this Makefile.
 #
-# AdGuard-Project-Version: 12
+# AdGuard-Project-Version: 11
 
 # Don't name these macros "GO" etc., because GNU Make apparently makes them
 # exported environment variables with the literal value of "${GO:-go}" and so
