@@ -243,7 +243,8 @@ async function setupClientsMocks(
 // ---- Tests ----
 
 test.describe('Clients', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test('renders the clients page with persistent and runtime clients', async ({ page }) => {
         await setupClientsMocks(page);
@@ -255,12 +256,8 @@ test.describe('Clients', () => {
         await expect(page.getByTestId('clients-add-button')).toBeVisible();
 
         // Both tab labels are always visible in the tab nav
-        await expect(
-            page.getByRole('button', { name: 'Persistent', exact: true }),
-        ).toBeVisible();
-        await expect(
-            page.getByRole('button', { name: 'Runtime', exact: true }),
-        ).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Persistent', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Runtime', exact: true })).toBeVisible();
 
         // Persistent clients are shown by default
         await expect(page.getByText('Office Desktop')).toBeVisible({

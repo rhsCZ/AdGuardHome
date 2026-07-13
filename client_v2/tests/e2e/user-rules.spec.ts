@@ -144,7 +144,8 @@ const buildDefaultCheckHostResponse = ({
         return {
             reason: 'RewriteRule',
             rules: [],
-            ...(matchingRewrite.answer.includes('.') && !matchingRewrite.answer.match(/^\d+\.\d+\.\d+\.\d+$/)
+            ...(matchingRewrite.answer.includes('.') &&
+            !matchingRewrite.answer.match(/^\d+\.\d+\.\d+\.\d+$/)
                 ? { cname: matchingRewrite.answer }
                 : { ip_addrs: [matchingRewrite.answer] }),
         };
@@ -388,7 +389,8 @@ async function selectDnsRecordType(page: Page, value: string) {
 }
 
 test.describe('User rules desktop', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test('saves custom rules from the editor', async ({ page }) => {
         const { setRulesPayloads } = await openUserRules(page);
@@ -398,10 +400,14 @@ test.describe('User rules desktop', () => {
 
         await expect.poll(() => setRulesPayloads.length).toBe(1);
         expect(setRulesPayloads[0].rules).toEqual(['||editor.example^']);
-        await expect(page.getByTestId('toast').last()).toContainText('Custom rules successfully saved');
+        await expect(page.getByTestId('toast').last()).toContainText(
+            'Custom rules successfully saved',
+        );
     });
 
-    test('checks a qtype-specific rule and refreshes the result after allowlisting', async ({ page }) => {
+    test('checks a qtype-specific rule and refreshes the result after allowlisting', async ({
+        page,
+    }) => {
         const { checkHostRequests, setRulesPayloads } = await openUserRules(page, {
             filteringStatus: {
                 ...DEFAULT_FILTERING_STATUS,
@@ -444,17 +450,24 @@ test.describe('User rules desktop', () => {
         await selectDnsRecordType(page, 'A');
         await page.getByTestId('user-rules-check-submit').click();
 
-        await expect(page.getByTestId('user-rules-result-action-allow')).toHaveText('Add to allowlist');
-        await expect(page.getByTestId('user-rules-result-action-disable-blocked-service')).toHaveText('Allow service');
+        await expect(page.getByTestId('user-rules-result-action-allow')).toHaveText(
+            'Add to allowlist',
+        );
+        await expect(
+            page.getByTestId('user-rules-result-action-disable-blocked-service'),
+        ).toHaveText('Allow service');
 
         await page.getByTestId('user-rules-result-action-disable-blocked-service').click();
 
-        await expect(page.getByTestId('toast').last()).toContainText('The YouTube service was allowed');
+        await expect(page.getByTestId('toast').last()).toContainText(
+            'The YouTube service was allowed',
+        );
     });
 });
 
 test.describe('User rules mobile', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test('keeps the check and result flow usable on a mobile viewport', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });

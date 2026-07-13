@@ -106,10 +106,8 @@ async function setupMocks(page: Page) {
 }
 
 test.describe('Blocked Services Page', () => {
-    test.skip(
-        ({ browserName }) => process.env.CI === 'true',
-        'TODO(ik): fragile tests, need to rewrite later',
-    );
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test.beforeEach(async ({ page }) => {
         await login(page);
@@ -314,10 +312,8 @@ test.describe('Blocked Services Page', () => {
 });
 
 test.describe('Inactivity Schedule Page', () => {
-    test.skip(
-        ({ browserName }) => process.env.CI === 'true',
-        'TODO(ik): fragile tests, need to rewrite later',
-    );
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test.beforeEach(async ({ page }) => {
         await login(page);
@@ -552,7 +548,8 @@ test.describe('Inactivity Schedule Page', () => {
 test.describe('Blocked Services - Schedule Integration', () => {
     test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
 
-    test.beforeEach(async ({ page }) => {
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests
         await login(page);
         await setupMocks(page);
     });

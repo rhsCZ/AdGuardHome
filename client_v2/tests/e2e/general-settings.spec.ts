@@ -6,14 +6,11 @@ import { login } from '../helpers/login';
 const DNS_HOST = '127.0.0.1';
 const DNS_PORT = 5353;
 
-const lookupDomain = (domain: string): string => execFileSync(
-    'nslookup',
-    [`-port=${DNS_PORT}`, domain, DNS_HOST],
-    {
+const lookupDomain = (domain: string): string =>
+    execFileSync('nslookup', [`-port=${DNS_PORT}`, domain, DNS_HOST], {
         encoding: 'utf8',
         timeout: 15_000,
-    },
-);
+    });
 
 const setToggleState = async (input: Locator, label: Locator, checked: boolean) => {
     if ((await input.isChecked()) === checked) {
@@ -30,21 +27,26 @@ const setToggleState = async (input: Locator, label: Locator, checked: boolean) 
 };
 
 const expectLookupToChange = async (domain: string, previousResult: string) => {
-    await expect.poll(() => lookupDomain(domain), {
-        timeout: 15_000,
-        message: `Expected DNS lookup for ${domain} to change`,
-    }).not.toBe(previousResult);
+    await expect
+        .poll(() => lookupDomain(domain), {
+            timeout: 15_000,
+            message: `Expected DNS lookup for ${domain} to change`,
+        })
+        .not.toBe(previousResult);
 };
 
 const expectLookupToMatch = async (domain: string, expectedResult: string) => {
-    await expect.poll(() => lookupDomain(domain), {
-        timeout: 15_000,
-        message: `Expected DNS lookup for ${domain} to be restored`,
-    }).toBe(expectedResult);
+    await expect
+        .poll(() => lookupDomain(domain), {
+            timeout: 15_000,
+            message: `Expected DNS lookup for ${domain} to be restored`,
+        })
+        .toBe(expectedResult);
 };
 
 test.describe('General Settings', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test.beforeEach(async ({ page }) => {
         await login(page);

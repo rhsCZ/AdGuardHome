@@ -33,7 +33,6 @@ const DELETE_REWRITE: RewriteEntry = {
     enabled: true,
 };
 
-
 const openDnsRewritesPage = async (page: Page) => {
     await page.goto('/#dns_rewrites');
     await expect(page.getByText('DNS rewrites', { exact: true })).toBeVisible();
@@ -69,8 +68,12 @@ const addRewriteViaApi = async (page: Page, rewrite: RewriteEntry) => {
 };
 
 const expectRewriteVisible = async (page: Page, rewrite: RewriteEntry) => {
-    await expect(page.getByText(rewrite.domain, { exact: true }).first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(rewrite.answer, { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(rewrite.domain, { exact: true }).first()).toBeVisible({
+        timeout: 15_000,
+    });
+    await expect(page.getByText(rewrite.answer, { exact: true }).first()).toBeVisible({
+        timeout: 15_000,
+    });
 };
 
 const toggleGlobalRewrite = async (page: Page, targetEnabled: boolean) => {
@@ -86,7 +89,9 @@ const toggleGlobalRewrite = async (page: Page, targetEnabled: boolean) => {
 
     await globalToggleLabel.click();
 
-    const confirmButton = page.getByTestId(targetEnabled ? 'confirm-enable-rewrites' : 'confirm-disable-rewrites');
+    const confirmButton = page.getByTestId(
+        targetEnabled ? 'confirm-enable-rewrites' : 'confirm-disable-rewrites',
+    );
     await expect(confirmButton).toBeVisible({ timeout: 10_000 });
     await confirmButton.click();
 
@@ -98,7 +103,8 @@ const toggleGlobalRewrite = async (page: Page, targetEnabled: boolean) => {
 };
 
 test.describe('DNS Rewrites', () => {
-    test.skip(({ browserName }) => !!process.env.CI, 'TODO(ik): fragile tests, need to rewrite later');
+    // TODO(ik): fragile tests, need to rewrite later
+    test.skip(() => !!process.env.CI, 'Skipped on CI: fragile tests');
 
     test.beforeEach(async ({ page }) => {
         await login(page);
@@ -125,7 +131,9 @@ test.describe('DNS Rewrites', () => {
         await expect(saveButton).toBeVisible();
         await saveButton.click();
 
-        await page.waitForSelector('button#save', { state: 'hidden', timeout: 5000 }).catch(() => {});
+        await page
+            .waitForSelector('button#save', { state: 'hidden', timeout: 5000 })
+            .catch(() => {});
 
         await expectRewriteVisible(page, ADD_REWRITE);
     });
@@ -192,7 +200,9 @@ test.describe('DNS Rewrites', () => {
         await expect(saveButton).toBeVisible();
         await saveButton.click();
 
-        await page.waitForSelector('button#save', { state: 'hidden', timeout: 5000 }).catch(() => {});
+        await page
+            .waitForSelector('button#save', { state: 'hidden', timeout: 5000 })
+            .catch(() => {});
 
         await expectRewriteVisible(page, UPDATED_REWRITE);
     });
@@ -209,6 +219,8 @@ test.describe('DNS Rewrites', () => {
         await expect(confirmButton).toBeVisible({ timeout: 10000 });
         await confirmButton.click();
 
-        await expect(page.getByText(DELETE_REWRITE.domain, { exact: true })).not.toBeVisible({ timeout: 15_000 });
+        await expect(page.getByText(DELETE_REWRITE.domain, { exact: true })).not.toBeVisible({
+            timeout: 15_000,
+        });
     });
 });
