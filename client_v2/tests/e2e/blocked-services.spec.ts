@@ -4,14 +4,62 @@ import { login } from '../helpers/login';
 
 const MOCK_ALL_SERVICES = {
     blocked_services: [
-        { id: 'telegram', name: 'Telegram', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||telegram.org^'], group_id: 'messaging' },
-        { id: 'whatsapp', name: 'WhatsApp', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||whatsapp.com^'], group_id: 'messaging' },
-        { id: 'steam', name: 'Steam', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||steampowered.com^'], group_id: 'gaming' },
-        { id: 'epic_games', name: 'Epic Games', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||epicgames.com^'], group_id: 'gaming' },
-        { id: 'tiktok', name: 'TikTok', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||tiktok.com^'], group_id: 'social_networks' },
-        { id: 'facebook', name: 'Facebook', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||facebook.com^'], group_id: 'social_networks' },
-        { id: 'youtube', name: 'YouTube', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||youtube.com^'], group_id: 'streaming' },
-        { id: 'chatgpt', name: 'ChatGPT', icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>', rules: ['||openai.com^'], group_id: 'ai' },
+        {
+            id: 'telegram',
+            name: 'Telegram',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||telegram.org^'],
+            group_id: 'messaging',
+        },
+        {
+            id: 'whatsapp',
+            name: 'WhatsApp',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||whatsapp.com^'],
+            group_id: 'messaging',
+        },
+        {
+            id: 'steam',
+            name: 'Steam',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||steampowered.com^'],
+            group_id: 'gaming',
+        },
+        {
+            id: 'epic_games',
+            name: 'Epic Games',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||epicgames.com^'],
+            group_id: 'gaming',
+        },
+        {
+            id: 'tiktok',
+            name: 'TikTok',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||tiktok.com^'],
+            group_id: 'social_networks',
+        },
+        {
+            id: 'facebook',
+            name: 'Facebook',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||facebook.com^'],
+            group_id: 'social_networks',
+        },
+        {
+            id: 'youtube',
+            name: 'YouTube',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||youtube.com^'],
+            group_id: 'streaming',
+        },
+        {
+            id: 'chatgpt',
+            name: 'ChatGPT',
+            icon_svg: '<svg><circle cx="12" cy="12" r="10"/></svg>',
+            rules: ['||openai.com^'],
+            group_id: 'ai',
+        },
     ],
     groups: [
         { id: 'messaging' },
@@ -58,7 +106,10 @@ async function setupMocks(page: Page) {
 }
 
 test.describe('Blocked Services Page', () => {
-    test.skip(({ browserName }) => process.env.CI === 'true', 'TODO(ik): fragile tests, need to rewrite later');
+    test.skip(
+        ({ browserName }) => process.env.CI === 'true',
+        'TODO(ik): fragile tests, need to rewrite later using data-testid instead of class locators',
+    );
 
     test.beforeEach(async ({ page }) => {
         await login(page);
@@ -264,7 +315,10 @@ test.describe('Blocked Services Page', () => {
 });
 
 test.describe('Inactivity Schedule Page', () => {
-    test.skip(({ browserName }) => process.env.CI === 'true', 'TODO(ik): fragile tests, need to rewrite later');
+    test.skip(
+        ({ browserName }) => process.env.CI === 'true',
+        'TODO(ik): fragile tests, need to rewrite later using data-testid instead of class locators',
+    );
 
     test.beforeEach(async ({ page }) => {
         await login(page);
@@ -390,7 +444,9 @@ test.describe('Inactivity Schedule Page', () => {
         await deleteButton.click();
 
         // Confirm deletion
-        const confirmButton = page.locator('.rc-dialog-update button').filter({ hasText: /delete/i });
+        const confirmButton = page
+            .locator('.rc-dialog-update button')
+            .filter({ hasText: /delete/i });
         await expect(confirmButton).toBeVisible();
         await confirmButton.click();
 
@@ -417,7 +473,9 @@ test.describe('Inactivity Schedule Page', () => {
         await deleteButton.click();
 
         // Cancel deletion
-        const cancelButton = page.locator('.rc-dialog-update button').filter({ hasText: /cancel/i });
+        const cancelButton = page
+            .locator('.rc-dialog-update button')
+            .filter({ hasText: /cancel/i });
         await expect(cancelButton).toBeVisible();
         await cancelButton.click();
 
@@ -544,7 +602,9 @@ test.describe('Blocked Services - Schedule Integration', () => {
         const deleteButton = mondayRow.locator('button').nth(1);
         await deleteButton.click();
 
-        const confirmButton = page.locator('.rc-dialog-update button').filter({ hasText: /delete/i });
+        const confirmButton = page
+            .locator('.rc-dialog-update button')
+            .filter({ hasText: /delete/i });
         await expect(confirmButton).toBeVisible();
         await confirmButton.click();
 
