@@ -161,9 +161,9 @@ func TestDNSFilter_HandleRewriteHTTP(t *testing.T) {
 		},
 		wantConfMod: false,
 		wantStatus:  http.StatusBadRequest,
-		wantBody: "normalizing: invalid CNAME target \"invalid_domain\": " +
-			"bad domain name \"invalid_domain\": bad top-level domain name label " +
-			"\"invalid_domain\": bad top-level domain name label rune '_'\n",
+		wantBody: `normalizing: invalid CNAME target "invalid_domain": bad domain name ` +
+			`"invalid_domain": bad top-level domain name label "invalid_domain": bad top-level ` +
+			`domain name label rune '_'` + "\n",
 		wantList: testRewrites,
 	}, {
 		name:        "delete",

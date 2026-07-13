@@ -99,6 +99,7 @@ func (rw *LegacyRewrite) normalize(ctx context.Context, l *slog.Logger) (err err
 		// name first.
 		err = netutil.ValidateDomainName(rw.Answer)
 		if err != nil {
+			// Use capital letters, as the error message is shown to the user.
 			return fmt.Errorf("invalid CNAME target %q: %w", rw.Answer, err)
 		}
 
