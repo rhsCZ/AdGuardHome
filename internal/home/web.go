@@ -120,6 +120,10 @@ type webAPIConfig struct {
 
 // httpsServer contains the data for the HTTPS server.
 type httpsServer struct {
+	// logger is used for logging the operation of the server.  It must not be
+	// nil.
+	logger *slog.Logger
+
 	// server is the pre-HTTP/3 HTTPS server.
 	server *http.Server
 
@@ -127,7 +131,7 @@ type httpsServer struct {
 	// [httpsServer.server] must also be non-nil.
 	server3 *http3.Server
 
-	// mu protects cert, enabled, and shutdown.
+	// mu protects cert, enabled, and shutdown.  It must not be nil.
 	mu *sync.Mutex
 
 	// reconfigured wakes the TLS server loop waiting in [waitForTLSReady]
@@ -145,10 +149,11 @@ type httpsServer struct {
 }
 
 // notifyReconfigured notifies the loop waiting in [waitForTLSReady].
-func (srv *httpsServer) notifyReconfigured() {
+func (srv *httpsServer) notifyReconfigured(ctx context.Context) {
 	select {
 	case srv.reconfigured <- unit{}:
 	default:
+		srv.logger.WarnContext(ctx, "reconfigured channel is full")
 	}
 }
 
@@ -276,6 +281,7 @@ func newWebAPI(ctx context.Context, conf *webAPIConfig) (w *webAPI) {
 		w.registerControlHandlers()
 	}
 
+	w.httpsServer.logger = conf.baseLogger.With(slogutil.KeyPrefix, "https_server")
 	w.httpsServer.mu = &sync.Mutex{}
 	w.httpsServer.reconfigured = make(chan unit, 1)
 
@@ -320,7 +326,7 @@ func (web *webAPI) tlsConfigChanged(ctx context.Context, tlsConf *tlsConfigSetti
 		web.httpsServer.cert = cert
 	}()
 
-	web.httpsServer.notifyReconfigured()
+	web.httpsServer.notifyReconfigured(ctx)
 }
 
 // loggerKeyServer is the key used by [webAPI] to identify servers.
@@ -399,7 +405,7 @@ func (web *webAPI) close(ctx context.Context) {
 		web.httpsServer.shutdown = true
 	}()
 
-	web.httpsServer.notifyReconfigured()
+	web.httpsServer.notifyReconfigured(ctx)
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, shutdownTimeout)
