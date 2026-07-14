@@ -12,6 +12,7 @@ import (
 
 	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
 	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
+	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/stringutil"
 	"github.com/AdguardTeam/golibs/testutil"
@@ -83,7 +84,7 @@ func TestV4Server_leasing(t *testing.T) {
 				IP:       anotherIP,
 				IsStatic: true,
 			})
-			assert.ErrorIs(t, err, ErrDupHostname)
+			assert.ErrorIs(t, err, errors.ErrDuplicated)
 		})
 
 		t.Run("same_mac", func(t *testing.T) {
@@ -950,7 +951,7 @@ func TestV4Server_validateStaticLease_emptyHostname(t *testing.T) {
 		lease: &dhcpsvc.Lease{
 			Hostname: "",
 			HWAddr:   otherMAC,
-			IP:       existingIP,
+			IP:       nonExistingIP,
 			IsStatic: true,
 		},
 	}, {
@@ -963,7 +964,7 @@ func TestV4Server_validateStaticLease_emptyHostname(t *testing.T) {
 		},
 	}, {
 		name:    "non_empty_hostname_still_validated",
-		wantErr: ErrDupHostname.Error(),
+		wantErr: "hostname: duplicated value",
 		lease: &dhcpsvc.Lease{
 			Hostname: existingHostname,
 			HWAddr:   otherMAC,
@@ -972,7 +973,7 @@ func TestV4Server_validateStaticLease_emptyHostname(t *testing.T) {
 		},
 	}, {
 		name:    "non_empty_hostname_duplicate_ip",
-		wantErr: ErrDupIP.Error(),
+		wantErr: "ip address: duplicated value",
 		lease: &dhcpsvc.Lease{
 			Hostname: "new-client",
 			HWAddr:   otherMAC,

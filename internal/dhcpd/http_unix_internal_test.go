@@ -210,6 +210,14 @@ func TestServer_HandleUpdateStaticLease(t *testing.T) {
 			Hostname: "updated-client-v4",
 		},
 	}, {
+		name: "update_v4_empty_hostname",
+		pos:  leaseV4Pos,
+		lease: &leaseStatic{
+			HWAddr:   leaseV4MAC,
+			IP:       leaseV4IP,
+			Hostname: "",
+		},
+	}, {
 		name: "update_v4_ip",
 		pos:  leaseV4Pos,
 		lease: &leaseStatic{
