@@ -381,11 +381,12 @@ type applyConfigReq struct {
 }
 
 // copyInstallSettings copies the installation parameters between two
-// configuration structures.
+// configuration structures.  All arguments must not be nil.
 func copyInstallSettings(dst, src *configuration) {
-	dst.HTTPConfig = src.HTTPConfig
 	dst.DNS.BindHosts = src.DNS.BindHosts
 	dst.DNS.Port = src.DNS.Port
+	dst.HTTPConfig = src.HTTPConfig
+	dst.Language = src.Language
 }
 
 // shutdownTimeout is the timeout for shutting HTTP server down operation.
