@@ -186,10 +186,6 @@ type Server struct {
 
 	// isRunning is true if the DNS server is running.
 	isRunning bool
-
-	// hasIPAddrs is set during the certificate parsing and is true if the
-	// configured certificate contains at least a single IP address.
-	hasIPAddrs bool
 }
 
 // defaultLocalDomainSuffix is the default suffix used to detect internal hosts
@@ -536,8 +532,6 @@ func (s *Server) Prepare(ctx context.Context, conf *ServerConfig) (err error) {
 	s.dnsProxy = dnsProxy
 
 	s.setupAddrProc()
-
-	s.setHasIPAddrs()
 
 	s.registerHandlers()
 
@@ -948,16 +942,4 @@ func (s *Server) IsBlockedClient(ip netip.Addr, clientID string) (blocked bool, 
 	}
 
 	return blocked, cmp.Or(rule, clientID)
-}
-
-// setHasIPAddrs sets s.hasIPAddrs based on the current TLS certificate.
-func (s *Server) setHasIPAddrs() {
-	tlsConf := s.tlsConfigProvider.TLSConfig()
-	if tlsConf == nil || len(tlsConf.Certificates) == 0 {
-		s.hasIPAddrs = false
-
-		return
-	}
-
-	s.hasIPAddrs = aghtls.CertificateHasIP(tlsConf.Certificates[0].Leaf)
 }

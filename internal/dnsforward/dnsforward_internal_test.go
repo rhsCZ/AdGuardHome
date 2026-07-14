@@ -215,6 +215,10 @@ func createServerTLSConfig(tb testing.TB) (*tls.Config, []byte, []byte) {
 		IsCA:                  true,
 	}
 	template.DNSNames = append(template.DNSNames, tlsServerName)
+	template.IPAddresses = append(
+		template.IPAddresses,
+		net.ParseIP(netutil.IPv4Localhost().String()),
+	)
 
 	derBytes, err := x509.CreateCertificate(
 		rand.Reader,
