@@ -18,6 +18,10 @@ See also the [v0.107.79 GitHub milestone][ms-v0.107.79].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Added
+
+- The user is able to remove the static lease's hostname via the HTTP API.
+
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
 -->
@@ -53,8 +57,6 @@ See also the [v0.107.78 GitHub milestone][ms-v0.107.78].
 ### Added
 
 - Improved updater logging to give users more insight into the problem with version updating ([#8410]).
-
-- The user is able to remove the static lease's hostname via the HTTP API.
 
 ### Changed
 
