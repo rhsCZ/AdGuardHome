@@ -3159,11 +3159,15 @@
       'properties':
         'dns':
           '$ref': '#/components/schemas/CheckConfigRequestInfo'
-        'web':
-          '$ref': '#/components/schemas/CheckConfigRequestInfo'
+        'language':
+          'description': 'The language to set'
+          'example': 'en'
+          'type': 'string'
         'set_static_ip':
           'type': 'boolean'
           'example': false
+        'web':
+          '$ref': '#/components/schemas/CheckConfigRequestInfo'
     'CheckConfigRequestInfo':
       'type': 'object'
       'properties':
@@ -3181,15 +3185,18 @@
       'type': 'object'
       'required':
       - 'dns'
-      - 'web'
+      - 'language'
       - 'static_ip'
+      - 'web'
       'properties':
         'dns':
           '$ref': '#/components/schemas/CheckConfigResponseInfo'
-        'web':
+        'language':
           '$ref': '#/components/schemas/CheckConfigResponseInfo'
         'static_ip':
           '$ref': '#/components/schemas/CheckConfigStaticIpInfo'
+        'web':
+          '$ref': '#/components/schemas/CheckConfigResponseInfo'
     'CheckConfigResponseInfo':
       'type': 'object'
       'required':
@@ -3231,21 +3238,25 @@
       'required':
       - 'dns'
       - 'web'
-      - 'username'
       - 'password'
+      - 'username'
       'properties':
         'dns':
           '$ref': '#/components/schemas/AddressInfo'
         'web':
           '$ref': '#/components/schemas/AddressInfo'
-        'username':
+        'language':
+          'description': 'The language to set'
+          'example': 'en'
           'type': 'string'
-          'description': 'Basic auth username'
-          'example': 'admin'
         'password':
-          'type': 'string'
           'description': 'Basic auth password'
           'example': 'password'
+          'type': 'string'
+        'username':
+          'description': 'Basic auth username'
+          'example': 'admin'
+          'type': 'string'
     'Login':
       'type': 'object'
       'description': 'Login request data'

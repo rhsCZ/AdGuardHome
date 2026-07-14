@@ -18,6 +18,10 @@ See also the [v0.107.79 GitHub milestone][ms-v0.107.79].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Added
+
+- New property `"language"` in `POST /control/install/check_config` and `POST /control/install/configure` HTTP APIs.
+
 <!--
 NOTE: Add new changes ABOVE THIS COMMENT.
 -->
