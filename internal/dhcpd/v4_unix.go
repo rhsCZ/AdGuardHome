@@ -405,6 +405,27 @@ func (s *v4Server) AddStaticLease(l *dhcpsvc.Lease) (err error) {
 		return err
 	}
 
+	if hostname := l.Hostname; hostname != "" {
+		hostname, err = normalizeHostname(hostname)
+		if err != nil {
+			// Don't wrap the error, because it's informative enough as is.
+			return err
+		}
+
+		err = netutil.ValidateHostname(hostname)
+		if err != nil {
+			return fmt.Errorf("validating hostname: %w", err)
+		}
+
+		// Don't check for hostname uniqueness, since we try to emulate dnsmasq
+		// here, which means that rmDynamicLease below will simply empty the
+		// hostname of the dynamic lease if there even is one.  In case a static
+		// lease with the same name already exists, addLease will return an
+		// error and the lease won't be added.
+
+		l.Hostname = hostname
+	}
+
 	err = s.updateStaticLease(l)
 	if err != nil {
 		// Don't wrap the error, because it's informative enough as is.
@@ -464,19 +485,21 @@ func (s *v4Server) validateStaticLease(l *dhcpsvc.Lease) (err error) {
 		return err
 	}
 
-	err = netutil.ValidateHostname(hostname)
-	if err != nil {
-		return fmt.Errorf("validating hostname: %w", err)
-	}
+	if hostname != "" {
+		err = netutil.ValidateHostname(hostname)
+		if err != nil {
+			return fmt.Errorf("validating hostname: %w", err)
+		}
 
-	dup, ok := s.hostsIndex[hostname]
-	if ok && !bytes.Equal(dup.HWAddr, l.HWAddr) {
-		return ErrDupHostname
-	}
+		dup, ok := s.hostsIndex[hostname]
+		if ok && !bytes.Equal(dup.HWAddr, l.HWAddr) {
+			return ErrDupHostname
+		}
 
-	dup, ok = s.ipIndex[l.IP]
-	if ok && !bytes.Equal(dup.HWAddr, l.HWAddr) {
-		return ErrDupIP
+		dup, ok = s.ipIndex[l.IP]
+		if ok && !bytes.Equal(dup.HWAddr, l.HWAddr) {
+			return ErrDupIP
+		}
 	}
 
 	l.Hostname = hostname
@@ -497,17 +520,6 @@ func (s *v4Server) validateStaticLease(l *dhcpsvc.Lease) (err error) {
 func (s *v4Server) updateStaticLease(l *dhcpsvc.Lease) (err error) {
 	s.leasesLock.Lock()
 	defer s.leasesLock.Unlock()
-
-	err = s.validateStaticLease(l)
-	if err != nil {
-		switch err {
-		case ErrDupHostname, ErrDupIP:
-			// Go on.
-		default:
-			// Don't wrap the error, because it's informative enough as is.
-			return err
-		}
-	}
 
 	err = s.rmDynamicLease(l)
 	if err != nil {

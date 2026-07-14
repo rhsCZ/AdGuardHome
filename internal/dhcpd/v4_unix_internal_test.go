@@ -914,3 +914,79 @@ func TestV4Server_handleRelease(t *testing.T) {
 
 	require.Equal(t, wantResp, resp)
 }
+
+func TestV4Server_validateStaticLease_emptyHostname(t *testing.T) {
+	t.Parallel()
+
+	const (
+		existingHostname = "existing-client"
+	)
+
+	existingIP := netip.MustParseAddr("192.168.10.150")
+	nonExistingIP := existingIP.Next()
+	existingMAC := net.HardwareAddr{0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA}
+	otherMAC := net.HardwareAddr{0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB}
+
+	s := defaultSrv(t)
+
+	s4, ok := s.(*v4Server)
+	require.True(t, ok)
+
+	existingLease := &dhcpsvc.Lease{
+		Hostname: existingHostname,
+		HWAddr:   existingMAC,
+		IP:       existingIP,
+		IsStatic: true,
+	}
+	err := s4.addLease(existingLease)
+	require.NoError(t, err)
+
+	testCases := []struct {
+		name    string
+		wantErr string
+		lease   *dhcpsvc.Lease
+	}{{
+		name: "empty_hostname_allowed",
+		lease: &dhcpsvc.Lease{
+			Hostname: "",
+			HWAddr:   otherMAC,
+			IP:       existingIP,
+			IsStatic: true,
+		},
+	}, {
+		name: "empty_hostname_no_duplicate_check",
+		lease: &dhcpsvc.Lease{
+			Hostname: "",
+			HWAddr:   otherMAC,
+			IP:       nonExistingIP,
+			IsStatic: true,
+		},
+	}, {
+		name:    "non_empty_hostname_still_validated",
+		wantErr: ErrDupHostname.Error(),
+		lease: &dhcpsvc.Lease{
+			Hostname: existingHostname,
+			HWAddr:   otherMAC,
+			IP:       nonExistingIP,
+			IsStatic: true,
+		},
+	}, {
+		name:    "non_empty_hostname_duplicate_ip",
+		wantErr: ErrDupIP.Error(),
+		lease: &dhcpsvc.Lease{
+			Hostname: "new-client",
+			HWAddr:   otherMAC,
+			IP:       existingIP,
+			IsStatic: true,
+		},
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Don't run subtests in parallel because they modify the server's
+			// leases.
+			err = s4.validateStaticLease(tc.lease)
+			testutil.AssertErrorMsg(t, tc.wantErr, err)
+		})
+	}
+}
