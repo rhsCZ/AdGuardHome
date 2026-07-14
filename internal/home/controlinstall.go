@@ -502,12 +502,7 @@ func (web *webAPI) finalizeInstall(
 		}
 	}()
 
-	err = validateLang(req.Language, true)
-	if err != nil {
-		aghhttp.ErrorAndLog(ctx, l, r, w, http.StatusUnprocessableEntity, "%s", err)
-
-		return
-	} else if req.Language != "" {
+	if req.Language != "" {
 		config.Language = req.Language
 	}
 
