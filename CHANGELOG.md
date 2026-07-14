@@ -30,6 +30,8 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - Improved updater logging to give users more insight into the problem with version updating ([#8410]).
 
+- The user is able to remove the static lease's hostname via the HTTP API.
+
 ### Changed
 
 - The interval of filter updates can now be set to any number of ours between 0 and 365 days in the configuration file.
