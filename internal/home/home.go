@@ -69,7 +69,6 @@ type homeContext struct {
 	// Runtime properties
 	// --
 
-	pidFileName string // PID file name.  Empty if no PID file was created.
 	controlLock sync.Mutex
 }
 
@@ -130,12 +129,14 @@ func Main(clientBuildFS fs.FS) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
+	pidFilePath := setPIDFilePath(opts)
+
 	sigHdlrLogger := baseLogger.With(slogutil.KeyPrefix, "signalhdlr")
 	sigHdlr := newSignalHandler(sigHdlrLogger, signals, func(ctx context.Context) {
 		defer close(done)
 
-		cleanup(ctx)
-		cleanupAlways()
+		cleanup(ctx, sigHdlrLogger)
+		cleanupAlways(ctx, pidFilePath, sigHdlrLogger)
 
 		if !opts.glinetMode {
 			return
@@ -319,21 +320,6 @@ func setupHostsContainer(ctx context.Context, baseLogger *slog.Logger) (err erro
 	return hostsWatcher.Start(ctx)
 }
 
-// setupOpts sets up command-line options.
-func setupOpts(opts options) (err error) {
-	err = setupBindOpts(opts)
-	if err != nil {
-		// Don't wrap the error, because it's informative enough as is.
-		return err
-	}
-
-	if len(opts.pidFile) != 0 && writePIDFile(opts.pidFile) {
-		globalContext.pidFileName = opts.pidFile
-	}
-
-	return nil
-}
-
 // initContextClients initializes Context clients and related fields.  All
 // arguments must not be nil.
 func initContextClients(
@@ -378,6 +364,16 @@ func initContextClients(
 		confModifier,
 		httpReg,
 	)
+}
+
+// setPIDFilePath writes the PID value to a file and returns its path, if the
+// PID file option is specified.
+func setPIDFilePath(opts options) (pidFilePath string) {
+	if opts.pidFile != "" && writePIDFile(opts.pidFile) {
+		pidFilePath = opts.pidFile
+	}
+
+	return pidFilePath
 }
 
 // setupBindOpts overrides bind host/port from the opts.
@@ -810,7 +806,7 @@ func run(
 	)
 	fatalOnError(err)
 
-	err = setupOpts(opts)
+	err = setupBindOpts(opts)
 	fatalOnError(err)
 
 	upd, isCustomURL := initUpdate(ctx, baseLogger, opts, tlsMgr, isFirstRun, workDir, confPath)
@@ -1214,9 +1210,9 @@ func initWorkingDir(opts options) (workDir string, err error) {
 	return workDir, nil
 }
 
-// cleanup stops and resets all the modules.
-func cleanup(ctx context.Context) {
-	log.Info("stopping AdGuard Home")
+// cleanup stops and resets all the modules.  l must not be nil.
+func cleanup(ctx context.Context, l *slog.Logger) {
+	l.InfoContext(ctx, "stopping adguard home")
 
 	if globalContext.web != nil {
 		globalContext.web.close(ctx)
@@ -1225,30 +1221,30 @@ func cleanup(ctx context.Context) {
 
 	err := stopDNSServer(ctx)
 	if err != nil {
-		log.Error("stopping dns server: %s", err)
+		l.ErrorContext(ctx, "stopping dns server", slogutil.KeyError, err)
 	}
 
 	if globalContext.dhcpServer != nil {
 		err = globalContext.dhcpServer.Stop()
 		if err != nil {
-			log.Error("stopping dhcp server: %s", err)
+			l.ErrorContext(ctx, "stopping dhcp server", slogutil.KeyError, err)
 		}
 	}
 
 	if globalContext.etcHosts != nil {
 		if err = globalContext.etcHosts.Close(); err != nil {
-			log.Error("closing hosts container: %s", err)
+			l.ErrorContext(ctx, "closing hosts container", slogutil.KeyError, err)
 		}
 	}
 }
 
-// This function is called before application exits
-func cleanupAlways() {
-	if len(globalContext.pidFileName) != 0 {
-		_ = os.Remove(globalContext.pidFileName)
+// cleanupAlways is called on application exit.  l must not be nil.
+func cleanupAlways(ctx context.Context, pidFilePath string, l *slog.Logger) {
+	if pidFilePath != "" {
+		_ = os.Remove(pidFilePath)
 	}
 
-	log.Info("stopped")
+	l.InfoContext(ctx, "stopped")
 }
 
 func exitWithError() {
