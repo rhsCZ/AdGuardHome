@@ -17,7 +17,6 @@ import (
 	"github.com/AdguardTeam/AdGuardHome/internal/aghhttp"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghnet"
 	"github.com/AdguardTeam/AdGuardHome/internal/aghslog"
-	"github.com/AdguardTeam/AdGuardHome/internal/aghtls"
 	"github.com/AdguardTeam/AdGuardHome/internal/client"
 	"github.com/AdguardTeam/dnscrypt"
 	"github.com/AdguardTeam/dnsproxy/proxy"
@@ -723,15 +722,6 @@ func (s *Server) prepareTLS(ctx context.Context, proxyConf *proxy.Config) {
 	}
 
 	s.replaceGetCertificate(proxyConf.TLSConfig)
-
-	tlsCert := proxyConf.TLSConfig.Certificates[0]
-	if tlsCert.Leaf == nil {
-		s.logger.WarnContext(ctx, "error while parsing tls certificate: leaf is nil")
-
-		return
-	}
-
-	s.hasIPAddrs = aghtls.CertificateHasIP(tlsCert.Leaf)
 }
 
 // isWildcard returns true if host is a wildcard hostname.

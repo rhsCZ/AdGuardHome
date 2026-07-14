@@ -537,6 +537,8 @@ func (s *Server) Prepare(ctx context.Context, conf *ServerConfig) (err error) {
 
 	s.setupAddrProc()
 
+	s.setHasIPAddrs()
+
 	s.registerHandlers()
 
 	return nil
@@ -946,4 +948,16 @@ func (s *Server) IsBlockedClient(ip netip.Addr, clientID string) (blocked bool, 
 	}
 
 	return blocked, cmp.Or(rule, clientID)
+}
+
+// setHasIPAddrs sets s.hasIPAddrs based on the current TLS certificate.
+func (s *Server) setHasIPAddrs() {
+	tlsConf := s.tlsConfigProvider.TLSConfig()
+	if tlsConf == nil || len(tlsConf.Certificates) == 0 {
+		s.hasIPAddrs = false
+
+		return
+	}
+
+	s.hasIPAddrs = aghtls.CertificateHasIP(tlsConf.Certificates[0].Leaf)
 }
