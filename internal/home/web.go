@@ -381,7 +381,8 @@ func (web *webAPI) start(ctx context.Context) {
 
 		err := <-errs
 		if !errors.Is(err, http.ErrServerClosed) {
-			cleanupAlways(ctx, web.pidFilePath, logger)
+			cleanupAlways(ctx, logger, web.pidFilePath)
+
 			panic(err)
 		}
 
@@ -485,7 +486,8 @@ func (web *webAPI) serveTLS(ctx context.Context) (next bool) {
 	logger.InfoContext(ctx, "starting https server")
 	err := web.httpsServer.server.ListenAndServeTLS("", "")
 	if !errors.Is(err, http.ErrServerClosed) {
-		cleanupAlways(ctx, web.pidFilePath, logger)
+		cleanupAlways(ctx, logger, web.pidFilePath)
+
 		panic(fmt.Errorf("https: %w", err))
 	}
 
@@ -515,7 +517,8 @@ func (web *webAPI) mustStartHTTP3(ctx context.Context, address string) {
 	web.logger.DebugContext(ctx, "starting http/3 server")
 	err := web.httpsServer.server3.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
-		cleanupAlways(ctx, web.pidFilePath, logger)
+		cleanupAlways(ctx, logger, web.pidFilePath)
+
 		panic(fmt.Errorf("http3: %w", err))
 	}
 }

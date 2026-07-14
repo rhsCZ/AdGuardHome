@@ -235,7 +235,7 @@ func finishUpdate(
 	l.InfoContext(ctx, "stopping all tasks")
 
 	cleanup(ctx, l)
-	cleanupAlways(ctx, pidFilePath, l)
+	cleanupAlways(ctx, l, pidFilePath)
 
 	if runtime.GOOS == "windows" {
 		finalizeWindowsUpdate(ctx, l, cmdCons, execPath, runningAsService)

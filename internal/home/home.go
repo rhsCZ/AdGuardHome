@@ -66,9 +66,6 @@ type homeContext struct {
 	// configuration files, for example /etc/hosts.
 	etcHosts *aghnet.HostsContainer
 
-	// Runtime properties
-	// --
-
 	controlLock sync.Mutex
 }
 
@@ -136,7 +133,7 @@ func Main(clientBuildFS fs.FS) {
 		defer close(done)
 
 		cleanup(ctx, sigHdlrLogger)
-		cleanupAlways(ctx, pidFilePath, sigHdlrLogger)
+		cleanupAlways(ctx, sigHdlrLogger, pidFilePath)
 
 		if !opts.glinetMode {
 			return
@@ -165,6 +162,7 @@ func Main(clientBuildFS fs.FS) {
 			sigHdlr,
 			workDir,
 			confPath,
+			pidFilePath,
 		)
 		if err != nil {
 			svcLogger.ErrorContext(ctx, "action failed", slogutil.KeyError, err)
@@ -175,7 +173,7 @@ func Main(clientBuildFS fs.FS) {
 	}
 
 	// run the protection
-	run(ctx, baseLogger, opts, clientBuildFS, glTokenFileRoot, done, sigHdlr, workDir, confPath)
+	run(ctx, baseLogger, opts, clientBuildFS, glTokenFileRoot, done, sigHdlr, workDir, confPath, pidFilePath)
 }
 
 // setupContext initializes [globalContext] fields.  It also reads and upgrades
@@ -645,6 +643,9 @@ type webConfig struct {
 	// confPath is a config path.
 	confPath string
 
+	// pidFilePath is a path to a PID file.
+	pidFilePath string
+
 	// isCustomUpdURL defines if updater should use custom url.
 	isCustomUpdURL bool
 
@@ -695,6 +696,7 @@ func newWeb(ctx context.Context, conf *webConfig) (web *webAPI, err error) {
 		WriteTimeout:      writeTimeout,
 
 		defaultWebPort: webPort,
+		pidFilePath:    conf.pidFilePath,
 
 		firstRun:         conf.isFirstRun,
 		disableUpdate:    disableUpdate,
@@ -762,6 +764,7 @@ func run(
 	sigHdlr *signalHandler,
 	workDir string,
 	confPath string,
+	pidFilePath string,
 ) {
 	aghtls.Init(ctx, baseLogger.With(slogutil.KeyPrefix, "aghtls"))
 
@@ -832,6 +835,7 @@ func run(
 		httpReg:        httpReg,
 		workDir:        workDir,
 		confPath:       confPath,
+		pidFilePath:    pidFilePath,
 		isCustomUpdURL: isCustomURL,
 		isFirstRun:     isFirstRun,
 	}
@@ -1239,9 +1243,12 @@ func cleanup(ctx context.Context, l *slog.Logger) {
 }
 
 // cleanupAlways is called on application exit.  l must not be nil.
-func cleanupAlways(ctx context.Context, pidFilePath string, l *slog.Logger) {
+func cleanupAlways(ctx context.Context, l *slog.Logger, pidFilePath string) {
 	if pidFilePath != "" {
-		_ = os.Remove(pidFilePath)
+		err := os.Remove(pidFilePath)
+		if err != nil {
+			l.ErrorContext(ctx, "removing pid file", slogutil.KeyError, err)
+		}
 	}
 
 	l.InfoContext(ctx, "stopped")
