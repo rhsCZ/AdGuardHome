@@ -98,12 +98,13 @@
 
                 docker info
 
+                env SNAPCRAFT_STORE_CREDENTIALS="${bamboo_snapcraftMacaroonPassword}" \
                 docker build \
                     --build-arg "BASE_IMAGE=${bamboo_dockerSnap}" \
                     --build-arg "CACHE_BUSTER=${bamboo_cacheBuster}" \
                     --build-arg "SNAPCRAFT_CHANNEL=${bamboo_snapcraftChannel}" \
-                    --build-arg "SNAPCRAFT_STORE_CREDENTIALS=${bamboo_snapcraftMacaroonPassword}" \
                     --build-arg "VERSION=${bamboo_buildNumber}" \
+                    --secret id=SNAPCRAFT_STORE_CREDENTIALS \
                     --output '.' \
                     --progress 'plain' \
                     --target 'publisher' \
