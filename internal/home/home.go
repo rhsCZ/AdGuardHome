@@ -367,7 +367,7 @@ func initContextClients(
 // setPIDFilePath writes the PID value to a file and returns its path, if the
 // PID file option is specified.
 func setPIDFilePath(opts options) (pidFilePath string) {
-	if opts.pidFile != "" && writePIDFile(opts.pidFile) {
+	if opts.pidFile != "" && !opts.performUpdate && writePIDFile(opts.pidFile) {
 		pidFilePath = opts.pidFile
 	}
 
