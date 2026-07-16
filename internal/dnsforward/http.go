@@ -341,11 +341,9 @@ func (req *jsonDNSConfig) checkBootstrap() (err error) {
 	var b string
 	defer func() { err = errors.Annotate(err, "checking bootstrap %s: %w", b) }()
 
-	*req.Bootstraps = stringutil.FilterOut(*req.Bootstraps, aghnet.IsCommentOrEmpty)
-
 	for _, b = range *req.Bootstraps {
-		if b == "" {
-			return errors.Error("empty")
+		if aghnet.IsCommentOrEmpty(b) {
+			continue
 		}
 
 		var resolver *upstream.UpstreamResolver
