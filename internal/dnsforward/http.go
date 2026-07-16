@@ -341,6 +341,8 @@ func (req *jsonDNSConfig) checkBootstrap() (err error) {
 	var b string
 	defer func() { err = errors.Annotate(err, "checking bootstrap %s: %w", b) }()
 
+	*req.Bootstraps = stringutil.FilterOut(*req.Bootstraps, aghnet.IsCommentOrEmpty)
+
 	for _, b = range *req.Bootstraps {
 		if b == "" {
 			return errors.Error("empty")
@@ -729,8 +731,6 @@ func (s *Server) handleTestUpstreamDNS(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	req.BootstrapDNS = stringutil.FilterOut(req.BootstrapDNS, aghnet.IsCommentOrEmpty)
 
 	opts := &upstream.Options{
 		Logger:     aghslog.NewForUpstream(s.baseLogger, aghslog.UpstreamTypeTest),
