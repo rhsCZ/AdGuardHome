@@ -4,7 +4,7 @@
 
 ## v0.107.79: API changes
 
-- Fields `bootstrap_dns`, `upstream_dns` in `POST /control/dns_config` now accepts comments.  A comment must start with a `#` symbol.
+- Field `bootstrap_dns` in `POST /control/dns_config` now accepts comments.  A comment must start with a `#` symbol.
 
 ### Setting the UI language through the install API
 
