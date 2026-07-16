@@ -20,12 +20,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Added
 
-- Bootstrap servers configuration now supports comments. Example:
-
-  ```yaml
-    # Comment 1
-    1.1.1.1
-  ```
+- Bootstrap servers configuration now supports comments.
 
 - New property `"language"` in `POST /control/install/check_config` and `POST /control/install/configure` HTTP APIs.
 
