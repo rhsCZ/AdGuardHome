@@ -126,11 +126,11 @@
                     --build-arg "SIGN=1" \
                     --build-arg "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" \
                     --build-arg "VERSION=$version" \
+                    --output '.' \
+                    --progress 'plain' \
                     --secret id=GPG_KEY_PASSPHRASE \
                     --secret id=GPG_SECRET_KEY \
                     --secret id=SIGNER_API_KEY \
-                    --output '.' \
-                    --progress 'plain' \
                     --target 'builder-exporter' \
                     -f ./docker/ci.Dockerfile \
                     .

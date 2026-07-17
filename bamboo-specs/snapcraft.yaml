@@ -104,9 +104,9 @@
                     --build-arg "CACHE_BUSTER=${bamboo_cacheBuster}" \
                     --build-arg "SNAPCRAFT_CHANNEL=${bamboo_snapcraftChannel}" \
                     --build-arg "VERSION=${bamboo_buildNumber}" \
-                    --secret id=SNAPCRAFT_STORE_CREDENTIALS \
                     --output '.' \
                     --progress 'plain' \
+                    --secret id=SNAPCRAFT_STORE_CREDENTIALS \
                     --target 'publisher' \
                     -f ./docker/snapcraft.Dockerfile \
                     .
