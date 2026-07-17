@@ -113,9 +113,14 @@
 
                 docker info
 
-                env GPG_KEY_PASSPHRASE="${bamboo_gpgPassword}" \
-                    GPG_SECRET_KEY="${bamboo_gpgSecretKeyPart1}${bamboo_gpgSecretKeyPart2}" \
-                    SIGNER_API_KEY="${bamboo_adguardHomeWinSignerSecretApiKey}" \
+                # Disable xtrace so the expanded secret values aren't printed to
+                # the build log.
+                set +x
+                export GPG_KEY_PASSPHRASE="${bamboo_gpgPassword}"
+                export GPG_SECRET_KEY="${bamboo_gpgSecretKeyPart1}${bamboo_gpgSecretKeyPart2}"
+                export SIGNER_API_KEY="${bamboo_adguardHomeWinSignerSecretApiKey}"
+                set -x
+
                 docker build \
                     --build-arg "BASE_IMAGE=${bamboo_dockerGo}" \
                     --build-arg "BRANCH=${bamboo_planRepository_branchName}" \
