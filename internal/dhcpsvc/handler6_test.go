@@ -58,14 +58,14 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		in        gopacket.Packet
-		wantLease *dhcpsvc.Lease
-		name      string
-		wantOpts  layers.DHCPv6Options
+		in       gopacket.Packet
+		want     *dhcpsvc.Lease
+		name     string
+		wantOpts layers.DHCPv6Options
 	}{{
-		in:        newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, false),
-		wantLease: nil,
-		name:      "new",
+		in:   newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, false),
+		want: nil,
+		name: "new",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWUnknown),
@@ -74,9 +74,9 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:        newDHCPv6SOLICIT(t, testHWStatic, testIPv6Static, false),
-		wantLease: nil,
-		name:      "existing_static",
+		in:   newDHCPv6SOLICIT(t, testHWStatic, testIPv6Static, false),
+		want: nil,
+		name: "existing_static",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWStatic),
@@ -85,9 +85,9 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:        newDHCPv6SOLICIT(t, testHWDynamic, testIPv6Dynamic, false),
-		wantLease: nil,
-		name:      "existing_dynamic",
+		in:   newDHCPv6SOLICIT(t, testHWDynamic, testIPv6Dynamic, false),
+		want: nil,
+		name: "existing_dynamic",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWDynamic),
@@ -96,9 +96,9 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:        newDHCPv6SOLICIT(t, testHWExpired, testIPv6Expired, false),
-		wantLease: nil,
-		name:      "existing_expired",
+		in:   newDHCPv6SOLICIT(t, testHWExpired, testIPv6Expired, false),
+		want: nil,
+		name: "existing_expired",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWExpired),
@@ -108,7 +108,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		},
 	}, {
 		in: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, true),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testClock.Now().Add(testLeaseTTL),
 			Hostname: aghnet.GenerateHostname(testIPv6Conf.RangeStart),
@@ -126,7 +126,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		},
 	}, {
 		in: newDHCPv6SOLICIT(t, testHWStatic, testIPv6Static, true),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Static,
 			Expiry:   time.Time{},
 			Hostname: "static6",
@@ -144,7 +144,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		},
 	}, {
 		in: newDHCPv6SOLICIT(t, testHWDynamic, testIPv6Dynamic, true),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Dynamic,
 			Expiry:   testExpiryDynamicLease,
 			Hostname: "dynamic6",
@@ -162,7 +162,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		},
 	}, {
 		in: newDHCPv6SOLICIT(t, testHWExpired, testIPv6Expired, true),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Expired,
 			Expiry:   testClock.Now().Add(testLeaseTTL),
 			Hostname: "expired6",
@@ -189,20 +189,20 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			t.Parallel()
 
 			onStore := func(ctx context.Context, leases []*dhcpsvc.Lease) (err error) {
-				assert.Contains(t, leases, tc.wantLease)
+				assert.Contains(t, leases, tc.want)
 
 				return nil
 			}
-			if tc.wantLease != nil {
+			if tc.want != nil {
 				db.onStore = onStore
 			}
 
 			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
 			startTestDHCPServer(t, &dhcpsvc.Config{
-				Interfaces:           testIPv6InterfacesConf,
-				NetworkDeviceManager: ndMgr,
-				Logger:               testLogger,
 				Database:             db,
+				Interfaces:           testIPv6InterfacesConf,
+				Logger:               testLogger,
+				NetworkDeviceManager: ndMgr,
 				Enabled:              true,
 			})
 
@@ -221,15 +221,15 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	notOnLinkAddr := netip.MustParseAddr(testAnotherRangeStartV6Str)
 
 	testCases := []struct {
-		in        gopacket.Packet
-		solicit   gopacket.Packet
-		wantLease *dhcpsvc.Lease
-		name      string
-		wantOpts  layers.DHCPv6Options
+		in       gopacket.Packet
+		solicit  gopacket.Packet
+		want     *dhcpsvc.Lease
+		name     string
+		wantOpts layers.DHCPv6Options
 	}{{
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
 		solicit: nil,
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testClock.Now().Add(testLeaseTTL),
 			Hostname: aghnet.GenerateHostname(testIPv6Conf.RangeStart),
@@ -245,10 +245,10 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:        newDHCPv6REQUEST(t, testHWUnknown, notOnLinkAddr),
-		solicit:   nil,
-		wantLease: nil,
-		name:      "not_on_link",
+		in:      newDHCPv6REQUEST(t, testHWUnknown, notOnLinkAddr),
+		solicit: nil,
+		want:    nil,
+		name:    "not_on_link",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWUnknown),
@@ -259,7 +259,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	}, {
 		in:      newDHCPv6REQUEST(t, testHWStatic, testIPv6Static),
 		solicit: nil,
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Static,
 			Expiry:   time.Time{},
 			Hostname: "static6",
@@ -275,10 +275,10 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:        newDHCPv6REQUEST(t, testHWUnknown, netip.Addr{}),
-		solicit:   nil,
-		wantLease: nil,
-		name:      "no_iana",
+		in:      newDHCPv6REQUEST(t, testHWUnknown, netip.Addr{}),
+		solicit: nil,
+		want:    nil,
+		name:    "no_iana",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWUnknown),
@@ -288,7 +288,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	}, {
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
 		solicit: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, false),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testClock.Now().Add(testLeaseTTL),
 			Hostname: aghnet.GenerateHostname(testIPv6Conf.RangeStart),
@@ -306,7 +306,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	}, {
 		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
 		solicit: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, true),
-		wantLease: &dhcpsvc.Lease{
+		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testClock.Now().Add(testLeaseTTL),
 			Hostname: aghnet.GenerateHostname(testIPv6Conf.RangeStart),
@@ -332,21 +332,21 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			t.Parallel()
 
 			onStore := func(ctx context.Context, leases []*dhcpsvc.Lease) (err error) {
-				assert.Contains(t, leases, tc.wantLease)
+				assert.Contains(t, leases, tc.want)
 
 				return nil
 			}
 
-			if tc.wantLease != nil {
+			if tc.want != nil {
 				db.onStore = onStore
 			}
 
 			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
 			startTestDHCPServer(t, &dhcpsvc.Config{
-				Interfaces:           testIPv6InterfacesConf,
-				NetworkDeviceManager: ndMgr,
-				Logger:               testLogger,
 				Database:             db,
+				Interfaces:           testIPv6InterfacesConf,
+				Logger:               testLogger,
+				NetworkDeviceManager: ndMgr,
 				Enabled:              true,
 			})
 

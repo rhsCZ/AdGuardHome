@@ -195,7 +195,7 @@ func (idx *leaseIndex) dbLoad(
 	return nil
 }
 
-// addDBLeases adds leases to the server.
+// addDBLeases adds leases to the server.  logger must not be nil,
 func (idx *leaseIndex) addDBLeases(
 	ctx context.Context,
 	logger *slog.Logger,

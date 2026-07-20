@@ -14,6 +14,9 @@ import (
 
 // Config is the configuration for the DHCP service.
 type Config struct {
+	// Database is the storage for DHCP leases.  It must not be nil.
+	Database Database
+
 	// Interfaces stores configurations of DHCP server specific for the network
 	// interface identified by its name.  It must not be empty and must only
 	// contain valid interface names and configurations.
@@ -24,9 +27,6 @@ type Config struct {
 	//
 	// TODO(e.burkov):  Set.
 	NetworkDeviceManager NetworkDeviceManager
-
-	// Database is the storage for DHCP leases.  It must not be nil.
-	Database Database
 
 	// Logger will be used to log the DHCP events.  It must not be nil.
 	Logger *slog.Logger

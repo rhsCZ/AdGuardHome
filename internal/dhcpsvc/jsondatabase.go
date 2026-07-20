@@ -133,7 +133,7 @@ type JSONDatabase struct {
 func NewJSONDatabase(c *JSONDatabaseConfig) (db *JSONDatabase) {
 	return &JSONDatabase{
 		mu:       &sync.RWMutex{},
-		logger:   c.Logger,
+		logger:   c.Logger.With("file", c.FilePath),
 		filePath: c.FilePath,
 	}
 }
@@ -141,6 +141,8 @@ func NewJSONDatabase(c *JSONDatabaseConfig) (db *JSONDatabase) {
 // Load implements the [Database] interface for *JSONDatabase.
 func (db *JSONDatabase) Load(ctx context.Context) (leases []*Lease, err error) {
 	defer func() { err = errors.Annotate(err, "loading db: %w") }()
+
+	db.logger.DebugContext(ctx, "loading leases")
 
 	db.mu.RLock()
 	defer db.mu.RUnlock()
@@ -151,7 +153,7 @@ func (db *JSONDatabase) Load(ctx context.Context) (leases []*Lease, err error) {
 			return nil, fmt.Errorf("reading db: %w", err)
 		}
 
-		db.logger.DebugContext(ctx, "no db file found", "file", db.filePath)
+		db.logger.DebugContext(ctx, "no db file found")
 
 		return nil, nil
 	}
@@ -210,7 +212,7 @@ func (db *JSONDatabase) Store(ctx context.Context, leases []*Lease) (err error) 
 		return err
 	}
 
-	db.logger.InfoContext(ctx, "stored leases", "num", len(dl.Leases), "file", db.filePath)
+	db.logger.InfoContext(ctx, "stored leases", "num", len(dl.Leases))
 
 	return nil
 }
