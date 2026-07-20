@@ -82,7 +82,6 @@ set -e -f -u -x
 
 env \
 	SNAPCRAFT_CHANNEL="${SNAPCRAFT_CHANNEL}" \
-	SNAPCRAFT_STORE_CREDENTIALS="${SNAPCRAFT_STORE_CREDENTIALS}" \
 	VERBOSE='1' \
 	sh ./scripts/snap/upload.sh
 EOF
