@@ -54,6 +54,7 @@ var (
 	testIPv6Static = netip.MustParseAddr("2001:db8::65")
 )
 
+// TODO(e.burkov):  Increase maintainability index.
 func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 	t.Parallel()
 
@@ -215,6 +216,8 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 
 // TODO(e.burkov):  Add tests for REQUEST causing errors.  This would require a
 // custom implementation of the address checker at least.
+//
+// TODO(e.burkov):  Increase maintainability index.
 func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	t.Parallel()
 

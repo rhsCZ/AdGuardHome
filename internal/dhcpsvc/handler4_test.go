@@ -223,6 +223,7 @@ func TestDHCPServer_ServeEther4_release(t *testing.T) {
 	}
 }
 
+// TODO(e.burkov):  Increase maintainability index.
 func TestDHCPServer_ServeEther4_requestSelecting(t *testing.T) {
 	t.Parallel()
 

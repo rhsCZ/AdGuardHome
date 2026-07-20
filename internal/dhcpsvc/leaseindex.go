@@ -186,11 +186,7 @@ func (idx *leaseIndex) dbLoad(
 ) (err error) {
 	leases, err := idx.database.Load(ctx)
 	if err != nil {
-		if leases == nil {
-			return fmt.Errorf("loading leases: %w", err)
-		}
-
-		logger.ErrorContext(ctx, "loading leases", slogutil.KeyError, err)
+		return fmt.Errorf("loading leases: %w", err)
 	}
 
 	idx.addDBLeases(ctx, logger, leases, ifaces4, ifaces6)

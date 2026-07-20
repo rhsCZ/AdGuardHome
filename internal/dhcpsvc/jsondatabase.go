@@ -38,14 +38,25 @@ type jsonLeasesData struct {
 //
 // TODO(e.burkov):  Migrate to add DUID and IAID fields for DHCPv6 leases.
 type jsonLease struct {
-	Expiry   string     `json:"expires"`
-	IP       netip.Addr `json:"ip"`
-	Hostname string     `json:"hostname"`
-	HWAddr   string     `json:"mac"`
-	IsStatic bool       `json:"static"`
+	// Expiry is the expiration time of the lease in RFC 3339 format.  It is
+	// empty for static leases.
+	Expiry string `json:"expires"`
+
+	// IP is the IP address leased to the client.  It must not be empty.
+	IP netip.Addr `json:"ip"`
+
+	// Hostname is the hostname of the client.
+	Hostname string `json:"hostname"`
+
+	// HWAddr is the MAC address of the client.  It must be a valid hardware
+	// address string according to [netutil.IsValidMACString].
+	HWAddr string `json:"mac"`
+
+	// IsStatic defines if the lease is static.
+	IsStatic bool `json:"static"`
 }
 
-// compareNames returns the result of comparing the hostnames of dl and other
+// compareNames returns the result of comparing the hostnames of jl and other
 // lexicographically.
 func (jl *jsonLease) compareNames(other *jsonLease) (res int) {
 	return strings.Compare(jl.Hostname, other.Hostname)
@@ -71,7 +82,7 @@ func toJSONLease(l *Lease) (jl *jsonLease) {
 	}
 }
 
-// toInternal converts dl to *Lease.
+// toInternal converts jl to *Lease.
 func (jl *jsonLease) toInternal() (l *Lease, err error) {
 	mac, err := net.ParseMAC(jl.HWAddr)
 	if err != nil {
