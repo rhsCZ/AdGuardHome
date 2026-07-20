@@ -70,7 +70,10 @@ func (idx *leaseIndex) clear(ctx context.Context) (err error) {
 
 // add adds l into idx and into iface.  l must be valid, iface should be
 // responsible for l's IP.  It returns an error if l duplicates at least a
-// single value of another lease.
+// single value of another lease.  It doesn't store the leases into the
+// database, it's caller's responsibility to do so.
+//
+// TODO(e.burkov):  Support empty hostnames.
 func (idx *leaseIndex) add(l *Lease, iface *netInterface) (err error) {
 	loweredName := strings.ToLower(l.Hostname)
 
@@ -195,7 +198,7 @@ func (idx *leaseIndex) dbLoad(
 	return nil
 }
 
-// addDBLeases adds leases to the server.  logger must not be nil,
+// addDBLeases adds leases to the server.  logger must not be nil.
 func (idx *leaseIndex) addDBLeases(
 	ctx context.Context,
 	logger *slog.Logger,
