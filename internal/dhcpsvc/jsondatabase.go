@@ -62,7 +62,7 @@ func (jl *jsonLease) compareNames(other *jsonLease) (res int) {
 	return strings.Compare(jl.Hostname, other.Hostname)
 }
 
-// toJSONLease converts *Lease to *jsonLease.
+// toJSONLease converts *Lease to *jsonLease.  l must not be nil.
 func toJSONLease(l *Lease) (jl *jsonLease) {
 	var expiryStr string
 	if !l.IsStatic {
