@@ -39,6 +39,7 @@ trailing_newlines() (
 		-name '*.db' \
 		-o -name '*.exe' \
 		-o -name '*.ico' \
+		-o -name '*.woff2' \
 		-o -name '*.out' \
 		-o -name '*.png' \
 		-o -name '*.svg' \
@@ -66,6 +67,7 @@ trailing_whitespace() {
 		-name '*.db' \
 		-o -name '*.exe' \
 		-o -name '*.ico' \
+		-o -name '*.woff2' \
 		-o -name '*.out' \
 		-o -name '*.png' \
 		-o -name '*.svg' \
