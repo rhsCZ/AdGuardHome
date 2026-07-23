@@ -17,7 +17,23 @@ type LanguageDropdownProps = {
     sort?: boolean;
 };
 
-const getLanguageShortLabel = (lang: string) => (lang || '').slice(0, 2).toUpperCase();
+const getLanguageShortLabel = (lang: string) => {
+    const code = (lang || '').toLowerCase();
+    const parts = code.split('-');
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    const prefix = parts[0].slice(0, 2).toUpperCase();
+    const suffix = parts.slice(1).map((p) => p.toUpperCase()).join('-');
+
+    // Skip redundant suffix, e.g. pt-pt → PT (not PT (PT))
+    if (prefix === suffix) {
+        return prefix;
+    }
+
+    return `${prefix} (${suffix})`;
+};
 
 export const LanguageDropdown = (props: LanguageDropdownProps) => {
     const [open, setOpen] = createSignal(false);
