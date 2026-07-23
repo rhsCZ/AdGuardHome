@@ -7,7 +7,7 @@ import { Footer } from 'panel/common/ui/Footer';
 import { Header } from 'panel/common/ui/Header';
 import { Banners } from 'panel/common/ui/Banners';
 import { Settings } from 'panel/components/Settings';
-import intl, { LocalesType } from 'panel/common/intl';
+import intl, { initialLanguage, LocalesType } from 'panel/common/intl';
 import { Encryption } from 'panel/components/Encryption';
 import { Blocklists } from 'panel/components/FilterLists/Blocklists';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
@@ -46,7 +46,13 @@ const ProtectionRoute = () => <Protection />;
 const AddClientRoute = () => <AddClient />;
 
 const App = () => {
-    onMount(() => {
+    onMount(async () => {
+        // Preload the browser-detected locale so the initial render uses
+        // the correct language.  The app renders immediately with English
+        // (always bundled); once the locale chunk loads, changeLanguage
+        // triggers a reactive re-render of every translated string.
+        await intl.changeLanguage(initialLanguage);
+
         getDnsStatus();
 
         const handleVisibilityChange = () => {
@@ -67,9 +73,10 @@ const App = () => {
         const language = dashboardState.language;
         const processing = dashboardState.processing;
         if (!processing && language) {
-            intl.changeLanguage(language as LocalesType);
-            setHtmlLangAttr(language);
-            LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, language);
+            intl.changeLanguage(language as LocalesType).then(() => {
+                setHtmlLangAttr(language);
+                LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, language);
+            });
         }
     });
 

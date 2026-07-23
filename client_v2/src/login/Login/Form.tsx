@@ -59,6 +59,7 @@ const Form = (props: LoginFormProps) => {
                                 errorMessage={field.error as string}
                                 autocomplete="username"
                                 autocapitalize="none"
+                                size="large"
                             />
                         )}
                     </Field>
@@ -79,6 +80,7 @@ const Form = (props: LoginFormProps) => {
                                 inputError={field.error as string}
                                 autocomplete="current-password"
                                 onChange={(value: string) => setValue(loginForm, 'password', value)}
+                                size="large"
                             />
                         )}
                     </Field>

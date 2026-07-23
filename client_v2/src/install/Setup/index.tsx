@@ -16,7 +16,9 @@ import { getInterfaceIp, getWebAddress } from '../../helpers/helpers';
 import { INSTALL_TOTAL_STEPS, ALL_INTERFACES_IP, DEBOUNCE_TIMEOUT } from '../../helpers/constants';
 
 import Greeting from './Greeting';
-import type { ConfigType, DnsConfig, WebConfig } from './types';
+import type { ConfigType, DnsConfig, SettingsFormValues, WebConfig } from './types';
+import type { InitialConfiguration } from 'panel/api/model/initialConfiguration';
+import type { AuthFormValues } from './Auth';
 import { InterfaceSettings } from './InterfaceSettings';
 import { DnsSettings } from './DnsSettings';
 import { Controls } from './Controls';
@@ -28,14 +30,9 @@ import Toasts from '../../components/Toasts';
 import styles from './styles.module.pcss';
 import { getDnsAddressWithPort } from './helpers/helpers';
 
-type InstallInterface = {
-    name?: string;
-    ip_addresses?: string[];
-};
-
 const getInstallDnsAddresses = (
     dns: { ip: string; port: number },
-    interfaces: InstallInterface[],
+    interfaces: { ip_addresses?: string[] }[],
 ) => {
     if (!dns?.ip || !dns?.port) {
         return [];
@@ -43,8 +40,8 @@ const getInstallDnsAddresses = (
 
     if (dns.ip === ALL_INTERFACES_IP) {
         return (interfaces || [])
-            .filter((iface: InstallInterface) => iface?.ip_addresses?.length > 0)
-            .map((iface: InstallInterface) => getInterfaceIp(iface))
+            .filter((iface) => iface?.ip_addresses?.length > 0)
+            .map((iface) => getInterfaceIp(iface))
             .filter(Boolean)
             .map((ip: string) => getDnsAddressWithPort(ip, dns.port));
     }
@@ -78,17 +75,19 @@ export const Setup = () => {
         }
     };
 
-    const handleAuthSubmit = (values: any) => {
+    const handleAuthSubmit = (values: AuthFormValues) => {
         setAuthData(values);
         handleNextStep();
     };
 
     const handleFinalSubmit = () => {
-        const config: any = {
+        const config: InitialConfiguration & { confirm_password: string } = {
             web: web(),
             dns: dns(),
             language: installState.language,
-            ...auth(),
+            username: auth().username,
+            password: auth().password,
+            confirm_password: auth().password,
         };
 
         if (web().port && dns().port) {
@@ -98,7 +97,7 @@ export const Setup = () => {
 
     // Debounced checkConfig
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    const debouncedCheckConfig = (values: any) => {
+    const debouncedCheckConfig = (values: SettingsFormValues) => {
         if (debounceTimer) {
             clearTimeout(debounceTimer);
         }

@@ -59,6 +59,7 @@ const config = {
     output: {
         path: PUBLIC_PATH,
         filename: '[name].[chunkhash].js',
+        chunkFilename: '[name].[chunkhash].js',
     },
     resolve: {
         modules: ['node_modules'],
