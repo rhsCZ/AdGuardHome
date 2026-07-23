@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { translate } from '@adguard/translate';
 import { LocalStorageHelper } from '../helpers/localStorageHelper';
+
+// Ensure the real constants module is available even when other test files
+// (e.g., install-store.test.ts) mock it with a partial stub.
+vi.mock('panel/helpers/constants', async (importOriginal) =>
+    importOriginal<typeof import('panel/helpers/constants')>(),
+);
+
 import {
     createSolidDefaultValues,
     solidMessageConstructor,
