@@ -13,7 +13,12 @@ import {
 import { dashboardState } from 'panel/stores/dashboard';
 
 import { getInterfaceIp, getWebAddress } from '../../helpers/helpers';
-import { INSTALL_TOTAL_STEPS, ALL_INTERFACES_IP, DEBOUNCE_TIMEOUT } from '../../helpers/constants';
+import {
+    INSTALL_TOTAL_STEPS,
+    ALL_INTERFACES_IP,
+    DEBOUNCE_TIMEOUT,
+    LANGUAGE_QUERY_PARAM,
+} from '../../helpers/constants';
 
 import Greeting from './Greeting';
 import type { ConfigType, DnsConfig, SettingsFormValues, WebConfig } from './types';
@@ -120,11 +125,11 @@ export const Setup = () => {
     };
 
     const openDashboard = (ip: string, port: number) => {
-        let address = getWebAddress(ip, port);
-        if (ip === ALL_INTERFACES_IP) {
-            address = getWebAddress(window.location.hostname, port);
-        }
-        window.location.replace(address);
+        const host = ip === ALL_INTERFACES_IP ? window.location.hostname : ip;
+        const url = new URL(getWebAddress(host, port));
+        url.searchParams.set(LANGUAGE_QUERY_PARAM, installState.language);
+        console.log(url.toString());
+        window.location.replace(url.toString());
     };
 
     const config = createMemo<ConfigType>(() => ({

@@ -25,7 +25,10 @@ const getLanguageShortLabel = (lang: string) => {
     }
 
     const prefix = parts[0].slice(0, 2).toUpperCase();
-    const suffix = parts.slice(1).map((p) => p.toUpperCase()).join('-');
+    const suffix = parts
+        .slice(1)
+        .map((p) => p.toUpperCase())
+        .join('-');
 
     // Skip redundant suffix, e.g. pt-pt → PT (not PT (PT))
     if (prefix === suffix) {
@@ -66,9 +69,9 @@ export const LanguageDropdown = (props: LanguageDropdownProps) => {
                                     // Fire-and-forget with finally-guaranteed close.
                                     // If the onChange throws or hangs, the dropdown
                                     // still closes — no stuck-open state.
-                                    Promise.resolve(
-                                        untrack(() => props.onChange)(lang),
-                                    ).finally(() => setOpen(false));
+                                    Promise.resolve(untrack(() => props.onChange)(lang)).finally(
+                                        () => setOpen(false),
+                                    );
                                 }}
                             >
                                 {props.languageNames?.[lang] || getLanguageShortLabel(lang)}

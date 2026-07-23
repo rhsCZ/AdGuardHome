@@ -3,6 +3,7 @@ import { createSignal } from 'solid-js';
 import { I18nInterface, Locale, translate } from '@adguard/translate';
 import { BASE_LOCALE } from 'panel/helpers/twosky';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
+import { LANGUAGE_QUERY_PARAM } from 'panel/helpers/constants';
 
 import {
     LOCALES,
@@ -80,13 +81,36 @@ export const i18n = (lang: LocalesType) => {
     };
 };
 
-const detectedLanguage = ((typeof window !== 'undefined' &&
-    typeof localStorage !== 'undefined' &&
-    LocalStorageHelper.getItem<string>(LOCAL_STORAGE_KEYS.LANGUAGE)) ||
-    (typeof navigator !== 'undefined' && (navigator.language as string)) ||
-    BASE_LOCALE) as LocalesType;
+/**
+ * Detects the initial language using a priority chain: URL query param
+ * (set after cross-port redirect from the install wizard) → localStorage
+ * → browser language → base locale.
+ */
+export const getInitialLanguage = (): LocalesType => {
+    if (typeof window === 'undefined') {
+        return BASE_LOCALE as LocalesType;
+    }
 
-export const initialLanguage: LocalesType = resolveLanguage(detectedLanguage);
+    const urlLang = new URL(window.location.href).searchParams.get(LANGUAGE_QUERY_PARAM);
+    if (urlLang) {
+        const resolved = resolveLanguage(urlLang);
+        LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, resolved);
+        return resolved;
+    }
+
+    const stored = LocalStorageHelper.getItem<string>(LOCAL_STORAGE_KEYS.LANGUAGE);
+    if (stored) {
+        return resolveLanguage(stored);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.language) {
+        return resolveLanguage(navigator.language);
+    }
+
+    return BASE_LOCALE as LocalesType;
+};
+
+export const initialLanguage: LocalesType = getInitialLanguage();
 
 // Always start with English (the only locale guaranteed to be in `messages`
 // at module-init time).  The App.onMount preloads the actual detected locale
