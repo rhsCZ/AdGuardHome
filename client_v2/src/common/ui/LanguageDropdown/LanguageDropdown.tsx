@@ -17,19 +17,7 @@ type LanguageDropdownProps = {
     sort?: boolean;
 };
 
-const getLanguageShortLabel = (lang: string) => {
-    const l = lang || '';
-
-    const base = (() => {
-        if (typeof Intl !== 'undefined' && 'Locale' in Intl) {
-            return new Intl.Locale(l).language || '';
-        }
-
-        return l.split('-')[0] || '';
-    })();
-
-    return base.slice(0, 2).toLocaleUpperCase();
-};
+const getLanguageShortLabel = (lang: string) => (lang || '').slice(0, 2).toUpperCase();
 
 export const LanguageDropdown = (props: LanguageDropdownProps) => {
     const [open, setOpen] = createSignal(false);

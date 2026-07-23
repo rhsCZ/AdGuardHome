@@ -87,6 +87,7 @@ export const Setup = () => {
         const config: any = {
             web: web(),
             dns: dns(),
+            language: installState.language,
             ...auth(),
         };
 
@@ -141,6 +142,7 @@ export const Setup = () => {
                     dropdownPosition="bottomRight"
                     center={<Progress step={step()} />}
                     useLocalLanguage={true}
+                    hideLanguageDropdown={true}
                 />
 
                 <div class={styles.container}>

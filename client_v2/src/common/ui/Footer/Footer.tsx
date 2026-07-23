@@ -4,7 +4,7 @@ import cn from 'clsx';
 import theme from 'panel/lib/theme';
 import { Dropdown } from 'panel/common/ui/Dropdown';
 import { Icon } from 'panel/common/ui/Icon';
-import intl from 'panel/common/intl';
+import intl, { type LocalesType } from 'panel/common/intl';
 
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from 'panel/helpers/localStorageHelper';
 import { LanguageDropdown } from '../LanguageDropdown/LanguageDropdown';
@@ -54,10 +54,10 @@ export const Footer = () => {
 
     const changeLanguage = async (newLang: Lang) => {
         setHtmlLangAttr(newLang);
+        intl.changeLanguage(newLang as LocalesType);
+        LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, newLang);
         try {
             await changeLanguageAction(newLang);
-            LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, newLang);
-            window.location.reload();
         } catch (error) {
             console.error('Failed to save language preference:', error);
         }
