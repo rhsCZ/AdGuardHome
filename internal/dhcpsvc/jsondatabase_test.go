@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// dbFilePath returns the path to the database file for the given test.
+func dbFilePath(tb testing.TB) (p string) {
+	return filepath.Join("testdata", tb.Name()+".json")
+}
+
 func TestJSONDatabase_Load(t *testing.T) {
 	t.Parallel()
 
@@ -44,7 +49,7 @@ func TestJSONDatabase_Load(t *testing.T) {
 
 			db := dhcpsvc.NewJSONDatabase(&dhcpsvc.JSONDatabaseConfig{
 				Logger:   testLogger,
-				FilePath: filepath.Join("testdata", t.Name()+".json"),
+				FilePath: dbFilePath(t),
 			})
 
 			ctx := testutil.ContextWithTimeout(t, testTimeout)
@@ -94,22 +99,32 @@ func TestJSONDatabase_Store(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
+		db := dhcpsvc.NewJSONDatabase(&dhcpsvc.JSONDatabaseConfig{
+			Logger:   testLogger,
+			FilePath: tc.path,
+		})
+
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-
-			db := dhcpsvc.NewJSONDatabase(&dhcpsvc.JSONDatabaseConfig{
-				Logger:   testLogger,
-				FilePath: tc.path,
-			})
 
 			ctx := testutil.ContextWithTimeout(t, testTimeout)
 
 			err := db.Store(ctx, tc.in)
 
 			assert.ErrorIs(t, err, tc.wantErr)
-			if tc.wantErr == nil {
-				assert.FileExists(t, tc.path)
+			if tc.wantErr != nil {
+				return
 			}
+
+			require.FileExists(t, tc.path)
+
+			content, err := os.ReadFile(tc.path)
+			require.NoError(t, err)
+
+			wantContent, err := os.ReadFile(dbFilePath(t))
+			require.NoError(t, err)
+
+			assert.Equal(t, wantContent, content)
 		})
 	}
 }
