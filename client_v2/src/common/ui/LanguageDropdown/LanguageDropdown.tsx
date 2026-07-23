@@ -62,9 +62,13 @@ export const LanguageDropdown = (props: LanguageDropdownProps) => {
                                 class={cn(theme.dropdown.item, {
                                     [theme.dropdown.item_active]: props.value === lang,
                                 })}
-                                onClick={async () => {
-                                    await untrack(() => props.onChange)(lang);
-                                    setOpen(false);
+                                onClick={() => {
+                                    // Fire-and-forget with finally-guaranteed close.
+                                    // If the onChange throws or hangs, the dropdown
+                                    // still closes — no stuck-open state.
+                                    Promise.resolve(
+                                        untrack(() => props.onChange)(lang),
+                                    ).finally(() => setOpen(false));
                                 }}
                             >
                                 {props.languageNames?.[lang] || getLanguageShortLabel(lang)}

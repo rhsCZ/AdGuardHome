@@ -20,8 +20,8 @@ type Props = {
 
 export const PublicHeader = (props: Props) => {
     const changeLanguage = async (newLang: Lang) => {
+        await intl.changeLanguage(newLang as LocalesType);
         setHtmlLangAttr(newLang);
-        intl.changeLanguage(newLang as LocalesType);
         LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, newLang);
 
         if (props.useLocalLanguage) {

@@ -110,8 +110,8 @@ export const setAuthData = (auth: Partial<InstallState['auth']>) => {
     setState('auth', (prev) => ({ ...prev, ...auth }));
 };
 
-export const setLanguage = (lang: Lang) => {
-    intl.changeLanguage(lang as LocalesType);
+export const setLanguage = async (lang: Lang) => {
+    await intl.changeLanguage(lang as LocalesType);
     LocalStorageHelper.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, lang);
     setState('language', lang);
 };

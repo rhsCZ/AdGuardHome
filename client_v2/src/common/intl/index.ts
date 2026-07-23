@@ -224,7 +224,13 @@ const intl = {
      */
     changeLanguage: async (newLang: LocalesType) => {
         const resolved = resolveLanguage(newLang);
-        await preloadLocale(resolved);
+        try {
+            await preloadLocale(resolved);
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('[i18n] Failed to load locale:', resolved, err);
+            return;
+        }
         translator = createSolidTranslator(i18n(resolved));
         setLang(resolved);
     },
@@ -246,5 +252,16 @@ export const preloadLocale = async (code: string) => {
     const mod = await loader();
     messages[code] = (mod as { default?: LocaleMessage }).default ?? (mod as LocaleMessage);
 };
+
+// Fire-and-forget: preload the browser-detected locale as soon as the module
+// loads.  Every entry point (dashboard, login, install, forgot_password)
+// benefits without needing its own onMount preload gate.  The app renders
+// immediately with English; once the locale chunk loads, changeLanguage
+// triggers a reactive re-render.
+if (typeof window !== 'undefined') {
+    intl.changeLanguage(initialLanguage).catch((err) => {
+        console.warn('[i18n] Failed to preload locale:', err);
+    });
+}
 
 export default intl;
