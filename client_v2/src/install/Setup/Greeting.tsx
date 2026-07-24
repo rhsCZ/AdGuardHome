@@ -11,7 +11,7 @@ import routerImage from '../../img/router.svg';
 import type { Lang } from 'panel/api/model/lang';
 import theme from 'panel/lib/theme';
 
-const Greeting = () => {
+export const Greeting = () => {
     const languageOptions = () =>
         Object.entries(LANGUAGES).map(([value, label]) => ({
             value,
@@ -66,5 +66,3 @@ const Greeting = () => {
         </div>
     );
 };
-
-export default Greeting;

@@ -2,6 +2,7 @@ import ipaddr, { IPv4, IPv6 } from 'ipaddr.js';
 import queryString from 'qs';
 import intl from 'panel/common/intl';
 import { getTrackerData } from './trackers/trackers';
+import type { TrackerData } from './trackers/trackers';
 
 import {
     ADDRESS_TYPES,
@@ -20,10 +21,8 @@ import {
     SHORT_DATE_FORMAT_OPTIONS,
 } from './constants';
 import { LOCAL_STORAGE_KEYS, LocalStorageHelper } from './localStorageHelper';
-import { DhcpInterfaces } from '../initialState';
 import { LANGUAGES, BASE_LOCALE } from './twosky';
 import type { Lang } from 'panel/api/model/lang';
-import type { NetInterfaces } from 'panel/api/model/netInterfaces';
 import type { DnsAnswer } from 'panel/api/model/dnsAnswer';
 import type { ResultRule } from 'panel/api/model/resultRule';
 import type { FilteringReason } from 'panel/api/model/filteringReason';
@@ -61,7 +60,7 @@ export type NormalizedQueryLogItem = {
     serviceName?: string;
     originalAnswer?: DnsAnswer[];
     originalResponse: NormalizedDnsResponse[];
-    tracker: Record<string, unknown> | null;
+    tracker: TrackerData | null;
     answer_dnssec?: boolean;
     elapsedMs?: string;
     upstream?: string;
@@ -933,8 +932,8 @@ export type Filter = {
 };
 
 export type Rule = {
-    filter_list_id: number;
-    text: string;
+    filter_list_id?: number;
+    text?: string;
 };
 
 export const getFilterName = (
@@ -955,26 +954,9 @@ export const getFilterName = (
 };
 
 export const getFilterNames = (rules: Rule[], filters: Filter[], whitelistFilters: Filter[]) =>
-    rules.map(({ filter_list_id }: Rule) =>
-        getFilterName(filters, whitelistFilters, filter_list_id),
-    );
-
-/**
- * Add ip_addresses property - concatenated ipv4_addresses and ipv6_addresses for every interface
- * @param interfaces
- * @param interfaces.ipv4_addresses {string[]}
- * @param interfaces.ipv6_addresses {string[]}
- * @returns interfaces Interfaces enriched with ip_addresses property
- */
-
-export const enrichWithConcatenatedIpAddresses = (interfaces: NetInterfaces): DhcpInterfaces =>
-    Object.entries(interfaces).reduce((acc: DhcpInterfaces, [k, v]) => {
-        const ipv4_addresses = v.ipv4_addresses ?? [];
-        const ipv6_addresses = v.ipv6_addresses ?? [];
-
-        acc[k] = { ...v, ip_addresses: ipv4_addresses.concat(ipv6_addresses) };
-        return acc;
-    }, {});
+    rules
+        .filter((r): r is Required<Rule> => r.filter_list_id != null)
+        .map(({ filter_list_id }) => getFilterName(filters, whitelistFilters, filter_list_id));
 
 /**
  * @param {string[]} lines
@@ -1019,11 +1001,10 @@ export const calculateDhcpPlaceholdersIpv4 = (ip: string, gatewayIp: string) => 
  * @returns Pre-filled v6 config values
  */
 export const calculateDhcpPlaceholdersIpv6 = () => {
-    const { range_start, range_end, lease_duration } = DHCP_VALUES_PLACEHOLDERS.ipv6;
+    const { range_start, lease_duration } = DHCP_VALUES_PLACEHOLDERS.ipv6;
 
     return {
         range_start,
-        range_end,
         lease_duration,
     };
 };

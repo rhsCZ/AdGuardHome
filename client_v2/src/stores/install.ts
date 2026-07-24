@@ -1,7 +1,7 @@
 import { createStore } from 'solid-js/store';
 import { untrack } from 'solid-js';
 import { installGetAddresses, installConfigure, installCheckConfig } from 'panel/api/generated';
-import { addErrorToast, addSuccessToast } from './toasts';
+import { addErrorToast } from './toasts';
 import intl, { type LocalesType } from 'panel/common/intl';
 import type { InstallInterface } from '../initialState';
 import type { NetInterface } from 'panel/api/model/netInterface';
@@ -77,14 +77,12 @@ export const getDefaultAddresses = async () => {
                   ([name, iface]: [string, NetInterface]) => ({
                       flags: iface.flags,
                       hardware_address: iface.hardware_address,
-                      ip_addresses: [
-                          ...(iface.ipv4_addresses || []),
-                          ...(iface.ipv6_addresses || []),
-                      ],
-                      mtu: 0,
+                      ip_addresses: iface.ip_addresses || [],
+                      mtu: iface.mtu || 0,
                       name: iface.name || name,
                   }),
               );
+
         setState({
             web: { ...state.web, port: data.web_port },
             dns: { ...state.dns, port: data.dns_port },
@@ -125,7 +123,6 @@ export const setAllSettings = async (
         void confirm_password;
         await installConfigure(rest);
         setState({ processingSubmit: false, submitted: true });
-        addSuccessToast(intl.getMessage('install_saved'));
     } catch (error) {
         addErrorToast({ error });
         setState('processingSubmit', false);

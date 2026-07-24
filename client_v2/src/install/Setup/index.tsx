@@ -1,4 +1,4 @@
-import { createMemo, onMount, onCleanup, Show, Switch, Match } from 'solid-js';
+import { createMemo, createEffect, onMount, onCleanup, Show, Switch, Match } from 'solid-js';
 
 import { PublicHeader } from 'panel/common/ui/PublicHeader';
 import { SetupGuide } from 'panel/components/SetupGuide/SetupGuide';
@@ -20,7 +20,7 @@ import {
     LANGUAGE_QUERY_PARAM,
 } from '../../helpers/constants';
 
-import Greeting from './Greeting';
+import { Greeting } from './Greeting';
 import type { ConfigType, DnsConfig, SettingsFormValues, WebConfig } from './types';
 import type { InitialConfiguration } from 'panel/api/model/initialConfiguration';
 import type { AuthFormValues } from './Auth';
@@ -30,7 +30,7 @@ import { Controls } from './Controls';
 import { Submit } from './Submit';
 import { Progress } from './blocks/Progress';
 import { Auth } from './Auth';
-import Toasts from '../../components/Toasts';
+import { Toasts } from 'panel/components/Toasts';
 
 import styles from './styles.module.pcss';
 import { getDnsAddressWithPort } from './helpers/helpers';
@@ -72,6 +72,11 @@ export const Setup = () => {
 
     onMount(() => {
         getDefaultAddresses();
+    });
+
+    createEffect(() => {
+        step();
+        window.scrollTo({ top: 0, behavior: 'instant' });
     });
 
     const handleNextStep = () => {
@@ -128,7 +133,6 @@ export const Setup = () => {
         const host = ip === ALL_INTERFACES_IP ? window.location.hostname : ip;
         const url = new URL(getWebAddress(host, port));
         url.searchParams.set(LANGUAGE_QUERY_PARAM, installState.language);
-        console.log(url.toString());
         window.location.replace(url.toString());
     };
 
