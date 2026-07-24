@@ -1508,10 +1508,7 @@
       - 'dns_port'
       - 'http_port'
       - 'protection_enabled'
-      # TODO: 'protection_disabled_until' in required does not match the property name
-      # 'protection_disabled_duration' below.  Check which name the
-      # backend actually uses and align them.
-      - 'protection_disabled_until'
+      - 'protection_disabled_duration'
       - 'running'
       - 'version'
       - 'language'
