@@ -11,24 +11,42 @@ import (
 	"github.com/gopacket/gopacket/layers"
 )
 
+// newOptStatusCode creates a top-level DHCPv6 Status Code option.
+func newOptStatusCode(tb testing.TB, status layers.DHCPv6StatusCode) (opt layers.DHCPv6Option) {
+	tb.Helper()
+
+	const (
+		statusCodeLen = 2
+	)
+
+	data := make([]byte, 0, statusCodeLen)
+	data = binary.BigEndian.AppendUint16(data, uint16(status))
+
+	return layers.NewDHCPv6Option(layers.DHCPv6OptStatusCode, data)
+}
+
 // newOptIANA creates a DHCPv6 Identity Association for Non-temporary Address
 // (3) option containing an IA Address with the specified IAID and requested IP
-// address.  reqIP must be a valid IPv6 address.  The option will have the T1
-// and T2 values set to the recommended values based on the [testLeaseTTL]
-// constant, see the RFC reference in the
-// [dhcpsvc.DHCPServer.newDHCPInterfaceV6].
-func newOptIANA(tb testing.TB, iaid uint32, reqIP netip.Addr) (opt layers.DHCPv6Option) {
+// address.  The option will have the T1 and T2 values set to the recommended
+// values based on ttl, see the RFC reference in the
+// [dhcpsvc.DHCPServer.newDHCPInterfaceV6].  reqIP must be a valid IPv6 address.
+func newOptIANA(
+	tb testing.TB,
+	iaid uint32,
+	reqIP netip.Addr,
+	ttl time.Duration,
+) (opt layers.DHCPv6Option) {
 	tb.Helper()
 
 	iana := &dhcpsvc.IANAOption{
 		ID: iaid,
 		Nested: []dhcpsvc.IAAddrOption{{
-			PreferredLifetime: testLeaseTTL,
-			ValidLifetime:     testLeaseTTL,
+			PreferredLifetime: ttl,
+			ValidLifetime:     ttl,
 			Addr:              reqIP,
 		}},
-		T1: testLeaseTTL / 2,
-		T2: testLeaseTTL * 4 / 5,
+		T1: ttl / 2,
+		T2: ttl * 4 / 5,
 	}
 
 	return iana.Encode()
@@ -65,11 +83,13 @@ func newOptIANAStatus(
 	data = binary.BigEndian.AppendUint32(data, 0)
 
 	// Nested Status Code option.
-	data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptStatusCode))
+	if status != layers.DHCPv6StatusCodeSuccess {
+		data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptStatusCode))
 
-	// The length of the Status Code option data is 2 bytes.
-	data = binary.BigEndian.AppendUint16(data, 2)
-	data = binary.BigEndian.AppendUint16(data, uint16(status))
+		// The length of the Status Code option data is 2 bytes.
+		data = binary.BigEndian.AppendUint16(data, 2)
+		data = binary.BigEndian.AppendUint16(data, uint16(status))
+	}
 
 	return layers.NewDHCPv6Option(layers.DHCPv6OptIANA, data)
 }

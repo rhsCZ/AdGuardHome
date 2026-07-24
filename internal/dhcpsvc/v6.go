@@ -238,7 +238,7 @@ type dhcpInterfacesV6 []*dhcpInterfaceV6
 // contains ip.  It returns false if there is no such interface.
 func (ifaces dhcpInterfacesV6) find(ip netip.Addr) (iface6 *netInterface, ok bool) {
 	i := slices.IndexFunc(ifaces, func(iface *dhcpInterfaceV6) (contains bool) {
-		return iface.subnetPrefix.Contains(ip)
+		return iface.common.addrSpace.contains(ip)
 	})
 	if i < 0 {
 		return nil, false
@@ -501,6 +501,43 @@ func (iface *dhcpInterfaceV6) firstIANA(
 	return nil, false
 }
 
+// confirmAddrsOnLink checks whether every address in every IA_NA option of req
+// is appropriate for the link, i.e., lies within iface.subnetPrefix.  It
+// returns true in hasAddrs if at least one address was found across all IA_NA
+// options.  If all addresses are on-link, allOnLink is true.  req must be a
+// valid DHCPv6 message of CONFIRM type.
+//
+// See RFC 9915 Section 18.3.3.
+func (iface *dhcpInterfaceV6) confirmAddrsOnLink(
+	ctx context.Context,
+	req *layers.DHCPv6,
+) (allOnLink, hasAddrs bool) {
+	logger := iface.common.logger
+
+	for i, reqOpt := range req.Options {
+		if reqOpt.Code != layers.DHCPv6OptIANA {
+			continue
+		}
+
+		var iana IANAOption
+		err := iana.UnmarshalBinary(reqOpt.Data)
+		if err != nil {
+			logger.DebugContext(ctx, "malformed ia_na", "idx", i, slogutil.KeyError, err)
+
+			continue
+		}
+
+		for _, addr := range iana.Nested {
+			hasAddrs = true
+			if !iface.common.addrSpace.contains(addr.Addr) {
+				return false, true
+			}
+		}
+	}
+
+	return true, hasAddrs
+}
+
 // newSolicitRespOpts returns the common option list for Advertise and
 // rapid-commit Reply responses to a Solicit request.  Zero iaid creates an
 // option with Status Code NoAddrsAvail.  rapidCommit defines whether the
@@ -565,6 +602,33 @@ func (iface *dhcpInterfaceV6) newRequestRespOpts(
 	opts = append(opts, newSOLMaxRTOption(DefaultSolMaxRT))
 
 	return iface.appendRequestedOptions(opts, req)
+}
+
+// newConfirmRespOpts returns the common option list for Reply responses to a
+// Confirm message.  fd, cliID, and status must not be nil.  status is the
+// top-level Status Code for the Reply: Success (implicit) or NotOnLink.
+//
+// See RFC 9915 Section 18.3.3.
+func (iface *dhcpInterfaceV6) newConfirmRespOpts(
+	fd *frameData6,
+	cliID *layers.DHCPv6DUID,
+	status layers.DHCPv6StatusCode,
+) (opts layers.DHCPv6Options) {
+	opts = append(
+		opts,
+		layers.NewDHCPv6Option(layers.DHCPv6OptServerID, fd.duidData),
+		layers.NewDHCPv6Option(layers.DHCPv6OptClientID, cliID.Encode()),
+	)
+
+	// If the Status Code option does not appear in a message in which the
+	// option could appear, the status of the message is assumed to be Success.
+	//
+	// See RFC 9915 Section 21.13.
+	if status != layers.DHCPv6StatusCodeSuccess {
+		opts = append(opts, newStatusCodeOption(status))
+	}
+
+	return opts
 }
 
 // iaNAFromLease returns an IA_NA option with a single IA Address sub-option
