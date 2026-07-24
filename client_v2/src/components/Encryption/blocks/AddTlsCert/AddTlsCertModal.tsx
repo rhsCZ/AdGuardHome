@@ -141,14 +141,14 @@ export const AddTlsCertModal = (props: Props) => {
     const isKeyStep = () => step() === 2;
 
     const handleCertFileSelect = (content: string) => {
-        setCertChain(content);
+        setCertChain(content.trim());
         setCertSource(ENCRYPTION_SOURCE.CONTENT);
         clearError('certificate_chain');
         clearError('certificate_path');
     };
 
     const handleKeyFileSelect = (content: string) => {
-        setPrivateKey(content);
+        setPrivateKey(content.trim());
         setKeySource(ENCRYPTION_SOURCE.CONTENT);
         setPrivateKeySaved(false);
         clearError('private_key');
@@ -174,7 +174,7 @@ export const AddTlsCertModal = (props: Props) => {
     };
 
     const handleCertChainChange = (e: Event) => {
-        setCertChain((e.target as HTMLTextAreaElement).value);
+        setCertChain((e.target as HTMLTextAreaElement).value.trim());
         clearError('certificate_chain');
         resetValidationStatus();
     };
@@ -205,7 +205,7 @@ export const AddTlsCertModal = (props: Props) => {
     };
 
     const handleKeyChange = (e: Event) => {
-        setPrivateKey((e.target as HTMLTextAreaElement).value);
+        setPrivateKey((e.target as HTMLTextAreaElement).value.trim());
         clearError('private_key');
         resetValidationStatus();
     };

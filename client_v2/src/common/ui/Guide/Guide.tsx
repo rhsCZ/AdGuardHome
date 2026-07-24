@@ -304,7 +304,7 @@ const getDnsSettingsContent = (
     const httpsAddress = dnsAddresses?.filter((addr: string) => addr.includes('https://')) ?? [];
     const quicAddress = dnsAddresses?.find((addr: string) => addr.includes('quic://'));
 
-    const showDnsPrivacyNotice = httpsAddress.length < 1 && tlsAddress.length < 1;
+    const showDnsPrivacyNotice = !encryptionState.enabled && httpsAddress.length < 1 && tlsAddress.length < 1;
 
     return showDnsPrivacyNotice ? (
         <div class={s.guideParagraph}>
