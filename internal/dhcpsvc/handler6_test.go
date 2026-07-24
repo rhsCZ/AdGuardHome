@@ -44,7 +44,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in:   newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, false),
+		in:   newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, false),
 		name: "new",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -54,7 +54,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6SOLICIT(t, testHWStatic, testIPv6Static, false),
+		in:   newDHCPv6Solicit(t, testHWStatic, testIPv6Static, false),
 		name: "existing_static",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -64,7 +64,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6SOLICIT(t, testHWDynamic, testIPv6Dynamic, false),
+		in:   newDHCPv6Solicit(t, testHWDynamic, testIPv6Dynamic, false),
 		name: "existing_dynamic",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -74,7 +74,7 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6SOLICIT(t, testHWExpired, testIPv6Expired, false),
+		in:   newDHCPv6Solicit(t, testHWExpired, testIPv6Expired, false),
 		name: "existing_expired",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -118,7 +118,7 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, true),
+		in: newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, true),
 		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testExpiryDynamicLease,
@@ -136,7 +136,7 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
 		},
 	}, {
-		in:   newDHCPv6SOLICIT(t, testHWStatic, testIPv6Static, true),
+		in:   newDHCPv6Solicit(t, testHWStatic, testIPv6Static, true),
 		want: testLease6Static,
 		name: "existing",
 		wantOpts: layers.DHCPv6Options{
@@ -148,7 +148,7 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
 		},
 	}, {
-		in:   newDHCPv6SOLICIT(t, testHWDynamic, testIPv6Dynamic, true),
+		in:   newDHCPv6Solicit(t, testHWDynamic, testIPv6Dynamic, true),
 		want: testLease6Dynamic,
 		name: "existing_dynamic",
 		wantOpts: layers.DHCPv6Options{
@@ -160,7 +160,7 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
 		},
 	}, {
-		in: newDHCPv6SOLICIT(t, testHWExpired, testIPv6Expired, true),
+		in: newDHCPv6Solicit(t, testHWExpired, testIPv6Expired, true),
 		want: &dhcpsvc.Lease{
 			IP:       testIPv6Expired,
 			Expiry:   testExpiryDynamicLease,
@@ -218,15 +218,13 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 func TestDHCPServer_ServeEther6_request(t *testing.T) {
 	t.Parallel()
 
-	notOnLinkAddr := netip.MustParseAddr(testAnotherRangeStartV6Str)
-
 	testCases := []struct {
 		in       gopacket.Packet
 		want     *dhcpsvc.Lease
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in: newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
+		in: newDHCPv6Request(t, testHWUnknown, testIPv6Unknown),
 		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testExpiryDynamicLease,
@@ -243,7 +241,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6REQUEST(t, testHWUnknown, notOnLinkAddr),
+		in:   newDHCPv6Request(t, testHWUnknown, testIPv6OtherSubnet),
 		want: nil,
 		name: "not_on_link",
 		wantOpts: layers.DHCPv6Options{
@@ -254,7 +252,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6REQUEST(t, testHWStatic, testIPv6Static),
+		in:   newDHCPv6Request(t, testHWStatic, testIPv6Static),
 		want: testLease6Static,
 		name: "existing_static",
 		wantOpts: layers.DHCPv6Options{
@@ -265,7 +263,7 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:   newDHCPv6REQUEST(t, testHWUnknown, netip.Addr{}),
+		in:   newDHCPv6Request(t, testHWUnknown, netip.Addr{}),
 		want: nil,
 		name: "no_iana",
 		wantOpts: layers.DHCPv6Options{
@@ -320,8 +318,8 @@ func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
-		solicit: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, false),
+		in:      newDHCPv6Request(t, testHWUnknown, testIPv6Unknown),
+		solicit: newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, false),
 		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testExpiryDynamicLease,
@@ -338,8 +336,8 @@ func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},
 	}, {
-		in:      newDHCPv6REQUEST(t, testHWUnknown, testIPv6Unknown),
-		solicit: newDHCPv6SOLICIT(t, testHWUnknown, testIPv6Unknown, true),
+		in:      newDHCPv6Request(t, testHWUnknown, testIPv6Unknown),
+		solicit: newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, true),
 		want: &dhcpsvc.Lease{
 			IP:       testIPv6Conf.RangeStart,
 			Expiry:   testExpiryDynamicLease,
@@ -404,21 +402,34 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in:   newDHCPv6CONFIRM(t, testHWUnknown, testIPv6Unknown),
+		in: newDHCPv6Confirm(
+			t,
+			testHWUnknown,
+			newOptIANA(t, testIAID, testIPv6Unknown, 0),
+		),
 		name: "success",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWUnknown),
 		},
 	}, {
-		in:   newDHCPv6CONFIRM(t, testHWDynamic, testIPv6Dynamic, testIPv6Static),
+		in: newDHCPv6Confirm(
+			t,
+			testHWDynamic,
+			newOptIANA(t, testIAID, testIPv6Dynamic, 0),
+			newOptIANA(t, testIAID+1, testIPv6Static, 0),
+		),
 		name: "success_multiple",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWDynamic),
 		},
 	}, {
-		in:   newDHCPv6CONFIRM(t, testHWUnknown, testIPv6OtherSubnet),
+		in: newDHCPv6Confirm(
+			t,
+			testHWUnknown,
+			newOptIANA(t, testIAID, testIPv6OtherSubnet, 0),
+		),
 		name: "not_on_link",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -426,7 +437,12 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			newOptStatusCode(t, layers.DHCPv6StatusCodeNotOnLink),
 		},
 	}, {
-		in:   newDHCPv6CONFIRM(t, testHWUnknown, testIPv6Unknown, testIPv6OtherSubnet),
+		in: newDHCPv6Confirm(
+			t,
+			testHWUnknown,
+			newOptIANA(t, testIAID, testIPv6Unknown, 0),
+			newOptIANA(t, testIAID+1, testIPv6OtherSubnet, 0),
+		),
 		name: "mixed",
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
@@ -434,11 +450,15 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			newOptStatusCode(t, layers.DHCPv6StatusCodeNotOnLink),
 		},
 	}, {
-		in:       newDHCPv6CONFIRM(t, testHWUnknown),
+		in:       newDHCPv6Confirm(t, testHWUnknown),
 		name:     "no_iana",
 		wantOpts: nil,
 	}, {
-		in:       newDHCPv6CONFIRMEmptyIANA(t, testHWUnknown, testIAID),
+		in: newDHCPv6Confirm(
+			t,
+			testHWUnknown,
+			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeSuccess),
+		),
 		name:     "no_addrs",
 		wantOpts: nil,
 	}}
@@ -467,8 +487,8 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 	}
 }
 
-// newDHCPv6SOLICIT creates a new DHCPv6 SOLICIT packet for testing.
-func newDHCPv6SOLICIT(
+// newDHCPv6Solicit creates a new DHCPv6 SOLICIT packet for testing.
+func newDHCPv6Solicit(
 	tb testing.TB,
 	hwAddr net.HardwareAddr,
 	reqIP netip.Addr,
@@ -477,7 +497,6 @@ func newDHCPv6SOLICIT(
 	tb.Helper()
 
 	eth := newEthernetLayer(tb, hwAddr, nil, layers.EthernetTypeIPv6)
-
 	ip, udp := newIPv6UDPLayer(tb, netip.AddrPort{}, netip.AddrPort{})
 
 	dhcp := &layers.DHCPv6{
@@ -505,8 +524,8 @@ func newDHCPv6SOLICIT(
 	return newTestPacket(tb, layers.LinkTypeEthernet, eth, ip, udp, dhcp)
 }
 
-// newDHCPv6REQUEST creates a new DHCPv6 REQUEST packet for testing.
-func newDHCPv6REQUEST(tb testing.TB, mac net.HardwareAddr, reqIP netip.Addr) (pkt gopacket.Packet) {
+// newDHCPv6Request creates a new DHCPv6 REQUEST packet for testing.
+func newDHCPv6Request(tb testing.TB, mac net.HardwareAddr, reqIP netip.Addr) (pkt gopacket.Packet) {
 	tb.Helper()
 
 	eth := newEthernetLayer(tb, mac, testIfaceHWAddr, layers.EthernetTypeIPv6)
@@ -533,13 +552,13 @@ func newDHCPv6REQUEST(tb testing.TB, mac net.HardwareAddr, reqIP netip.Addr) (pk
 	return newTestPacket(tb, layers.LinkTypeEthernet, eth, ip, udp, dhcp)
 }
 
-// newDHCPv6CONFIRM creates a new DHCPv6 CONFIRM packet for testing.  addrs
+// newDHCPv6Confirm creates a new DHCPv6 CONFIRM packet for testing.  addrs
 // provides the addresses included within IA_NA options in the packet.  If addrs
 // is empty, the packet contains no IA_NA options.
-func newDHCPv6CONFIRM(
+func newDHCPv6Confirm(
 	tb testing.TB,
 	mac net.HardwareAddr,
-	addrs ...netip.Addr,
+	ianas ...layers.DHCPv6Option,
 ) (pkt gopacket.Packet) {
 	tb.Helper()
 
@@ -557,37 +576,7 @@ func newDHCPv6CONFIRM(
 		},
 	}
 
-	for i, addr := range addrs {
-		dhcp.Options = append(dhcp.Options, newOptIANA(tb, uint32(testIAID+i), addr, 0))
-	}
-
-	return newTestPacket(tb, layers.LinkTypeEthernet, eth, ip, udp, dhcp)
-}
-
-// newDHCPv6CONFIRMEmptyIANA creates a new DHCPv6 CONFIRM packet for testing
-// with an IA_NA option that has no nested IA Address options.  iaid specifies
-// the IAID of the empty IA_NA.
-func newDHCPv6CONFIRMEmptyIANA(
-	tb testing.TB,
-	mac net.HardwareAddr,
-	iaid uint32,
-) (pkt gopacket.Packet) {
-	tb.Helper()
-
-	eth := newEthernetLayer(tb, mac, testIfaceHWAddr, layers.EthernetTypeIPv6)
-	ip, udp := newIPv6UDPLayer(tb, netip.AddrPort{}, netip.AddrPort{})
-
-	dhcp := &layers.DHCPv6{
-		MsgType:       layers.DHCPv6MsgTypeConfirm,
-		HopCount:      0,
-		LinkAddr:      nil,
-		PeerAddr:      nil,
-		TransactionID: testTransactionID,
-		Options: layers.DHCPv6Options{
-			newOptClientDUID(tb, mac),
-			newOptIANAStatus(tb, iaid, layers.DHCPv6StatusCodeSuccess),
-		},
-	}
+	dhcp.Options = append(dhcp.Options, ianas...)
 
 	return newTestPacket(tb, layers.LinkTypeEthernet, eth, ip, udp, dhcp)
 }

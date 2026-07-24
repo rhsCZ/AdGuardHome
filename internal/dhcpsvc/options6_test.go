@@ -53,7 +53,9 @@ func newOptIANA(
 }
 
 // newOptIANAStatus creates a DHCPv6 IA_NA (3) option carrying only a nested
-// Status Code option.
+// Status Code option.  If status is [layers.DHCPv6StatusCodeSuccess], the
+// returned option will not contain a nested Status Code option, as per RFC 8415
+// section 21.13.
 func newOptIANAStatus(
 	tb testing.TB,
 	iaid uint32,
@@ -82,8 +84,8 @@ func newOptIANAStatus(
 	data = binary.BigEndian.AppendUint32(data, 0)
 	data = binary.BigEndian.AppendUint32(data, 0)
 
-	// Nested Status Code option.
 	if status != layers.DHCPv6StatusCodeSuccess {
+		// Nested Status Code option.
 		data = binary.BigEndian.AppendUint16(data, uint16(layers.DHCPv6OptStatusCode))
 
 		// The length of the Status Code option data is 2 bytes.
