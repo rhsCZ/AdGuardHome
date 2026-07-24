@@ -72,10 +72,10 @@ export const AddTlsCertModal = (props: Props) => {
         port_https: Number(encryptionState.port_https) || 0,
         port_dns_over_tls: Number(encryptionState.port_dns_over_tls) || 0,
         port_dns_over_quic: Number(encryptionState.port_dns_over_quic) || 0,
-        certificate_chain: certChain(),
-        private_key: privateKey(),
-        certificate_path: certPath(),
-        private_key_path: privateKeyPath(),
+        certificate_chain: certChain().trim(),
+        private_key: privateKey().trim(),
+        certificate_path: certPath().trim(),
+        private_key_path: privateKeyPath().trim(),
         certificate_source: certSource(),
         key_source: keySource(),
         private_key_saved: privateKeySaved(),
@@ -141,14 +141,14 @@ export const AddTlsCertModal = (props: Props) => {
     const isKeyStep = () => step() === 2;
 
     const handleCertFileSelect = (content: string) => {
-        setCertChain(content.trim());
+        setCertChain(content);
         setCertSource(ENCRYPTION_SOURCE.CONTENT);
         clearError('certificate_chain');
         clearError('certificate_path');
     };
 
     const handleKeyFileSelect = (content: string) => {
-        setPrivateKey(content.trim());
+        setPrivateKey(content);
         setKeySource(ENCRYPTION_SOURCE.CONTENT);
         setPrivateKeySaved(false);
         clearError('private_key');
@@ -174,7 +174,7 @@ export const AddTlsCertModal = (props: Props) => {
     };
 
     const handleCertChainChange = (e: Event) => {
-        setCertChain((e.target as HTMLTextAreaElement).value.trim());
+        setCertChain((e.target as HTMLTextAreaElement).value);
         clearError('certificate_chain');
         resetValidationStatus();
     };
@@ -205,7 +205,7 @@ export const AddTlsCertModal = (props: Props) => {
     };
 
     const handleKeyChange = (e: Event) => {
-        setPrivateKey((e.target as HTMLTextAreaElement).value.trim());
+        setPrivateKey((e.target as HTMLTextAreaElement).value);
         clearError('private_key');
         resetValidationStatus();
     };
