@@ -894,17 +894,14 @@ func (m *tlsManager) HasIPAddrs() (ok bool) {
 
 // onGetCertificate gets [*tls.Certificate] from [*tls.Config].  If
 // [tlsManager.extTLSConf.Enabled] is false, nil is returned.
+//
+// TODO(m.kazantsev):  Consider using tls.SupportsCertificate.
 func (m *tlsManager) onGetCertificate(chi *tls.ClientHelloInfo) (cert *tls.Certificate, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if !m.extTLSConf.Enabled || m.tlsConf == nil {
 		return nil, nil
-	}
-
-	err = chi.SupportsCertificate(m.tlsCert)
-	if err != nil {
-		return nil, fmt.Errorf("client hello does not support certificate: %w", err)
 	}
 
 	tlsCert := *m.tlsCert
