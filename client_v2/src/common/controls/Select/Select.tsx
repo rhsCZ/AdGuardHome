@@ -303,17 +303,7 @@ export const Select = <
                 >
                     <ComboboxInputReset />
                     <Show when={!props.isDropdownSelect}>
-                        <ArkCombobox.Control
-                            onClick={(e: MouseEvent) => {
-                                // Click the input when clicking the control's dead zone.
-                                if (e.target === e.currentTarget) {
-                                    const input = (e.currentTarget as HTMLElement).querySelector(
-                                        'input',
-                                    );
-                                    input?.click();
-                                }
-                            }}
-                        >
+                        <ArkCombobox.Control>
                             <Show when={isMulti()}>
                                 <div class="solid-select-multi-value-container">
                                     <ComboboxMultiValueDisplay

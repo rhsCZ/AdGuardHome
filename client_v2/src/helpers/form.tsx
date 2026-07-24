@@ -56,3 +56,18 @@ export const normalizeMac = (value: string): string => {
     // Already colon-separated or other format — just uppercase
     return value.toUpperCase();
 };
+
+/**
+ * Trims whitespace, strips http(s):// prefix, trailing slash, and trailing
+ * dot (FQDN notation) from a server name. Does NOT strip port, path, query,
+ * or fragment — those are user mistakes left for validation to flag.
+ *
+ * @example normalizeServerName("  https://example.com/  ")  // "example.com"
+ * @example normalizeServerName("example.com:443")            // "example.com:443" (left)
+ */
+export const normalizeServerName = (value: string): string =>
+    value
+        .trim()
+        .replace(/^https?:\/\//i, '')
+        .replace(/\.$/, '')
+        .replace(/\/$/, '');
