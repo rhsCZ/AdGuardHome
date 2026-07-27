@@ -26,9 +26,11 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Changed
 
-- `strict_sni_check` is now deprecated.
-
 - The `edge` channel has been switched to the new UI and versioning scheme.
+
+### Deprecated
+
+- `strict_sni_check` is now deprecated.  It is now always set to `true`.
 
 ### Fixed
 
