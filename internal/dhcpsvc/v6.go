@@ -106,11 +106,7 @@ func (c *IPv6Config) Validate() (err error) {
 	}
 
 	if !c.RangeStart.Is6() {
-		errs = append(errs, fmt.Errorf(
-			"range start: %w: %s: must be a valid ipv6 address",
-			errors.ErrBadEnumValue,
-			c.RangeStart,
-		))
+		errs = append(errs, fmt.Errorf("range start: %s: must be a valid ipv6", c.RangeStart))
 	}
 
 	return errors.Join(errs...)

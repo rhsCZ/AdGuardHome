@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/dhcpsvc"
-	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/testutil"
 )
 
@@ -150,8 +149,7 @@ func TestIPv6Config_Validate(t *testing.T) {
 			RangeStart:    testIPv4Conf.GatewayIP,
 			LeaseDuration: 1 * time.Hour,
 		},
-		wantErrMsg: "range start: " + errors.ErrBadEnumValue.Error() + ": " +
-			testGatewayIPv4Str + ": must be a valid ipv6 address",
+		wantErrMsg: "range start: " + testGatewayIPv4Str + ": must be a valid ipv6",
 	}, {
 		name: "bad_lease_duration",
 		conf: &dhcpsvc.IPv6Config{
