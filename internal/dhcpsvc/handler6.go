@@ -40,8 +40,6 @@ func (srv *DHCPServer) serveEther6(ctx context.Context, iface *dhcpInterfaceV6, 
 
 // serveV6 handles the ethernet packet of IPv6 type. iface and pkt must not be
 // nil.  iface and fd must be valid.  pkt must be an IPv6 packet.
-//
-//lint:ignore U1000 TODO(e.burkov): Use.
 func (srv *DHCPServer) serveV6(
 	ctx context.Context,
 	iface *dhcpInterfaceV6,
@@ -52,9 +50,7 @@ func (srv *DHCPServer) serveV6(
 
 	msg, ok := pkt.Layer(layers.LayerTypeDHCPv6).(*layers.DHCPv6)
 	if !ok {
-		// TODO(e.burkov):  Consider adding some debug information about the
-		// actual received packet.
-		srv.logger.DebugContext(ctx, "skipping non-dhcpv6 packet")
+		srv.logger.DebugContext(ctx, "skipping non-dhcpv6 packet", "pkt", pkt)
 
 		return nil
 	}
@@ -232,6 +228,8 @@ func (iface *dhcpInterfaceV6) handleConfirm(
 		// sent by the client, the server MUST NOT send a Reply to the client.
 		//
 		// See RFC 9915 Section 18.3.3.
+		l.DebugContext(ctx, "no addresses in IA_NA options")
+
 		return nil
 	}
 
