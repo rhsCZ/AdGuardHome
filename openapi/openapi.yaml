@@ -2124,11 +2124,13 @@
     'DhcpStatus':
       'type': 'object'
       'description': 'Built-in DHCP server configuration and status'
-      # TODO: 'config' in required does not exist as a property.  The backend returns a flat object
-      # (no 'config' wrapper).  Remove 'config' from required.
       'required':
-      - 'config'
+      - 'enabled'
+      - 'interface_name'
+      - 'v4'
+      - 'v6'
       - 'leases'
+      - 'static_leases'
       'properties':
         'enabled':
           'type': 'boolean'
