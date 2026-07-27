@@ -30,7 +30,7 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 ### Deprecated
 
-- `strict_sni_check` is now deprecated.  It is now always set to `true`.
+- `strict_sni_check` is now deprecated.
 
 ### Fixed
 
