@@ -124,7 +124,7 @@ func TestJSONDatabase_Store(t *testing.T) {
 			wantContent, err := os.ReadFile(dbFilePath(t))
 			require.NoError(t, err)
 
-			assert.JSONEq(t, string(wantContent), string(content))
+			assert.Equal(t, wantContent, content)
 		})
 	}
 }
