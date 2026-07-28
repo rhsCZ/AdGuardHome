@@ -1,7 +1,6 @@
 package dhcpsvc
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"log/slog"
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/AdguardTeam/golibs/errors"
-	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/AdguardTeam/golibs/validate"
 	"github.com/gopacket/gopacket/layers"
@@ -152,14 +150,7 @@ type dhcpInterfaceV4 struct {
 	common *netInterface
 
 	// clock used to get current time.
-	//
-	// TODO(e.burkov):  Move to [netInterface].
 	clock timeutil.Clock
-
-	// addrChecker checks addresses for availability.
-	//
-	// TODO(e.burkov):  Move to [netInterface].
-	addrChecker addressChecker
 
 	// gateway is the IP address of the network gateway.
 	gateway netip.Addr
@@ -202,20 +193,19 @@ func (srv *DHCPServer) newDHCPInterfaceV4(
 	addrSpace, _ := newIPRange(conf.RangeStart, conf.RangeEnd)
 
 	iface = &dhcpInterfaceV4{
-		// TODO(e.burkov):  Use an ICMP implementation.
-		addrChecker: noopAddressChecker{},
-		gateway:     conf.GatewayIP,
-		clock:       conf.Clock,
-		subnet:      netip.PrefixFrom(conf.GatewayIP, maskLen),
+		gateway: conf.GatewayIP,
+		clock:   conf.Clock,
+		subnet:  netip.PrefixFrom(conf.GatewayIP, maskLen),
 		common: &netInterface{
-			logger:        baseLogger,
-			indexMu:       srv.leasesMu,
-			index:         srv.leases,
-			leases:        map[macKey]*Lease{},
-			leasedOffsets: newBitSet(),
-			name:          name,
-			addrSpace:     addrSpace,
-			leaseTTL:      conf.LeaseDuration,
+			logger:         baseLogger,
+			addressChecker: noopAddressChecker{},
+			indexMu:        srv.leasesMu,
+			index:          srv.leases,
+			leases:         map[macKey]*Lease{},
+			leasedOffsets:  newBitSet(),
+			name:           name,
+			addrSpace:      addrSpace,
+			leaseTTL:       conf.LeaseDuration,
 		},
 	}
 	iface.implicitOpts, iface.explicitOpts = conf.options(ctx, baseLogger)
@@ -226,7 +216,7 @@ func (srv *DHCPServer) newDHCPInterfaceV4(
 // updateLease updates lease in the database.  lease must be valid and not
 // expired.
 //
-// TODO(e.burkov):  Consider simplifying this wrapping.
+// TODO(e.burkov):  Consider simplifying the wrapping.
 func (iface *dhcpInterfaceV4) updateLease(ctx context.Context, lease *Lease) (err error) {
 	return iface.common.index.update(ctx, lease, iface.common)
 }
@@ -343,38 +333,13 @@ type dhcpInterfacesV4 []*dhcpInterfaceV4
 // returns false if there is no such interface.  ip must be valid.
 func (ifaces dhcpInterfacesV4) find(ip netip.Addr) (iface4 *netInterface, ok bool) {
 	i := slices.IndexFunc(ifaces, func(iface *dhcpInterfaceV4) (contains bool) {
-		return iface.subnet.Contains(ip)
+		return iface.common.addrSpace.contains(ip)
 	})
 	if i < 0 {
 		return nil, false
 	}
 
 	return ifaces[i].common, true
-}
-
-// updateAndRespond updates the lease and sends a DHCPACK or DHCPNAK response to
-// the client according to the update result.  idOpt is an expected to be the
-// value of the DHCP option Client Identifier, nil if not present.  req must be
-// a DHCPREQUEST message, lease, and l must not be nil, fd must be valid.
-func (iface *dhcpInterfaceV4) updateAndRespond(
-	ctx context.Context,
-	l *slog.Logger,
-	req *layers.DHCPv4,
-	lease *Lease,
-	fd *frameData4,
-	idOpt []byte,
-) {
-	lease.Hostname = cmp.Or(hostname4(req), lease.Hostname)
-
-	err := iface.updateLease(ctx, lease)
-	if err != nil {
-		l.ErrorContext(ctx, "init-reboot request failed", slogutil.KeyError, err)
-		iface.respondNAK(ctx, req, fd, idOpt)
-
-		return
-	}
-
-	iface.respondACK(ctx, req, fd, lease, idOpt)
 }
 
 // FlagsBroadcast is the DHCPv4 message flags field with the broadcast bit set.

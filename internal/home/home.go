@@ -1444,7 +1444,12 @@ func cmdlineUpdate(
 	//
 	// TODO(e.burkov):  We could probably initialize the internal resolver
 	// separately.
-	err := initDNSServer(ctx, l, dnsforward.DNSCreateParams{}, nil, tlsMgr, agh.EmptyConfigModifier{})
+	params := dnsforward.DNSCreateParams{
+		Logger:            l,
+		TLSConfigProvider: tlsMgr,
+	}
+
+	err := initDNSServer(ctx, l, params, nil, tlsMgr, agh.EmptyConfigModifier{})
 	fatalOnError(err)
 
 	l.InfoContext(ctx, "performing update via cli")
