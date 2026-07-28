@@ -1,6 +1,7 @@
 package home
 
 import (
+	"cmp"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -146,6 +147,7 @@ func initDNSServer(
 	tlsMgr *tlsManager,
 	confModifier agh.ConfigModifier,
 ) (err error) {
+	params.Logger = cmp.Or(params.Logger, l)
 	globalContext.dnsServer, err = dnsforward.NewServer(params)
 	defer func() {
 		if err != nil {

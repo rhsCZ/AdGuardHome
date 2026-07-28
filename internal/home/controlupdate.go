@@ -227,7 +227,7 @@ func (web *webAPI) finishUpdate(
 	cleanupAlways(ctx, web.logger, web.pidFilePath)
 
 	if runtime.GOOS == "windows" {
-		finalizeWindowsUpdate(ctx, web.logger, web.cmdCons, execPath, web.conf.runningAsService)
+		web.finalizeWindowsUpdate(ctx, execPath)
 
 		os.Exit(osutil.ExitCodeSuccess)
 	}
@@ -240,17 +240,14 @@ func (web *webAPI) finishUpdate(
 	}
 }
 
-// finalizeWindowsUpdate completes an update procedure on windows.  l and
-// cmdCons must not be nil.
-func finalizeWindowsUpdate(ctx context.Context,
-	l *slog.Logger,
-	cmdCons executil.CommandConstructor,
+// finalizeWindowsUpdate completes an update procedure on windows.
+func (web *webAPI) finalizeWindowsUpdate(
+	ctx context.Context,
 	execPath string,
-	runningAsService bool,
 ) {
 	var commandConf *executil.CommandConfig
 
-	if runningAsService {
+	if web.conf.runningAsService {
 		// NOTE: We can't restart the service via "kardianos/service" package,
 		// because it kills the process first we can't start a new instance,
 		// because Windows doesn't allow it.
@@ -270,10 +267,10 @@ func finalizeWindowsUpdate(ctx context.Context,
 		}
 	}
 
-	l.InfoContext(ctx, "restarting", "exec_path", execPath, "args", os.Args[1:])
+	web.logger.InfoContext(ctx, "restarting", "exec_path", execPath, "args", os.Args[1:])
 
 	var cmd executil.Command
-	cmd, err := cmdCons.New(ctx, commandConf)
+	cmd, err := web.cmdCons.New(ctx, commandConf)
 	if err != nil {
 		panic(fmt.Errorf("constructing cmd: %w", err))
 	}

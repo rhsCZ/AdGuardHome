@@ -2,7 +2,6 @@
 package home
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"io/fs"
@@ -128,7 +127,7 @@ func Main(clientBuildFS fs.FS) {
 
 	var (
 		hc        *aghnet.HostsContainer
-		hcWatcher service.Interface
+		hcWatcher service.Interface = service.Empty{}
 	)
 	if !opts.noEtcHosts {
 		hc, hcWatcher, err = newHostsContainer(ctx, baseLogger)
@@ -136,15 +135,17 @@ func Main(clientBuildFS fs.FS) {
 	}
 
 	sigHdlrLogger := baseLogger.With(slogutil.KeyPrefix, "signalhdlr")
-	sigHdlr := newSignalHandler(sigHdlrLogger, signals, newSignalHandlerCleanup(
-		done,
-		sigHdlrLogger,
-		hc,
-		pidFilePath,
-		opts,
-		glTokenFileRoot,
-		hcWatcher,
-	))
+	sigHdlrCleanup := signalHandlerCleanup{
+		logger:          sigHdlrLogger,
+		hostsContainer:  hc,
+		glTokenFileRoot: glTokenFileRoot,
+		hcWatcher:       hcWatcher,
+		done:            done,
+		pidFilePath:     pidFilePath,
+		glinetMode:      opts.glinetMode,
+	}
+
+	sigHdlr := newSignalHandler(sigHdlrLogger, signals, sigHdlrCleanup.cleanup)
 
 	go sigHdlr.handle(ctx)
 
@@ -188,38 +189,36 @@ func Main(clientBuildFS fs.FS) {
 	)
 }
 
-// newSignalHandlerCleanup  returns new cleanup function for signal handler.  l
-// and done must not be nil.  glTokenFileRoot must not be nil if opts.glinetMode
-// is true.
-func newSignalHandlerCleanup(
-	done chan struct{},
-	l *slog.Logger,
-	hc *aghnet.HostsContainer,
-	pidFilePath string,
-	opts options,
-	glTokenFileRoot *os.Root,
-	hcWatcher service.Interface,
-) func(ctx context.Context) {
-	return func(ctx context.Context) {
-		defer close(done)
+// signalHandlerCleanup performs application resources cleanup for
+// [signalHandler].
+type signalHandlerCleanup struct {
+	logger          *slog.Logger
+	hostsContainer  *aghnet.HostsContainer
+	glTokenFileRoot *os.Root
+	hcWatcher       service.Interface
+	done            chan struct{}
+	pidFilePath     string
+	glinetMode      bool
+}
 
-		cleanup(ctx, l, hc)
-		cleanupAlways(ctx, l, pidFilePath)
+// cleanup performs application cleanup.
+func (c *signalHandlerCleanup) cleanup(ctx context.Context) {
+	defer close(c.done)
 
-		if opts.glinetMode {
-			err := glTokenFileRoot.Close()
-			checkCleanupErr(ctx, l, err, "closing glinet token root")
-		}
+	cleanup(ctx, c.logger, c.hostsContainer)
+	cleanupAlways(ctx, c.logger, c.pidFilePath)
 
-		if hcWatcher != nil {
-			err := hcWatcher.Shutdown(ctx)
-			checkCleanupErr(ctx, l, err, "shutting down hosts file watcher")
-		}
+	if c.glinetMode {
+		err := c.glTokenFileRoot.Close()
+		checkCleanupErr(ctx, c.logger, err, "closing glinet token root")
 	}
+
+	err := c.hcWatcher.Shutdown(ctx)
+	checkCleanupErr(ctx, c.logger, err, "shutting down hosts file watcher")
 }
 
 // checkCleanupErr logs err and exits with [osutil.ExitCodeFailure] if err is
-// not nil.
+// not nil.  l must not be nil.
 func checkCleanupErr(ctx context.Context, l *slog.Logger, err error, msg string) {
 	if err == nil {
 		return
@@ -320,10 +319,10 @@ func configureOS(ctx context.Context, l *slog.Logger, conf *configuration) (err 
 func newHostsContainer(
 	ctx context.Context,
 	baseLogger *slog.Logger,
-) (etcHosts *aghnet.HostsContainer, watcher service.Interface, err error) {
+) (etcHosts *aghnet.HostsContainer, watcher aghos.FSWatcher, err error) {
 	l := baseLogger.With(slogutil.KeyPrefix, "hosts")
 
-	hostsWatcher, err := aghos.NewOSWatcher(&aghos.OSWatcherConfig{
+	watcher, err = aghos.NewOSWatcher(&aghos.OSWatcherConfig{
 		Logger: baseLogger.With(slogutil.KeyPrefix, "hosts_watcher"),
 	})
 	if err != nil {
@@ -333,8 +332,8 @@ func newHostsContainer(
 			slogutil.KeyError,
 			err,
 		)
-	} else {
-		watcher = hostsWatcher
+
+		watcher = aghos.EmptyFSWatcher{}
 	}
 
 	paths, err := hostsfile.DefaultHostsPaths()
@@ -346,11 +345,11 @@ func newHostsContainer(
 		ctx,
 		l,
 		osutil.RootDirFS(),
-		cmp.Or[aghos.FSWatcher](hostsWatcher, aghos.EmptyFSWatcher{}),
+		watcher,
 		paths...,
 	)
 	if err != nil {
-		closeErr := hostsWatcher.Shutdown(ctx)
+		closeErr := watcher.Shutdown(ctx)
 		if errors.Is(err, aghnet.ErrNoHostsPaths) {
 			l.WarnContext(ctx, "initializing hosts container", slogutil.KeyError, err)
 
@@ -360,7 +359,7 @@ func newHostsContainer(
 		return nil, nil, errors.Join(fmt.Errorf("initializing hosts container: %w", err), closeErr)
 	}
 
-	return etcHosts, watcher, hostsWatcher.Start(ctx)
+	return etcHosts, watcher, watcher.Start(ctx)
 }
 
 // initContextClients initializes Context clients and related fields.  All
