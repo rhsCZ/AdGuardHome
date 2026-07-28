@@ -575,14 +575,14 @@ func (iface *dhcpInterfaceV6) newRequestRespOpts(
 // See RFC 9915 Section 18.3.3.
 func (iface *dhcpInterfaceV6) newConfirmRespOpts(
 	fd *frameData6,
+	req *layers.DHCPv6,
 	cliID *layers.DHCPv6DUID,
 	status layers.DHCPv6StatusCode,
 ) (opts layers.DHCPv6Options) {
-	opts = append(
-		opts,
+	opts = layers.DHCPv6Options{
 		layers.NewDHCPv6Option(layers.DHCPv6OptServerID, fd.duidData),
 		layers.NewDHCPv6Option(layers.DHCPv6OptClientID, cliID.Encode()),
-	)
+	}
 
 	// If the Status Code option does not appear in a message in which the
 	// option could appear, the status of the message is assumed to be Success.
@@ -592,7 +592,37 @@ func (iface *dhcpInterfaceV6) newConfirmRespOpts(
 		opts = append(opts, newStatusCodeOption(status))
 	}
 
-	return opts
+	return iface.appendRequestedOptions(opts, req)
+}
+
+// newRenewRespOpts returns the common option list for Reply responses to a
+// Renew message.  fd, req, and cliID must not be nil.  iana must be a valid
+// IA_NA option.
+//
+// See RFC 9915 Section 18.3.4.
+//
+// TODO(e.burkov):  DRY with other response option builders.
+func (iface *dhcpInterfaceV6) newRenewRespOpts(
+	fd *frameData6,
+	req *layers.DHCPv6,
+	cliID *layers.DHCPv6DUID,
+	iana layers.DHCPv6Option,
+) (opts layers.DHCPv6Options) {
+	opts = append(opts, layers.NewDHCPv6Option(layers.DHCPv6OptServerID, fd.duidData))
+	opts = append(opts, layers.NewDHCPv6Option(layers.DHCPv6OptClientID, cliID.Encode()))
+
+	if iana.Code != 0 {
+		opts = append(opts, iana)
+	}
+
+	// The server preference value MUST default to 0 unless otherwise configured
+	// by the server administrator.
+	//
+	// See RFC 9915 Section 18.3.9.
+	opts = append(opts, newPreferenceOption(0))
+	opts = append(opts, newSOLMaxRTOption(DefaultSolMaxRT))
+
+	return iface.appendRequestedOptions(opts, req)
 }
 
 // iaNAFromLease returns an IA_NA option with a single IA Address sub-option
