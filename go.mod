@@ -4,8 +4,7 @@ go 1.26.5
 
 require (
 	github.com/AdguardTeam/dnscrypt v0.0.2
-	// TODO(f.setrakov): !! Upd to tag.
-	github.com/AdguardTeam/dnsproxy v0.83.1-0.20260721091015-3f201971607b
+	github.com/AdguardTeam/dnsproxy v0.83.1
 	github.com/AdguardTeam/golibs v0.35.14
 	github.com/AdguardTeam/urlfilter v0.23.4
 	github.com/NYTimes/gziphandler v1.1.1
