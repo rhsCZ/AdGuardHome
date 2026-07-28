@@ -189,45 +189,6 @@ func Main(clientBuildFS fs.FS) {
 	)
 }
 
-// signalHandlerCleanup performs application resources cleanup for
-// [signalHandler].
-type signalHandlerCleanup struct {
-	logger          *slog.Logger
-	hostsContainer  *aghnet.HostsContainer
-	glTokenFileRoot *os.Root
-	hcWatcher       service.Interface
-	done            chan struct{}
-	pidFilePath     string
-	glinetMode      bool
-}
-
-// cleanup performs application cleanup.
-func (c *signalHandlerCleanup) cleanup(ctx context.Context) {
-	defer close(c.done)
-
-	cleanup(ctx, c.logger, c.hostsContainer)
-	cleanupAlways(ctx, c.logger, c.pidFilePath)
-
-	if c.glinetMode {
-		err := c.glTokenFileRoot.Close()
-		checkCleanupErr(ctx, c.logger, err, "closing glinet token root")
-	}
-
-	err := c.hcWatcher.Shutdown(ctx)
-	checkCleanupErr(ctx, c.logger, err, "shutting down hosts file watcher")
-}
-
-// checkCleanupErr logs err and exits with [osutil.ExitCodeFailure] if err is
-// not nil.  l must not be nil.
-func checkCleanupErr(ctx context.Context, l *slog.Logger, err error, msg string) {
-	if err == nil {
-		return
-	}
-
-	l.ErrorContext(ctx, msg, slogutil.KeyError, err)
-	os.Exit(osutil.ExitCodeFailure)
-}
-
 // setupContext initializes [globalContext] fields.  It also reads and upgrades
 // config file if necessary.  baseLogger must not be nil.
 func setupContext(
@@ -356,7 +317,9 @@ func newHostsContainer(
 			return nil, nil, closeErr
 		}
 
-		return nil, nil, errors.Join(fmt.Errorf("initializing hosts container: %w", err), closeErr)
+		return nil,
+			nil,
+			errors.WithDeferred(fmt.Errorf("initializing hosts container: %w", err), closeErr)
 	}
 
 	return etcHosts, watcher, watcher.Start(ctx)
