@@ -135,7 +135,7 @@ func Main(clientBuildFS fs.FS) {
 	}
 
 	sigHdlrLogger := baseLogger.With(slogutil.KeyPrefix, "signalhdlr")
-	sigHdlrCleanup := signalHandlerCleanup{
+	sigHdlrCleanup := &signalHandlerCleanup{
 		logger:          sigHdlrLogger,
 		hostsContainer:  hc,
 		glTokenFileRoot: glTokenFileRoot,
@@ -178,7 +178,8 @@ func Main(clientBuildFS fs.FS) {
 	run(
 		ctx,
 		baseLogger,
-		opts, clientBuildFS,
+		opts,
+		clientBuildFS,
 		glTokenFileRoot,
 		done,
 		sigHdlr,
@@ -317,16 +318,16 @@ func newHostsContainer(
 			return nil, nil, closeErr
 		}
 
-		return nil,
-			nil,
-			errors.WithDeferred(fmt.Errorf("initializing hosts container: %w", err), closeErr)
+		err = fmt.Errorf("initializing hosts container: %w", err)
+
+		return nil, nil, errors.WithDeferred(err, closeErr)
 	}
 
 	return etcHosts, watcher, watcher.Start(ctx)
 }
 
 // initContextClients initializes Context clients and related fields.  All
-// arguments must not be nil.
+// arguments except hc must not be nil.
 func initContextClients(
 	ctx context.Context,
 	logger *slog.Logger,
@@ -423,7 +424,7 @@ func setupBindOpts(opts options) (err error) {
 }
 
 // setupDNSFilteringConf sets up DNS filtering configuration settings.  All
-// arguments must not be nil.
+// arguments except hc must not be nil.
 func setupDNSFilteringConf(
 	ctx context.Context,
 	baseLogger *slog.Logger,
