@@ -22,6 +22,8 @@ NOTE: Add new changes BELOW THIS COMMENT.
 
 - AdGuard Home is now more resistant to resource exhaustion attacks when using DNS-over-QUIC.
 
+    This is GHSA-w6v6-f44j-3rj2.  We thank @ATinyShoe for reporting this security issue.
+
 ### Added
 
 - Bootstrap servers configuration now supports comments.
