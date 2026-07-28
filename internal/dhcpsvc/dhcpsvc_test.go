@@ -3,8 +3,10 @@ package dhcpsvc_test
 import (
 	"cmp"
 	"context"
+	"log/slog"
 	"net"
 	"net/netip"
+	"os"
 	"slices"
 	"testing"
 	"time"
@@ -37,7 +39,9 @@ const testTimeout = 10 * time.Second
 const testLeaseTTL = 24 * time.Hour
 
 // testLogger is a common logger for tests.
-var testLogger = slogutil.NewDiscardLogger()
+var testLogger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	Level: slogutil.LevelTrace,
+}))
 
 // testCurrentTime is the fixed time returned by [testClock] to ensure
 // reproducible tests.

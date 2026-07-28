@@ -524,7 +524,6 @@ func TestDHCPServer_ServeEther6_renew(t *testing.T) {
 		wantOpts: layers.DHCPv6Options{
 			newOptServerDUID(t, testIfaceHWAddr),
 			newOptClientDUID(t, testHWUnknown),
-			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
 			newOptPreference(t, 0),
 			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
 		},

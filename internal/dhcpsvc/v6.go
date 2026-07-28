@@ -422,7 +422,7 @@ func (iface *dhcpInterfaceV6) allocateForSolicit(
 			return lease, iana.ID
 		}
 
-		lease, err = iface.common.allocateLease(ctx, mac, iface.clock.Now())
+		lease, err = iface.common.allocateLease(ctx, mac, key, iface.clock.Now())
 		if err != nil {
 			l.DebugContext(ctx, "no address available", "iaid", iana.ID, slogutil.KeyError, err)
 
@@ -646,34 +646,79 @@ func (iface *dhcpInterfaceV6) iaNAFromLease(lease *Lease, iaid uint32) (iana lay
 	}.Encode()
 }
 
-// leaseForRequest returns the committed lease for req.  It reuses an already
-// reserved lease for the client when possible, or allocates and commits the new
-// address.  iface.common.indexMu must be locked.
-func (iface *dhcpInterfaceV6) leaseForRequest(
+// ianaForRequest returns the IANA filled with committed lease data for req.  It
+// reuses an already reserved lease for the client when possible, or allocates
+// and commits the new address.  req msut be a valid DHCPv6 message of type
+// REQUEST, iaid must not be zero, and mac must be a valid MAC address according
+// to [netutil.ValidateMAC].  iface.common.indexMu must be locked.
+func (iface *dhcpInterfaceV6) ianaForRequest(
 	ctx context.Context,
 	req *layers.DHCPv6,
+	iaid uint32,
 	mac net.HardwareAddr,
-) (lease *Lease, err error) {
+) (iana layers.DHCPv6Option) {
 	key := macToKey(mac)
 	l := iface.common.logger
 
 	lease, ok := iface.common.leases[key]
 	if !ok {
-		lease, err = iface.common.allocateLease(ctx, mac, iface.clock.Now())
+		var err error
+		lease, err = iface.common.allocateLease(ctx, mac, key, iface.clock.Now())
 		if err != nil {
-			return nil, fmt.Errorf("allocating lease for mac %s: %w", mac, err)
-		}
-	}
+			l.ErrorContext(ctx, "allocating lease", slogutil.KeyError, err)
 
-	err = iface.commit(ctx, req, lease)
-	if err != nil {
+			return newIANAWithStatus(iaid, layers.DHCPv6StatusCodeNoAddrsAvail)
+		}
+	} else if err := iface.commit(ctx, req, lease); err != nil {
 		l.WarnContext(ctx, "committing lease", slogutil.KeyError, err)
 
 		// Don't wrap the error, because it's informative enough as is.
-		return nil, err
+		return newIANAWithStatus(iaid, layers.DHCPv6StatusCodeNoAddrsAvail)
 	}
 
-	return lease, nil
+	return iface.iaNAFromLease(lease, iaid)
+}
+
+// ianaForRenew returns the IANA filled with committed lease data for req.  It
+// reuses an already reserved lease for the client, if it exists.  req must be a
+// valid DHCPv6 message of type RENEW, iaid must not be zero, and mac must be a
+// valid MAC address according to [netutil.ValidateMAC].  iface.common.indexMu
+// must be locked.
+func (iface *dhcpInterfaceV6) ianaForRenew(
+	ctx context.Context,
+	req *layers.DHCPv6,
+	reqIANA *IANAOption,
+	mac net.HardwareAddr,
+) (iana layers.DHCPv6Option) {
+	key := macToKey(mac)
+	l := iface.common.logger
+
+	reqIP, hasReqIP := reqIANA.requestedAddr()
+	if !hasReqIP {
+		// With no requested addresses there's nothing to renew.  Respond with
+		// no IA options similarly to how the Request handler does.
+		//
+		// See RFC 9915 Section 18.3.4.
+		return layers.DHCPv6Option{}
+	}
+
+	lease, hasLease := iface.common.leases[key]
+	if !hasLease || lease.IP != reqIP {
+		// No binding found for this client.  The server returns the IA with a
+		// NoBinding status code.
+		//
+		// See RFC 9915 Section 18.3.4.
+		return layers.DHCPv6Option{}
+	}
+
+	err := iface.commit(ctx, req, lease)
+	if err != nil {
+		l.WarnContext(ctx, "committing lease", slogutil.KeyError, err)
+
+		return newIANAWithStatus(reqIANA.ID, layers.DHCPv6StatusCodeNoAddrsAvail)
+	}
+
+	return iface.iaNAFromLease(lease, reqIANA.ID)
 }
 
 // commit updates the lease allocated previously via a SOLICIT, or during

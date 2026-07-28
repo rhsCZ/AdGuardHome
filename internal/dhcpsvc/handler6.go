@@ -187,14 +187,7 @@ func (iface *dhcpInterfaceV6) handleRequest(
 		return respond6(fd, resp)
 	}
 
-	var ianaOpt layers.DHCPv6Option
-
-	lease, err := iface.leaseForRequest(ctx, req, fd.ether.SrcMAC)
-	if err != nil {
-		ianaOpt = newIANAWithStatus(iana.ID, layers.DHCPv6StatusCodeNoAddrsAvail)
-	} else {
-		ianaOpt = iface.iaNAFromLease(lease, iana.ID)
-	}
+	ianaOpt := iface.ianaForRequest(ctx, req, iana.ID, fd.ether.SrcMAC)
 
 	resp.Options = iface.newRequestRespOpts(fd, req, cliID, ianaOpt)
 
@@ -286,36 +279,7 @@ func (iface *dhcpInterfaceV6) handleRenew(
 		return respond6(fd, resp)
 	}
 
-	reqIP, hasReqIP := iana.requestedAddr()
-	if !hasReqIP {
-		// With no requested addresses there's nothing to renew.  Respond with
-		// no IA options similarly to how the Request handler does.
-		//
-		// See RFC 9915 Section 18.3.4.
-		resp.Options = iface.newRenewRespOpts(fd, req, cliID, layers.DHCPv6Option{})
-
-		return respond6(fd, resp)
-	}
-
-	key := macToKey(fd.ether.SrcMAC)
-	lease, hasLease := iface.common.leases[key]
-	if !hasLease || lease.IP != reqIP {
-		// No binding found for this client.  The server returns the IA with a
-		// NoBinding status code.
-		//
-		// See RFC 9915 Section 18.3.4.
-		ianaOpt := newIANAWithStatus(iana.ID, layers.DHCPv6StatusCodeNoBinding)
-		resp.Options = iface.newRenewRespOpts(fd, req, cliID, ianaOpt)
-
-		return respond6(fd, resp)
-	}
-
-	err = iface.commit(ctx, req, lease)
-	if err != nil {
-		return fmt.Errorf("updating lease: for address %s: %w", lease.IP, err)
-	}
-
-	ianaOpt := iface.iaNAFromLease(lease, iana.ID)
+	ianaOpt := iface.ianaForRenew(ctx, req, iana, fd.ether.SrcMAC)
 	resp.Options = iface.newRenewRespOpts(fd, req, cliID, ianaOpt)
 
 	return respond6(fd, resp)
