@@ -18,6 +18,10 @@ See also the [v0.107.79 GitHub milestone][ms-v0.107.79].
 NOTE: Add new changes BELOW THIS COMMENT.
 -->
 
+### Security
+
+- AdGuard Home is now more resistant to resource exhaustion attacks when using DNS-over-QUIC.
+
 ### Added
 
 - Bootstrap servers configuration now supports comments.
