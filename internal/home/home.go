@@ -1394,8 +1394,7 @@ func cmdlineUpdate(
 	// separately.
 	err := initDNSServer(
 		ctx,
-		l,
-		dnsforward.DNSCreateParams{},
+		dnsforward.DNSCreateParams{Logger: l, TLSConfigProvider: tlsMgr},
 		nil,
 		tlsMgr,
 		agh.EmptyConfigModifier{},

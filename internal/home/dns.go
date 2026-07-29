@@ -121,7 +121,6 @@ func initDNS(
 
 	err = initDNSServer(
 		ctx,
-		baseLogger,
 		params,
 		httpReg,
 		tlsMgr,
@@ -137,12 +136,12 @@ func initDNS(
 }
 
 // initDNSServer initializes the [context.dnsServer].  To only use the internal
-// proxy, none of the arguments are required, but tlsMgr and l still must not be
-// nil, in other cases all the arguments also must not be nil.  It also must not
-// be called unless [config] and [globalContext] are initialized.
+// proxy, none of the arguments are required, but params must be valid and
+// tlsMgr must not be nil.  In other cases all the arguments also must not be
+// nil.  It also must not be called unless [config] and [globalContext] are
+// initialized.
 func initDNSServer(
 	ctx context.Context,
-	l *slog.Logger,
 	params dnsforward.DNSCreateParams,
 	httpReg aghhttp.Registrar,
 	tlsMgr *tlsManager,
@@ -165,7 +164,7 @@ func initDNSServer(
 		config.Clients.Sources,
 		tlsMgr.extendedTLSConfig(),
 		config.HTTPConfig.DoH,
-		tlsMgr,
+		params.TLSConfigProvider,
 		httpReg,
 		globalContext.clients.storage,
 		confModifier,
@@ -178,6 +177,7 @@ func initDNSServer(
 	// failed to prepare as is.  See TODO on [dnsforward.PrivateRDNSError].
 	err = globalContext.dnsServer.Prepare(ctx, dnsConf)
 	if _, ok := errors.AsType[*dnsforward.PrivateRDNSError](err); ok {
+		l := params.Logger.With(slogutil.KeyPrefix, "dns")
 		l.WarnContext(ctx, "private rdns resolution failed; disabling", slogutil.KeyError, err)
 
 		dnsConf.UsePrivateRDNS = false
