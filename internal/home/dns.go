@@ -106,16 +106,25 @@ func initDNS(
 		return err
 	}
 
+	params := dnsforward.DNSCreateParams{
+		Logger:            baseLogger,
+		DNSFilter:         globalContext.filters,
+		Stats:             globalContext.stats,
+		QueryLog:          globalContext.queryLog,
+		DHCPServer:        globalContext.dhcpServer,
+		EtcHosts:          globalContext.etcHosts,
+		PrivateNets:       parseSubnetSet(config.DNS.PrivateNets),
+		Anonymizer:        anonymizer,
+		LocalDomain:       config.DHCP.LocalDomainName,
+		TLSConfigProvider: tlsMgr,
+	}
+
 	err = initDNSServer(
 		ctx,
-		globalContext.filters,
-		globalContext.stats,
-		globalContext.queryLog,
-		globalContext.dhcpServer,
-		anonymizer,
+		baseLogger,
+		params,
 		httpReg,
 		tlsMgr,
-		baseLogger,
 		confModifier,
 	)
 	if err != nil {
@@ -131,39 +140,22 @@ func initDNS(
 // proxy, none of the arguments are required, but tlsMgr and l still must not be
 // nil, in other cases all the arguments also must not be nil.  It also must not
 // be called unless [config] and [globalContext] are initialized.
-//
-// TODO(e.burkov): Use [dnsforward.DNSCreateParams] as a parameter.
 func initDNSServer(
 	ctx context.Context,
-	filters *filtering.DNSFilter,
-	sts stats.Interface,
-	qlog querylog.QueryLog,
-	dhcpSrv dnsforward.DHCP,
-	anonymizer *aghnet.IPMut,
+	l *slog.Logger,
+	params dnsforward.DNSCreateParams,
 	httpReg aghhttp.Registrar,
 	tlsMgr *tlsManager,
-	l *slog.Logger,
 	confModifier agh.ConfigModifier,
 ) (err error) {
-	globalContext.dnsServer, err = dnsforward.NewServer(dnsforward.DNSCreateParams{
-		Logger:            l,
-		DNSFilter:         filters,
-		Stats:             sts,
-		QueryLog:          qlog,
-		PrivateNets:       parseSubnetSet(config.DNS.PrivateNets),
-		Anonymizer:        anonymizer,
-		DHCPServer:        dhcpSrv,
-		EtcHosts:          globalContext.etcHosts,
-		LocalDomain:       config.DHCP.LocalDomainName,
-		TLSConfigProvider: tlsMgr,
-	})
+	globalContext.dnsServer, err = dnsforward.NewServer(params)
 	defer func() {
 		if err != nil {
 			closeDNSServer(ctx)
 		}
 	}()
 	if err != nil {
-		return fmt.Errorf("dnsforward.NewServer: %w", err)
+		return fmt.Errorf("creating new dns server: %w", err)
 	}
 
 	globalContext.clients.clientChecker = globalContext.dnsServer
@@ -179,7 +171,7 @@ func initDNSServer(
 		confModifier,
 	)
 	if err != nil {
-		return fmt.Errorf("newServerConfig: %w", err)
+		return fmt.Errorf("creating new dns server config: %w", err)
 	}
 
 	// Try to prepare the server with disabled private RDNS resolution if it
@@ -192,7 +184,7 @@ func initDNSServer(
 		err = globalContext.dnsServer.Prepare(ctx, dnsConf)
 	}
 	if err != nil {
-		return fmt.Errorf("dnsServer.Prepare: %w", err)
+		return fmt.Errorf("preparing dns server: %w", err)
 	}
 
 	return nil

@@ -284,7 +284,6 @@ func newWebAPI(ctx context.Context, conf *webAPIConfig) (w *webAPI) {
 		mux.Handle("/install.html", w.preInstallHandler(clientFS))
 		w.registerInstallHandlers()
 	} else {
-		w.registerTLSHandlers()
 		w.registerControlHandlers()
 	}
 
@@ -549,15 +548,6 @@ func startPprof(baseLogger *slog.Logger, port uint16) {
 			logger.ErrorContext(ctx, "shutting down", slogutil.KeyError, err)
 		}
 	}()
-}
-
-// registerTLSHandlers registers HTTP handlers for TLS configuration.
-//
-// TODO(m.kazantsev):  Consider uniting with registerControlHandlers.
-func (web *webAPI) registerTLSHandlers() {
-	web.httpReg.Register(http.MethodGet, "/control/tls/status", web.handleTLSStatus)
-	web.httpReg.Register(http.MethodPost, "/control/tls/configure", web.handleTLSConfigure)
-	web.httpReg.Register(http.MethodPost, "/control/tls/validate", web.handleTLSValidate)
 }
 
 // handleTLSStatus is the handler for the GET /control/tls/status HTTP API.
