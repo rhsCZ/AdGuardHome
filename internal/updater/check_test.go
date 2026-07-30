@@ -111,7 +111,11 @@ func TestUpdater_VersionInfo_others(t *testing.T) {
   "download_linux_mips_softfloat": "https://static.adtidy.org/adguardhome/beta/AdGuardHome_linux_mips_softfloat.tar.gz"
 }`
 
-	fakeClient, fakeURL := aghtest.StartHTTPServer(t, []byte(jsonData))
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(jsonData))
+	})
+
+	fakeClient, fakeURL := aghtest.StartHTTPServer(t, handler)
 	fakeURL = fakeURL.JoinPath("adguardhome", version.ChannelBeta, "version.json")
 
 	testCases := []struct {

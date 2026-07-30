@@ -148,6 +148,7 @@ func initDNSServer(
 	confModifier agh.ConfigModifier,
 ) (err error) {
 	globalContext.dnsServer, err = dnsforward.NewServer(params)
+	// TODO(m.kazantsev):  Consider moving the defer to the caller.
 	defer func() {
 		if err != nil {
 			closeDNSServer(ctx)
