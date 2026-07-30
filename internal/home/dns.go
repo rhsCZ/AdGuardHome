@@ -178,7 +178,7 @@ func initDNSServer(
 	// failed to prepare as is.  See TODO on [dnsforward.PrivateRDNSError].
 	err = globalContext.dnsServer.Prepare(ctx, dnsConf)
 	if _, ok := errors.AsType[*dnsforward.PrivateRDNSError](err); ok {
-		l := params.Logger.With(slogutil.KeyPrefix, "dns")
+		l := params.Logger
 		l.WarnContext(ctx, "private rdns resolution failed; disabling", slogutil.KeyError, err)
 
 		dnsConf.UsePrivateRDNS = false
