@@ -33,8 +33,8 @@ func HostToIPs(host string) (ipv4, ipv6 netip.Addr) {
 }
 
 // StartHTTPServer is a helper that starts the HTTP server, which is configured
-// handle HTTP requests with the given handler, and returns the client and
-// server URL.
+// to handle HTTP requests with the given handler.  It then returns the client
+// and server URL.
 func StartHTTPServer(tb testing.TB, handler http.Handler) (c *http.Client, u *url.URL) {
 	tb.Helper()
 

@@ -59,8 +59,8 @@ func TestUpdater_internal(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			pt := testutil.NewPanicT(t)
 
-			_, err = w.Write(pkgData)
-			require.NoError(pt, err)
+			_, werr := w.Write(pkgData)
+			require.NoError(pt, werr)
 		})
 
 		fakeClient, fakeURL := aghtest.StartHTTPServer(t, handler)

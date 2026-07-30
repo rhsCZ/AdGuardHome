@@ -83,7 +83,7 @@ var testRewrites = []*rewriteJSON{
 func TestDNSFilter_HandleRewriteHTTP(t *testing.T) {
 	t.Parallel()
 
-	testRewritesJSON, mErr := json.Marshal(testRewrites)
+	rewritesJSON, mErr := json.Marshal(testRewrites)
 	require.NoError(t, mErr)
 
 	testCases := []struct {
@@ -102,7 +102,7 @@ func TestDNSFilter_HandleRewriteHTTP(t *testing.T) {
 		reqData:     nil,
 		wantConfMod: false,
 		wantStatus:  http.StatusOK,
-		wantBody:    append(testRewritesJSON, '\n'),
+		wantBody:    append(rewritesJSON, '\n'),
 		wantList:    testRewrites,
 	}, {
 		name:        "add_enabled_null",
