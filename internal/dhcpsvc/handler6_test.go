@@ -573,6 +573,92 @@ func TestDHCPServer_ServeEther6_renew(t *testing.T) {
 	}
 }
 
+func TestDHCPServer_ServeEther6_rebind(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		in       gopacket.Packet
+		want     *dhcpsvc.Lease
+		name     string
+		wantOpts layers.DHCPv6Options
+	}{{
+		in:   newDHCPv6Rebind(t, testHWDynamic, testIPv6Dynamic),
+		name: "success",
+		want: testLease6Dynamic,
+		wantOpts: layers.DHCPv6Options{
+			newOptServerDUID(t, testIfaceHWAddr),
+			newOptClientDUID(t, testHWDynamic),
+			newOptIANA(t, testIAID, testIPv6Dynamic, testLeaseTTL),
+			newOptPreference(t, 0),
+			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
+		},
+	}, {
+		in:   newDHCPv6Rebind(t, testHWStatic, testIPv6Static),
+		name: "success_static",
+		want: testLease6Static,
+		wantOpts: layers.DHCPv6Options{
+			newOptServerDUID(t, testIfaceHWAddr),
+			newOptClientDUID(t, testHWStatic),
+			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
+			newOptPreference(t, 0),
+			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
+		},
+	}, {
+		in:   newDHCPv6Rebind(t, testHWUnknown, testIPv6Unknown),
+		name: "no_binding",
+		want: nil,
+		wantOpts: layers.DHCPv6Options{
+			newOptServerDUID(t, testIfaceHWAddr),
+			newOptClientDUID(t, testHWUnknown),
+			newOptPreference(t, 0),
+			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
+		},
+	}, {
+		in:   newDHCPv6Rebind(t, testHWUnknown, netip.Addr{}),
+		name: "no_iana",
+		want: nil,
+		wantOpts: layers.DHCPv6Options{
+			newOptServerDUID(t, testIfaceHWAddr),
+			newOptClientDUID(t, testHWUnknown),
+			newOptPreference(t, 0),
+			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
+		},
+	}}
+
+	for _, tc := range testCases {
+		req := testutil.RequireTypeAssert[*layers.DHCPv6](t, tc.in.Layer(layers.LayerTypeDHCPv6))
+
+		db := newTestDatabase(t, testLeases)
+
+		onStore := func(ctx context.Context, leases []*dhcpsvc.Lease) (err error) {
+			assert.Contains(t, leases, tc.want)
+
+			return nil
+		}
+
+		if tc.want != nil {
+			db.onStore = onStore
+		}
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			ndMgr, inCh, outCh := newTestNetworkDeviceManager(t, testIfaceAddrV6)
+			startTestDHCPServer(t, &dhcpsvc.Config{
+				Database:             db,
+				Interfaces:           testIPv6InterfacesConf,
+				Logger:               testLogger,
+				NetworkDeviceManager: ndMgr,
+				Enabled:              true,
+			})
+
+			testutil.RequireSend(t, inCh, tc.in, testTimeout)
+
+			assertValidResponse6(t, req, outCh, tc.wantOpts)
+		})
+	}
+}
+
 // newDHCPv6Solicit creates a new DHCPv6 SOLICIT packet for testing.
 func newDHCPv6Solicit(
 	tb testing.TB,
@@ -795,6 +881,36 @@ func assertValidDHCPv6(
 	default:
 		tb.Errorf("request message type: %v: %s", errors.ErrUnexpectedValue, req.MsgType)
 	}
+}
+
+// newDHCPv6Rebind creates a new DHCPv6 REBIND packet for testing.
+func newDHCPv6Rebind(tb testing.TB, mac net.HardwareAddr, reqIP netip.Addr) (pkt gopacket.Packet) {
+	tb.Helper()
+
+	// REBIND is sent to any available server, so the destination is the
+	// multicast address, not a specific server's unicast.
+	eth := newEthernetLayer(tb, mac, nil, layers.EthernetTypeIPv6)
+	ip, udp := newIPv6UDPLayer(tb, netip.AddrPort{}, netip.AddrPort{})
+
+	dhcp := &layers.DHCPv6{
+		MsgType:  layers.DHCPv6MsgTypeRebind,
+		HopCount: 0,
+		// Don't specify link and peer addresses, as they are intended for relay
+		// messages.
+		LinkAddr:      nil,
+		PeerAddr:      nil,
+		TransactionID: testTransactionID,
+		Options: layers.DHCPv6Options{
+			newOptClientDUID(tb, mac),
+			// REBIND must not contain a Server ID option.
+		},
+	}
+
+	if reqIP.IsValid() && reqIP.Is6() {
+		dhcp.Options = append(dhcp.Options, newOptIANA(tb, testIAID, reqIP, testLeaseTTL))
+	}
+
+	return newTestPacket(tb, layers.LinkTypeEthernet, eth, ip, udp, dhcp)
 }
 
 // newDHCPv6Renew creates a new DHCPv6 RENEW packet for testing.

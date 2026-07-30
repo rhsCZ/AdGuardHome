@@ -274,24 +274,27 @@ func (iface *dhcpInterfaceV6) handleRenew(
 		// handler does.
 		//
 		// See RFC 9915 Section 18.3.4.
-		resp.Options = iface.newRenewRespOpts(fd, req, cliID, layers.DHCPv6Option{})
+		resp.Options = iface.newUpdateRespOpts(fd, req, cliID, layers.DHCPv6Option{})
 
 		return respond6(fd, resp)
 	}
 
-	ianaOpt := iface.ianaForRenew(ctx, req, iana, fd.ether.SrcMAC)
-	resp.Options = iface.newRenewRespOpts(fd, req, cliID, ianaOpt)
+	ianaOpt := iface.ianaForUpdate(ctx, req, iana, fd.ether.SrcMAC)
+	resp.Options = iface.newUpdateRespOpts(fd, req, cliID, ianaOpt)
 
 	return respond6(fd, resp)
 }
 
 // handleRebind handles messages of type REBIND.  req must not be nil and must
-// be a valid DHCPv6 message of type REBIND.  fd must be valid.
+// be a valid DHCPv6 message of type REBIND, fd must be valid.
 //
-// TODO(e.burkov):  Implement.  This is a stub for now.
+// TODO(e.burkov):  The current implementation rebinds only the first valid
+// IA_NA option.  It does not verify that the addresses in the IA match the
+// stored lease, since clients are identified by MAC address rather than
+// DUID+IAID.
 func (iface *dhcpInterfaceV6) handleRebind(
 	ctx context.Context,
-	_ *frameData6,
+	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
 	cliID, err := clientIDNoServer(req.Options)
@@ -302,7 +305,30 @@ func (iface *dhcpInterfaceV6) handleRebind(
 	l := iface.common.logger
 	l.DebugContext(ctx, "handling message", "type", req.MsgType, "cli_id", cliID)
 
-	return nil
+	iface.common.indexMu.Lock()
+	defer iface.common.indexMu.Unlock()
+
+	resp := &layers.DHCPv6{
+		MsgType:       layers.DHCPv6MsgTypeReply,
+		TransactionID: req.TransactionID,
+	}
+
+	iana, ok := iface.firstIANA(ctx, req)
+	if !ok {
+		// With no IA_NA options and no requested addresses there's nothing to
+		// rebind.  Respond with no IA options similarly to how the Renew
+		// handler does.
+		//
+		// See RFC 9915 Section 18.3.5.
+		resp.Options = iface.newUpdateRespOpts(fd, req, cliID, layers.DHCPv6Option{})
+
+		return respond6(fd, resp)
+	}
+
+	ianaOpt := iface.ianaForUpdate(ctx, req, iana, fd.ether.SrcMAC)
+	resp.Options = iface.newUpdateRespOpts(fd, req, cliID, ianaOpt)
+
+	return respond6(fd, resp)
 }
 
 // handleInfo handles messages of type INFORMATION-REQUEST.  req must not be nil
