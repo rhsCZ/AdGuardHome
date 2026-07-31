@@ -335,24 +335,24 @@ func (iface *dhcpInterfaceV6) handleRebind(
 // and must be a valid DHCPv6 message of type INFORMATION-REQUEST.  fd must be
 // valid.
 //
-// TODO(e.burkov):  Implement.  This is a stub for now.
+// TODO(e.burkov):  The current implementation does not handle relay-forwarded
+// INFORMATION-REQUEST messages.
 func (iface *dhcpInterfaceV6) handleInfo(
 	ctx context.Context,
 	fd *frameData6,
 	req *layers.DHCPv6,
 ) (err error) {
-	if srvID, ok := findOption6(req.Options, layers.DHCPv6OptServerID); ok {
-		if !bytes.Equal(srvID, fd.duidData) {
-			return fmt.Errorf(
-				"dhcpv6: server id: got %v, want %v: %w",
-				srvID,
-				fd.duidData,
-				errors.ErrNotEqual,
-			)
-		}
+	srvID, ok := findOption6(req.Options, layers.DHCPv6OptServerID)
+	if ok && !bytes.Equal(srvID, fd.duidData) {
+		return fmt.Errorf(
+			"dhcpv6: server id: got %v, want %v: %w",
+			srvID,
+			fd.duidData,
+			errors.ErrNotEqual,
+		)
 	}
 
-	_, ok := findOption6(req.Options, layers.DHCPv6OptIANA)
+	_, ok = findOption6(req.Options, layers.DHCPv6OptIANA)
 	if ok {
 		return fmt.Errorf("dhcpv6: %s: ia option: %w", req.MsgType, errors.ErrUnexpectedValue)
 	}
@@ -365,7 +365,13 @@ func (iface *dhcpInterfaceV6) handleInfo(
 	l := iface.common.logger
 	l.DebugContext(ctx, "handling message", "type", req.MsgType)
 
-	return nil
+	resp := &layers.DHCPv6{
+		MsgType:       layers.DHCPv6MsgTypeReply,
+		TransactionID: req.TransactionID,
+		Options:       iface.newInfoRespOpts(fd, req),
+	}
+
+	return respond6(fd, resp)
 }
 
 // handleRelease handles messages of type RELEASE.  req must not be nil and must

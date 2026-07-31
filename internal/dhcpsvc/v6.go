@@ -623,6 +623,28 @@ func (iface *dhcpInterfaceV6) newUpdateRespOpts(
 	return iface.appendRequestedOptions(opts, req)
 }
 
+// newInfoRespOpts returns the option list for a Reply to an INFORMATION-REQUEST
+// message.  The Client Identifier option is echoed back only if the request
+// contained one.  fd and req must not be nil.
+//
+// See RFC 9915 Section 18.3.7.
+func (iface *dhcpInterfaceV6) newInfoRespOpts(
+	fd *frameData6,
+	req *layers.DHCPv6,
+) (opts layers.DHCPv6Options) {
+	opts = append(opts, layers.NewDHCPv6Option(layers.DHCPv6OptServerID, fd.duidData))
+
+	// Client ID is optional in INFORMATION-REQUEST but must be echoed if
+	// present.
+	//
+	// See RFC 9915 Section 18.3.7.
+	if cliIDData, ok := clientDUID6(req.Options); ok {
+		opts = append(opts, layers.NewDHCPv6Option(layers.DHCPv6OptClientID, cliIDData))
+	}
+
+	return iface.appendRequestedOptions(opts, req)
+}
+
 // iaNAFromLease returns an IA_NA option with a single IA Address sub-option
 // corresponding to lease and with the given iaid.  The T1 and T2 values are set
 // according to iface.t1 and iface.t2.  If lease is nil, it returns an IA_NA
