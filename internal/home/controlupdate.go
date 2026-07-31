@@ -223,7 +223,7 @@ func (web *webAPI) finishUpdate(
 
 	web.logger.InfoContext(ctx, "stopping all tasks")
 
-	cleanup(ctx, web.logger, web.hostsContainer)
+	cleanup(ctx, web.logger, web.hostsContainer, web)
 	cleanupAlways(ctx, web.logger, web.pidFilePath)
 
 	if runtime.GOOS == "windows" {

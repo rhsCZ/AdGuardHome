@@ -23,7 +23,7 @@ type signalHandler struct {
 	// logger is used to log the operation of the signal handler.
 	logger *slog.Logger
 
-	// mu protects clientStorage and tlsManager.
+	// mu protects clientStorage, tlsManager and web.
 	mu *sync.Mutex
 
 	// clientStorage is used to reload information about runtime clients with an
@@ -33,19 +33,22 @@ type signalHandler struct {
 	// tlsManager is used to reload the TLS configuration.
 	tlsManager aghtls.Manager
 
+	// web is the web API server.
+	web *webAPI
+
 	// signals receives incoming signals.
 	signals <-chan os.Signal
 
 	// cleanup is called to perform cleanup on all incoming signals, except
 	// SIGHUP.
-	cleanup func(ctx context.Context)
+	cleanup func(ctx context.Context, web *webAPI)
 }
 
 // newSignalHandler returns a new properly initialized *signalHandler.
 func newSignalHandler(
 	l *slog.Logger,
 	signals <-chan os.Signal,
-	cleanup func(ctx context.Context),
+	cleanup func(ctx context.Context, web *webAPI),
 ) (h *signalHandler) {
 	return &signalHandler{
 		logger:  l,
@@ -69,6 +72,14 @@ func (h *signalHandler) addTLSManager(m aghtls.Manager) {
 	defer h.mu.Unlock()
 
 	h.tlsManager = m
+}
+
+// addWeb stores the web API server.
+func (h *signalHandler) addWeb(w *webAPI) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.web = w
 }
 
 // handle processes incoming signals.  It blocks until a signal is received.  It
@@ -112,7 +123,7 @@ func (h *signalHandler) shutdown(ctx context.Context) {
 		}
 	}
 
-	h.cleanup(ctx)
+	h.cleanup(ctx, h.web)
 }
 
 // reloadConfig refreshes configurations of stored entities.
@@ -145,10 +156,10 @@ type signalHandlerCleanup struct {
 }
 
 // cleanup performs application cleanup.
-func (c *signalHandlerCleanup) cleanup(ctx context.Context) {
+func (c *signalHandlerCleanup) cleanup(ctx context.Context, web *webAPI) {
 	defer close(c.done)
 
-	cleanup(ctx, c.logger, c.hostsContainer)
+	cleanup(ctx, c.logger, c.hostsContainer, web)
 	cleanupAlways(ctx, c.logger, c.pidFilePath)
 
 	if c.glinetMode {
