@@ -376,8 +376,15 @@ func msg4Type(msg *layers.DHCPv4) (typ layers.DHCPMsgType, ok bool) {
 func requestedIPv4(msg *layers.DHCPv4) (ip netip.Addr, ok bool) {
 	for _, opt := range msg.Options {
 		if opt.Type == layers.DHCPOptRequestIP {
-			return netip.AddrFromSlice(opt.Data)
+			ip, ok = netip.AddrFromSlice(opt.Data)
+
+			break
 		}
+	}
+
+	ip = ip.Unmap()
+	if ok && ip.Is4() {
+		return ip, true
 	}
 
 	return netip.Addr{}, false
@@ -387,8 +394,15 @@ func requestedIPv4(msg *layers.DHCPv4) (ip netip.Addr, ok bool) {
 func serverID4(msg *layers.DHCPv4) (ip netip.Addr, ok bool) {
 	for _, opt := range msg.Options {
 		if opt.Type == layers.DHCPOptServerID {
-			return netip.AddrFromSlice(opt.Data)
+			ip, ok = netip.AddrFromSlice(opt.Data)
+
+			break
 		}
+	}
+
+	ip = ip.Unmap()
+	if ok && ip.Is4() {
+		return ip, true
 	}
 
 	return netip.Addr{}, false

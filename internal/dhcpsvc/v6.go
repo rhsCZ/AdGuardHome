@@ -541,7 +541,7 @@ func (iface *dhcpInterfaceV6) newSolicitRespOpts(
 
 // newRequestRespOpts returns the common option list for Reply responses to a
 // Request message.  fd, req, and cliID must not be nil.  iana must be a valid
-// IA_NA option.
+// IA_NA option, or be empty if the response should not contain an IA_NA option.
 //
 // TODO(e.burkov):  Keep the Reply option set aligned with the current Advertise
 // response shape until the wider DHCPv6 implementation is completed.
@@ -597,7 +597,7 @@ func (iface *dhcpInterfaceV6) newConfirmRespOpts(
 
 // newRenewRespOpts returns the common option list for Reply responses to a
 // Renew message.  fd, req, and cliID must not be nil.  iana must be a valid
-// IA_NA option.
+// IA_NA option, or be empty if the response should not contain an IA_NA option.
 //
 // See RFC 9915 Section 18.3.4.
 //
@@ -648,7 +648,7 @@ func (iface *dhcpInterfaceV6) iaNAFromLease(lease *Lease, iaid uint32) (iana lay
 
 // ianaForRequest returns the IANA filled with committed lease data for req.  It
 // reuses an already reserved lease for the client when possible, or allocates
-// and commits the new address.  req msut be a valid DHCPv6 message of type
+// and commits the new address.  req must be a valid DHCPv6 message of type
 // REQUEST, iaid must not be zero, and mac must be a valid MAC address according
 // to [netutil.ValidateMAC].  iface.common.indexMu must be locked.
 func (iface *dhcpInterfaceV6) ianaForRequest(
