@@ -223,10 +223,9 @@ func (web *webAPI) finishUpdate(
 
 	web.logger.InfoContext(ctx, "stopping all tasks")
 
-	err := web.Shutdown(ctx)
-	if err != nil {
-		panic(fmt.Errorf("shutting down web API server: %w", err))
-	}
+	// Ignore the error because, according to the documentation, this method
+	//  always returns nil error.
+	_ = web.Shutdown(ctx)
 
 	cleanup(ctx, web.logger, web.hostsContainer)
 	cleanupAlways(ctx, web.logger, web.pidFilePath)
@@ -237,6 +236,7 @@ func (web *webAPI) finishUpdate(
 		os.Exit(osutil.ExitCodeSuccess)
 	}
 
+	var err error
 	web.logger.InfoContext(ctx, "restarting", "exec_path", execPath, "args", os.Args[1:])
 	err = syscall.Exec(execPath, os.Args, os.Environ())
 	if err != nil {
