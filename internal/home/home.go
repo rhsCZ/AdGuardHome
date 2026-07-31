@@ -881,7 +881,7 @@ func run(
 }
 
 // runDNSServer initializes and starts DNS and DHCP servers if this is not the
-// first run.  httpReg, slogLogger, tlsMgr, confModifier and mux must not be
+// first run.  httpReg, slogLogger, tlsMgr, confModifier, and mux must not be
 // nil.
 func runDNSServer(
 	ctx context.Context,
@@ -1232,12 +1232,10 @@ func initWorkingDir(opts options) (workDir string, err error) {
 }
 
 // cleanup stops and resets all the modules.  l must not be nil.
-func cleanup(ctx context.Context, l *slog.Logger, hc *aghnet.HostsContainer, web *webAPI) {
+//
+// TODO(m.kazantsev):  Consider making it a method of [signalHandler].
+func cleanup(ctx context.Context, l *slog.Logger, hc *aghnet.HostsContainer) {
 	l.InfoContext(ctx, "stopping adguard home")
-
-	if web != nil {
-		web.close(ctx)
-	}
 
 	err := stopDNSServer(ctx)
 	if err != nil {

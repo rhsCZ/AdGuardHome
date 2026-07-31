@@ -34,21 +34,21 @@ type signalHandler struct {
 	tlsManager aghtls.Manager
 
 	// web is the web API server.
-	web *webAPI
+	web service.Shutdowner
 
 	// signals receives incoming signals.
 	signals <-chan os.Signal
 
 	// cleanup is called to perform cleanup on all incoming signals, except
 	// SIGHUP.
-	cleanup func(ctx context.Context, web *webAPI)
+	cleanup func(ctx context.Context)
 }
 
 // newSignalHandler returns a new properly initialized *signalHandler.
 func newSignalHandler(
 	l *slog.Logger,
 	signals <-chan os.Signal,
-	cleanup func(ctx context.Context, web *webAPI),
+	cleanup func(ctx context.Context),
 ) (h *signalHandler) {
 	return &signalHandler{
 		logger:  l,
@@ -123,7 +123,14 @@ func (h *signalHandler) shutdown(ctx context.Context) {
 		}
 	}
 
-	h.cleanup(ctx, h.web)
+	if h.web != nil {
+		err := h.web.Shutdown(ctx)
+		if err != nil {
+			h.logger.ErrorContext(ctx, "shutting down web", slogutil.KeyError, err)
+		}
+	}
+
+	h.cleanup(ctx)
 }
 
 // reloadConfig refreshes configurations of stored entities.
@@ -156,10 +163,10 @@ type signalHandlerCleanup struct {
 }
 
 // cleanup performs application cleanup.
-func (c *signalHandlerCleanup) cleanup(ctx context.Context, web *webAPI) {
+func (c *signalHandlerCleanup) cleanup(ctx context.Context) {
 	defer close(c.done)
 
-	cleanup(ctx, c.logger, c.hostsContainer, web)
+	cleanup(ctx, c.logger, c.hostsContainer)
 	cleanupAlways(ctx, c.logger, c.pidFilePath)
 
 	if c.glinetMode {
