@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
-	"net/http"
 	"net/netip"
 	"net/url"
 	"os"
@@ -27,6 +26,7 @@ import (
 	"github.com/AdguardTeam/golibs/log"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
+	"github.com/AdguardTeam/golibs/netutil/httputil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	yaml "go.yaml.in/yaml/v4"
 )
@@ -53,7 +53,7 @@ func initDNS(
 	statsDir string,
 	querylogDir string,
 	hc *aghnet.HostsContainer,
-	mux *http.ServeMux,
+	mux httputil.Router,
 ) (err error) {
 	anonymizer := config.anonymizer()
 

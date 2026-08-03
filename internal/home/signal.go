@@ -23,7 +23,7 @@ type signalHandler struct {
 	// logger is used to log the operation of the signal handler.
 	logger *slog.Logger
 
-	// mu protects clientStorage, tlsManager and web.
+	// mu protects clientStorage, tlsManager, and web.
 	mu *sync.Mutex
 
 	// clientStorage is used to reload information about runtime clients with an

@@ -43,6 +43,7 @@ import (
 	"github.com/AdguardTeam/golibs/log"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
+	"github.com/AdguardTeam/golibs/netutil/httputil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	"github.com/AdguardTeam/golibs/osutil"
 	"github.com/AdguardTeam/golibs/osutil/executil"
@@ -892,7 +893,7 @@ func runDNSServer(
 	querylogDir string,
 	httpReg *aghhttp.DefaultRegistrar,
 	hc *aghnet.HostsContainer,
-	mux *http.ServeMux,
+	mux httputil.Router,
 ) {
 	err := initDNS(ctx, slogLogger, tlsMgr, confModifier, httpReg, statsDir, querylogDir, hc, mux)
 	fatalOnError(err)
