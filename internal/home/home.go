@@ -834,7 +834,11 @@ func run(
 
 	dataDirPath := filepath.Join(workDir, dataDir)
 	err = os.MkdirAll(dataDirPath, aghos.DefaultPermDir)
-	fatalOnError(ctx, baseLogger, errors.Annotate(err, "creating DNS data dir at %s: %w", dataDirPath))
+	fatalOnError(
+		ctx,
+		baseLogger,
+		errors.Annotate(err, "creating dns data dir at %q: %w", dataDirPath),
+	)
 
 	auth, err := initUsers(ctx, baseLogger, workDir, mux, opts.glinetMode, glTokenFileRoot)
 	fatalOnError(ctx, baseLogger, err)
@@ -1293,6 +1297,9 @@ func exitWithError() {
 // loadCmdLineOpts reads command line arguments and initializes configuration
 // from them.  If there is an error or an effect, loadCmdLineOpts processes them
 // and exits.
+//
+// TODO(m.kazantsev):  Consider refactoring the logs so that it
+// resembles AdGuard DNS CLI.
 func loadCmdLineOpts() (opts options) {
 	opts, eff, err := parseCmdOpts(os.Args[0], os.Args[1:])
 	if err != nil {

@@ -276,7 +276,7 @@ var cmdLineOpts = []cmdLineOpt{{
 	updateWithValue: nil,
 	updateNoValue:   func(o options) (options, error) { o.noEtcHosts = true; return o, nil },
 	effect: func(_ options, _ string) (f effect, err error) {
-		log.Print(
+		log.Println(
 			"warning: --no-etc-hosts flag is deprecated " +
 				"and will be removed in the future versions; " +
 				"set clients.runtime_sources.hosts and dns.hostsfile_enabled " +

@@ -34,9 +34,9 @@ set -f -u
 #
 #   *  Packages log and github.com/AdguardTeam/golibs/log are replaced by
 #      stdlib's new package log/slog and AdGuard's new utilities package
-#      github.com/AdguardTeam/golibs/logutil/slogutil.  The exception is
-#      package home, where package log is used before the main logger is
-#      configured.
+#      github.com/AdguardTeam/golibs/logutil/slogutil.  The exceptions are
+#      packages home, dhcpd, and aghos, where package log is used before the
+#      main logger is configured.
 #
 #   *  Package github.com/prometheus/client_golang/prometheus/promauto is not
 #      recommended, as it encourages reliance on global state.
@@ -58,8 +58,8 @@ set -f -u
 #   *  Package unsafe is… unsafe.
 #
 # Currently, the only standard exception are files generated from protobuf
-# schemas, which use package reflect.  Additionally, package home is allowed to
-# use package log, see above.  If your project needs more exceptions, add and
+# schemas, which use package reflect.  Additionally, some packages are allowed
+# to use package log, see above.  If your project needs more exceptions, add and
 # document them.
 #
 # NOTE:  Flag -H for grep is non-POSIX but all of Busybox, GNU, macOS, and
