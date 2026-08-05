@@ -43,6 +43,7 @@ import (
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
+	"github.com/AdguardTeam/golibs/netutil/httputil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	"github.com/AdguardTeam/golibs/osutil"
 	"github.com/AdguardTeam/golibs/osutil/executil"
@@ -61,7 +62,6 @@ type homeContext struct {
 	dhcpServer dhcpd.Interface    // DHCP module
 
 	filters *filtering.DNSFilter // DNS filtering module
-	web     *webAPI              // Web (HTTP, HTTPS) module
 
 	controlLock sync.Mutex
 }
@@ -868,7 +868,7 @@ func run(
 
 	mw.set(web)
 
-	globalContext.web = web
+	sigHdlr.addWeb(web)
 
 	tlsMgr.setWebAPI(web)
 
@@ -876,7 +876,7 @@ func run(
 	fatalOnError(ctx, baseLogger, err)
 
 	if !isFirstRun {
-		runDNSServer(ctx, baseLogger, tlsMgr, confModifier, statsDir, querylogDir, httpReg, hc)
+		runDNSServer(ctx, baseLogger, tlsMgr, confModifier, statsDir, querylogDir, httpReg, hc, web.conf.mux)
 	}
 
 	if !opts.noPermCheck {
@@ -890,7 +890,8 @@ func run(
 }
 
 // runDNSServer initializes and starts DNS and DHCP servers if this is not the
-// first run.  httpReg, slogLogger, tlsMgr and confModifier must not be nil.
+// first run.  httpReg, slogLogger, tlsMgr, confModifier, and mux must not be
+// nil.
 func runDNSServer(
 	ctx context.Context,
 	slogLogger *slog.Logger,
@@ -900,17 +901,9 @@ func runDNSServer(
 	querylogDir string,
 	httpReg *aghhttp.DefaultRegistrar,
 	hc *aghnet.HostsContainer,
+	mux httputil.Router,
 ) {
-	err := initDNS(
-		ctx,
-		slogLogger,
-		tlsMgr,
-		confModifier,
-		httpReg,
-		statsDir,
-		querylogDir,
-		hc,
-	)
+	err := initDNS(ctx, slogLogger, tlsMgr, confModifier, httpReg, statsDir, querylogDir, hc, mux)
 	fatalOnError(ctx, slogLogger, err)
 
 	tlsMgr.start(ctx)
@@ -1251,13 +1244,10 @@ func initWorkingDir(opts options) (workDir string, err error) {
 }
 
 // cleanup stops and resets all the modules.  l must not be nil.
+//
+// TODO(m.kazantsev):  Consider making it a method of [signalHandler].
 func cleanup(ctx context.Context, l *slog.Logger, hc *aghnet.HostsContainer) {
 	l.InfoContext(ctx, "stopping adguard home")
-
-	if globalContext.web != nil {
-		globalContext.web.close(ctx)
-		globalContext.web = nil
-	}
 
 	err := stopDNSServer(ctx, l)
 	if err != nil {
