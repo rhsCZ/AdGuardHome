@@ -264,7 +264,7 @@ var cmdLineOpts = []cmdLineOpt{{
 	updateWithValue: nil,
 	updateNoValue:   nil,
 	effect: func(_ options, _ string) (f effect, err error) {
-		log.Print("warning: using --no-mem-optimization flag has no effect and is deprecated")
+		log.Println("warning: using --no-mem-optimization flag has no effect and is deprecated")
 
 		return nil, nil
 	},

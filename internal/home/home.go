@@ -1293,7 +1293,7 @@ func exitWithError() {
 func loadCmdLineOpts() (opts options) {
 	opts, eff, err := parseCmdOpts(os.Args[0], os.Args[1:])
 	if err != nil {
-		log.Printf("error: %s", err)
+		log.Printf("error: %s\n", err)
 		printHelp(os.Args[0])
 
 		exitWithError()
@@ -1302,7 +1302,7 @@ func loadCmdLineOpts() (opts options) {
 	if eff != nil {
 		err = eff()
 		if err != nil {
-			log.Printf("error: %s", err)
+			log.Printf("error: %s\n", err)
 			exitWithError()
 		}
 
