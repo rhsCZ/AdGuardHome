@@ -122,7 +122,7 @@ func TestWebAPI_HandleTLSConfigure(t *testing.T) {
 	})
 
 	res := &tlsConfig{
-		tlsConfigStatus: tlsConfigStatus{},
+		tlsConfigStatus: &tlsConfigStatus{},
 	}
 
 	err = json.NewDecoder(w.Body).Decode(res)

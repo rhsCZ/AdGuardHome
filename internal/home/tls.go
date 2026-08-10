@@ -433,7 +433,7 @@ type tlsConfigStatus struct {
 
 // tlsConfig is the TLS configuration and status response.
 type tlsConfig struct {
-	tlsConfigStatus      `json:",inline"`
+	*tlsConfigStatus     `json:",inline"`
 	tlsConfigSettingsExt `json:",inline"`
 }
 
@@ -533,7 +533,7 @@ func confToTLSSettings(conf *aghtls.ExtendedTLSConfig) (s tlsConfigSettings) {
 		OverrideTLSCiphers:   slices.Clone(conf.OverrideTLSCiphers),
 		CertificateChainData: slices.Clone(conf.CertificateChainData),
 		PrivateKeyData:       slices.Clone(conf.PrivateKeyData),
-		Status:               tlsConfigStatusFromConf(&conf.Status),
+		Status:               *tlsConfigStatusFromConf(&conf.Status),
 		PortDNSCrypt:         conf.PortDNSCrypt,
 		PortDNSOverQUIC:      conf.PortDNSOverQUIC,
 		PortDNSOverTLS:       conf.PortDNSOverTLS,
@@ -547,8 +547,8 @@ func confToTLSSettings(conf *aghtls.ExtendedTLSConfig) (s tlsConfigSettings) {
 
 // tlsConfigStatusFromConf converts the TLS configuration status to the TLS
 // settings status.  s must not be nil.
-func tlsConfigStatusFromConf(s *aghtls.TLSConfigStatus) (ds tlsConfigStatus) {
-	return tlsConfigStatus{
+func tlsConfigStatusFromConf(s *aghtls.TLSConfigStatus) (status *tlsConfigStatus) {
+	return &tlsConfigStatus{
 		Subject:           s.Subject,
 		Issuer:            s.Issuer,
 		KeyType:           s.KeyType,
