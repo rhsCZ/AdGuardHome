@@ -887,3 +887,14 @@ func (web *webAPI) marshalTLS(
 
 	aghhttp.WriteJSONResponseOK(ctx, web.logger, w, r, *data)
 }
+
+// type check
+var _ service.Shutdowner = (*webAPI)(nil)
+
+// Shutdown implements the [service.Shutdowner] interface.  It gracefully shuts
+// down the web API server.  It always returns nil error.
+func (web *webAPI) Shutdown(ctx context.Context) (err error) {
+	web.close(ctx)
+
+	return nil
+}

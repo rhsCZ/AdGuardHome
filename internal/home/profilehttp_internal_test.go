@@ -77,8 +77,6 @@ func TestWeb_HandleGetProfile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	globalContext.web = web
-
 	mux := auth.middleware().Wrap(baseMux)
 
 	require.True(t, t.Run("userless", func(t *testing.T) {
@@ -138,7 +136,6 @@ func TestWeb_HandlePutProfile(t *testing.T) {
 		tlsManager:     m,
 	})
 
-	globalContext.web = web
 	mw.set(web)
 
 	var (

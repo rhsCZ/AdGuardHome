@@ -640,6 +640,7 @@ func (web *webAPI) startMods(ctx context.Context) (err error) {
 		statsDir,
 		querylogDir,
 		web.hostsContainer,
+		web.conf.mux,
 	)
 	if err != nil {
 		// Don't wrap the error, because it's informative enough as is.
@@ -654,7 +655,7 @@ func (web *webAPI) startMods(ctx context.Context) (err error) {
 
 	err = startDNSServer()
 	if err != nil {
-		closeDNSServer(ctx)
+		closeDNSServer(ctx, web.baseLogger)
 
 		// Don't wrap the error, because it's informative enough as is.
 		return err
