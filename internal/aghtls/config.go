@@ -88,7 +88,7 @@ func (c *ExtendedTLSConfig) Clone() (clone *ExtendedTLSConfig) {
 }
 
 // UsesPrivilegedPorts returns true if the extended TLS configuration use
-// s privileged ports.  c must not be nil.
+// privileged ports.  c must not be nil.
 func (c *ExtendedTLSConfig) UsesPrivilegedPorts(maxPrivilegedPort uint16) (ok bool) {
 	return c.Enabled && (c.PortHTTPS < maxPrivilegedPort ||
 		c.PortDNSOverTLS < maxPrivilegedPort ||

@@ -186,7 +186,7 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 }
 
 // setWebAPI stores the provided web API.  It must be called before
-// [tlsManager.start], [tlsManager.reload] or [webAPI.validateTLSSettings].
+// [tlsManager.Start], [tlsManager.reload] or [webAPI.validateTLSSettings].
 //
 // TODO(s.chzhen):  Remove it once cyclic dependency is resolved.
 func (m *tlsManager) setWebAPI(webAPI *webAPI) {
@@ -283,9 +283,10 @@ func (m *tlsManager) reload(ctx context.Context) {
 }
 
 // loadTLSConfig loads and validates the TLS configuration.  It also sets
-// [tlsConfigSettings.CertificateChainData] and
-// [tlsConfigSettings.PrivateKeyData] properties.  The returned error is also
-// set in status.WarningValidation.  All arguments must not be nil.
+// [aghtls.ExtendedTLSConfig.CertificateChainData] and
+// [aghtls.ExtendedTLSConfig.PrivateKeyData] properties.  The returned error is
+// also set in [aghtls.TLSConfigStatus.WarningValidation].  All arguments must
+// not be nil.
 func loadTLSConfig(
 	ctx context.Context,
 	logger *slog.Logger,
