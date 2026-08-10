@@ -319,7 +319,7 @@ func TestTLSManager_Reload(t *testing.T) {
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
 		manager:      aghtls.EmptyManager{},
-		extTLSConf: aghtls.ExtendedTLSConfig{
+		extTLSConf: &aghtls.ExtendedTLSConfig{
 			Enabled:         true,
 			CertificatePath: certPath,
 			PrivateKeyPath:  keyPath,

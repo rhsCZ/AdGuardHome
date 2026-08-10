@@ -80,7 +80,7 @@ func TestWebAPI_HandleTLSConfigure(t *testing.T) {
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
 		manager:      aghtls.EmptyManager{},
-		extTLSConf: aghtls.ExtendedTLSConfig{
+		extTLSConf: &aghtls.ExtendedTLSConfig{
 			Enabled:         true,
 			CertificatePath: certPath,
 			PrivateKeyPath:  keyPath,
@@ -98,7 +98,7 @@ func TestWebAPI_HandleTLSConfigure(t *testing.T) {
 
 	// Prepare a request with the new TLS configuration.
 	setts := &tlsConfigSettingsExt{
-		ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+		tlsConfigSettings: tlsConfigSettings{
 			Enabled:         true,
 			PortHTTPS:       4433,
 			CertificatePath: testCertificatePath,
@@ -122,7 +122,7 @@ func TestWebAPI_HandleTLSConfigure(t *testing.T) {
 	})
 
 	res := &tlsConfig{
-		TLSConfigStatus: &aghtls.TLSConfigStatus{},
+		tlsConfigStatus: tlsConfigStatus{},
 	}
 
 	err = json.NewDecoder(w.Body).Decode(res)
@@ -135,7 +135,7 @@ func TestWebAPI_HandleTLSConfigure(t *testing.T) {
 	require.NoError(t, err)
 
 	wantIssuer := cert.Leaf.Issuer.String()
-	assert.Equal(t, wantIssuer, res.TLSConfigStatus.Issuer)
+	assert.Equal(t, wantIssuer, res.tlsConfigStatus.Issuer)
 
 	// Assert that the Web API's TLS configuration has been updated.
 	assert.Eventually(t, func() bool {
@@ -166,7 +166,7 @@ func TestWebAPI_HandleTLSStatus(t *testing.T) {
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
 		manager:      aghtls.EmptyManager{},
-		extTLSConf: aghtls.ExtendedTLSConfig{
+		extTLSConf: &aghtls.ExtendedTLSConfig{
 			Enabled:          true,
 			CertificateChain: string(testCertChain),
 			PrivateKey:       string(testPrivateKeyData),
@@ -245,7 +245,7 @@ func TestWebAPI_ValidateTLSSettings(t *testing.T) {
 		name:    "busy_https_port",
 		wantErr: fmt.Sprintf("port %d for HTTPS is not available", busyTCPPort),
 		setts: tlsConfigSettingsExt{
-			ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+			tlsConfigSettings: tlsConfigSettings{
 				Enabled:   true,
 				PortHTTPS: uint16(busyTCPPort),
 			},
@@ -254,7 +254,7 @@ func TestWebAPI_ValidateTLSSettings(t *testing.T) {
 		name:    "busy_dot_port",
 		wantErr: fmt.Sprintf("port %d for DNS-over-TLS is not available", busyTCPPort),
 		setts: tlsConfigSettingsExt{
-			ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+			tlsConfigSettings: tlsConfigSettings{
 				Enabled:        true,
 				PortDNSOverTLS: uint16(busyTCPPort),
 			},
@@ -263,7 +263,7 @@ func TestWebAPI_ValidateTLSSettings(t *testing.T) {
 		name:    "busy_doq_port",
 		wantErr: fmt.Sprintf("port %d for DNS-over-QUIC is not available", busyUDPPort),
 		setts: tlsConfigSettingsExt{
-			ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+			tlsConfigSettings: tlsConfigSettings{
 				Enabled:         true,
 				PortDNSOverQUIC: uint16(busyUDPPort),
 			},
@@ -272,7 +272,7 @@ func TestWebAPI_ValidateTLSSettings(t *testing.T) {
 		name:    "duplicate_port",
 		wantErr: "validating tcp ports: duplicated values: [4433]",
 		setts: tlsConfigSettingsExt{
-			ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+			tlsConfigSettings: tlsConfigSettings{
 				Enabled:        true,
 				PortHTTPS:      4433,
 				PortDNSOverTLS: 4433,
@@ -300,7 +300,7 @@ func TestWebAPI_HandleTLSValidate(t *testing.T) {
 		logger:       testLogger,
 		confModifier: agh.EmptyConfigModifier{},
 		manager:      aghtls.EmptyManager{},
-		extTLSConf: aghtls.ExtendedTLSConfig{
+		extTLSConf: &aghtls.ExtendedTLSConfig{
 			Enabled:         true,
 			CertificatePath: testCertificatePath,
 			PrivateKeyPath:  testPrivateKeyPath,
@@ -313,7 +313,7 @@ func TestWebAPI_HandleTLSValidate(t *testing.T) {
 	m.setWebAPI(web)
 
 	setts := &tlsConfigSettingsExt{
-		ExtendedTLSConfig: aghtls.ExtendedTLSConfig{
+		tlsConfigSettings: tlsConfigSettings{
 			Enabled:         true,
 			CertificatePath: testCertificatePath,
 			PrivateKeyPath:  testPrivateKeyPath,
@@ -327,7 +327,7 @@ func TestWebAPI_HandleTLSValidate(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/control/tls/validate", bytes.NewReader(req))
 	web.handleTLSValidate(w, r)
 
-	res := &aghtls.TLSConfigStatus{}
+	res := &tlsConfigStatus{}
 	err = json.NewDecoder(w.Body).Decode(res)
 	require.NoError(t, err)
 

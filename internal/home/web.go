@@ -266,6 +266,7 @@ func newWebAPI(ctx context.Context, conf *webAPIConfig) (w *webAPI) {
 		auth:            conf.auth,
 		pidFilePath:     conf.pidFilePath,
 		startTime:       time.Now(),
+		hostsContainer:  conf.hostsContainer,
 	}
 
 	clientFS := http.FileServer(http.FS(conf.clientFS))
@@ -538,10 +539,10 @@ func (web *webAPI) handleTLSStatus(w http.ResponseWriter, r *http.Request) {
 
 	data := &tlsConfig{
 		tlsConfigSettingsExt: tlsConfigSettingsExt{
-			ExtendedTLSConfig: *tlsConf,
+			tlsConfigSettings: confToTLSSettings(tlsConf),
 			ServePlainDNS:     aghalg.BoolToNullBool(tlsConf.ServePlainDNS),
 		},
-		TLSConfigStatus: &tlsConf.Status,
+		tlsConfigStatus: tlsConfigStatusFromConf(&tlsConf.Status),
 	}
 
 	web.marshalTLS(r.Context(), w, r, data)
@@ -579,10 +580,16 @@ func (web *webAPI) handleTLSValidate(w http.ResponseWriter, r *http.Request) {
 	// Skip the error check, since we are only interested in the value of
 	// status.WarningValidation.
 	status := &aghtls.TLSConfigStatus{}
-	_ = loadTLSConfig(ctx, web.logger, web.tlsConfProvider, &setts.ExtendedTLSConfig, status)
+	_ = loadTLSConfig(
+		ctx,
+		web.logger,
+		web.tlsConfProvider,
+		confFromTLSSettings(&setts.tlsConfigSettings),
+		status,
+	)
 	resp := &tlsConfig{
 		tlsConfigSettingsExt: setts,
-		TLSConfigStatus:      status,
+		tlsConfigStatus:      tlsConfigStatusFromConf(status),
 	}
 
 	web.marshalTLS(ctx, w, r, resp)
@@ -600,7 +607,7 @@ func (web *webAPI) validateTLSSettings(setts tlsConfigSettingsExt) (err error) {
 	}
 
 	var (
-		tlsConf      aghtls.ExtendedTLSConfig
+		tlsConf      tlsConfigSettings
 		webAPIAddr   netip.Addr
 		webAPIPort   uint16
 		plainDNSPort uint16
@@ -630,20 +637,20 @@ func (web *webAPI) validateTLSSettings(setts tlsConfigSettingsExt) (err error) {
 	}
 
 	// Don't wrap the error because it's informative enough as is.
-	return checkPortAvailability(tlsConf, setts.ExtendedTLSConfig, webAPIAddr)
+	return checkPortAvailability(tlsConf, setts.tlsConfigSettings, webAPIAddr)
 }
 
-// checkPortAvailability checks [aghtls.ExtendedTLSConfig.PortHTTPS],
-// [aghtls.ExtendedTLSConfig.PortDNSOverTLS], and
-// [aghtls.ExtendedTLSConfig.PortDNSOverQUIC] are available for use.  It checks
+// checkPortAvailability checks [tlsConfigSettings.PortHTTPS],
+// [tlsConfigSettings.PortDNSOverTLS], and
+// [tlsConfigSettings.PortDNSOverQUIC] are available for use.  It checks
 // the current configuration and, if needed, attempts to bind to the port.  The
 // function returns human-readable error messages for the frontend.  This is
 // best-effort check to prevent an "address already in use" error.
 //
 // TODO(a.garipov): Adapt for HTTP/3.
 func checkPortAvailability(
-	currConf aghtls.ExtendedTLSConfig,
-	newConf aghtls.ExtendedTLSConfig,
+	currConf tlsConfigSettings,
+	newConf tlsConfigSettings,
 	addr netip.Addr,
 ) (err error) {
 	const (
@@ -770,11 +777,12 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 	}
 
 	status := &aghtls.TLSConfigStatus{}
-	err = loadTLSConfig(ctx, web.logger, web.tlsConfProvider, &req.ExtendedTLSConfig, status)
+	conf := confFromTLSSettings(&req.tlsConfigSettings)
+	err = loadTLSConfig(ctx, web.logger, web.tlsConfProvider, conf, status)
 	if err != nil {
 		resp := &tlsConfig{
 			tlsConfigSettingsExt: req,
-			TLSConfigStatus:      status,
+			tlsConfigStatus:      tlsConfigStatusFromConf(status),
 		}
 
 		web.marshalTLS(ctx, w, r, resp)
@@ -782,7 +790,7 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newTLSConf := &req.ExtendedTLSConfig
+	newTLSConf := conf
 	newTLSConf.Status = *status
 
 	restartHTTPS, err = web.tlsConfProvider.SetExtendedTLSConfig(ctx, req.ServePlainDNS, newTLSConf)
@@ -803,7 +811,7 @@ func (web *webAPI) handleTLSConfigure(w http.ResponseWriter, r *http.Request) {
 
 	resp := &tlsConfig{
 		tlsConfigSettingsExt: req,
-		TLSConfigStatus:      status,
+		tlsConfigStatus:      tlsConfigStatusFromConf(status),
 	}
 
 	web.writeTLSConfigureResponse(ctx, w, r, resp)

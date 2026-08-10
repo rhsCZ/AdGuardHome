@@ -56,14 +56,14 @@ type tlsManager struct {
 	// nil.
 	extTLSConf *aghtls.ExtendedTLSConfig
 
-	// rootCerts is a pool of root CAs for TLSv1.2.
-	rootCerts *x509.CertPool
-
 	// web is the web UI and API server.  It must not be nil.
 	//
 	// TODO(s.chzhen):  Temporary cyclic dependency due to ongoing refactoring.
 	// Resolve it.
 	web *webAPI
+
+	// rootCerts is a pool of root CAs for TLSv1.2.
+	rootCerts *x509.CertPool
 
 	// confModifier is used to update the global configuration.
 	confModifier agh.ConfigModifier
@@ -97,7 +97,7 @@ type tlsManagerConfig struct {
 	httpReg aghhttp.Registrar
 
 	// extTLSConf contains the extended TLS configuration.
-	extTLSConf aghtls.ExtendedTLSConfig
+	extTLSConf *aghtls.ExtendedTLSConfig
 
 	// servePlainDNS defines if plain DNS is allowed for incoming requests.
 	servePlainDNS bool
@@ -115,7 +115,11 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 		confModifier: conf.confModifier,
 		httpReg:      conf.httpReg,
 		manager:      conf.manager,
-		extTLSConf:   &conf.extTLSConf,
+		extTLSConf:   &aghtls.ExtendedTLSConfig{},
+	}
+
+	if conf.extTLSConf != nil {
+		m.extTLSConf = conf.extTLSConf
 	}
 
 	m.rootCerts = aghtls.SystemRootCAs(ctx, conf.logger)
@@ -123,8 +127,8 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 	m.extTLSConf.ServePlainDNS = conf.servePlainDNS
 	m.extTLSConf.Status = aghtls.TLSConfigStatus{}
 
-	if len(conf.extTLSConf.OverrideTLSCiphers) > 0 {
-		m.customCipherIDs, err = aghtls.ParseCiphers(conf.extTLSConf.OverrideTLSCiphers)
+	if len(m.extTLSConf.OverrideTLSCiphers) > 0 {
+		m.customCipherIDs, err = aghtls.ParseCiphers(m.extTLSConf.OverrideTLSCiphers)
 		if err != nil {
 			// Should not happen because upstreams are already validated.  See
 			// [validateTLSCipherIDs].
@@ -276,11 +280,6 @@ func (m *tlsManager) reload(ctx context.Context) {
 
 	m.extTLSConf = &extTLSConf
 	m.certLastMod = fi.ModTime().UTC()
-
-	// The background context is used because the TLSConfigChanged wraps context
-	// with timeout on its own and shuts down the server, which handles current
-	// request.
-	m.web.tlsConfigChanged(context.Background(), m.extTLSConf)
 }
 
 // loadTLSConfig loads and validates the TLS configuration.  It also sets
@@ -391,16 +390,57 @@ func loadPrivateKeyData(extTLSConf *aghtls.ExtendedTLSConfig) (err error) {
 	return nil
 }
 
+// tlsConfigStatus contains the status of a certificate chain and key pair.
+type tlsConfigStatus struct {
+	// Subject is the subject of the first certificate in the chain.
+	Subject string `json:"subject,omitempty"`
+
+	// Issuer is the issuer of the first certificate in the chain.
+	Issuer string `json:"issuer,omitempty"`
+
+	// KeyType is the type of the private key.
+	KeyType string `json:"key_type,omitempty"`
+
+	// NotBefore is the NotBefore field of the first certificate in the chain.
+	NotBefore time.Time `json:"not_before"`
+
+	// NotAfter is the NotAfter field of the first certificate in the chain.
+	NotAfter time.Time `json:"not_after"`
+
+	// WarningValidation is a validation warning message with the issue
+	// description.
+	WarningValidation string `json:"warning_validation,omitempty"`
+
+	// DNSNames is the value of SubjectAltNames field of the first certificate
+	// in the chain.
+	DNSNames []string `json:"dns_names"`
+
+	// ValidCert is true if the specified certificate chain is a valid chain of
+	// X509 certificates.
+	ValidCert bool `json:"valid_cert"`
+
+	// ValidChain is true if the specified certificate chain is verified and
+	// issued by a known CA.
+	ValidChain bool `json:"valid_chain"`
+
+	// ValidKey is true if the key is a valid private key.
+	ValidKey bool `json:"valid_key"`
+
+	// ValidPair is true if both certificate and private key are correct for
+	// each other.
+	ValidPair bool `json:"valid_pair"`
+}
+
 // tlsConfig is the TLS configuration and status response.
 type tlsConfig struct {
-	*aghtls.TLSConfigStatus `json:",inline"`
-	tlsConfigSettingsExt    `json:",inline"`
+	tlsConfigStatus      `json:",inline"`
+	tlsConfigSettingsExt `json:",inline"`
 }
 
 // tlsConfigSettingsExt is used to (un)marshal PrivateKeySaved field and
 // ServePlainDNS field.
 type tlsConfigSettingsExt struct {
-	aghtls.ExtendedTLSConfig `json:",inline"`
+	tlsConfigSettings `json:",inline"`
 
 	// PrivateKeySaved is true if the private key is saved as a string and omit
 	// key from answer.  It is used to ensure that clients don't send and
@@ -438,6 +478,89 @@ func setPrivateFieldsAndCompare(
 
 	// TODO(a.garipov): Define a custom comparer.
 	return cmp.Equal(currentTLSConf, newTLSConf)
+}
+
+// confFromTLSSettings converts the TLS settings to the TLS configuration
+// version.  s must not be nil.
+func confFromTLSSettings(s *tlsConfigSettings) (conf *aghtls.ExtendedTLSConfig) {
+	conf = &aghtls.ExtendedTLSConfig{
+		PrivateKeyPath:       s.PrivateKeyPath,
+		PrivateKey:           s.PrivateKey,
+		ServerName:           s.ServerName,
+		DNSCryptConfigFile:   s.DNSCryptConfigFile,
+		CertificatePath:      s.CertificatePath,
+		CertificateChain:     s.CertificateChain,
+		OverrideTLSCiphers:   slices.Clone(s.OverrideTLSCiphers),
+		CertificateChainData: slices.Clone(s.CertificateChainData),
+		PrivateKeyData:       slices.Clone(s.PrivateKeyData),
+		PortDNSCrypt:         s.PortDNSCrypt,
+		PortDNSOverQUIC:      s.PortDNSOverQUIC,
+		PortDNSOverTLS:       s.PortDNSOverTLS,
+		PortHTTPS:            s.PortHTTPS,
+		Enabled:              s.Enabled,
+		ForceHTTPS:           s.ForceHTTPS,
+		StrictSNICheck:       s.StrictSNICheck,
+		ServePlainDNS:        s.ServePlainDNS,
+	}
+
+	conf.Status = aghtls.TLSConfigStatus{
+		Subject:           s.Status.Subject,
+		Issuer:            s.Status.Issuer,
+		KeyType:           s.Status.KeyType,
+		NotBefore:         s.Status.NotBefore,
+		NotAfter:          s.Status.NotAfter,
+		WarningValidation: s.Status.WarningValidation,
+		DNSNames:          slices.Clone(s.Status.DNSNames),
+		ValidCert:         s.Status.ValidCert,
+		ValidChain:        s.Status.ValidChain,
+		ValidKey:          s.Status.ValidKey,
+		ValidPair:         s.Status.ValidPair,
+	}
+
+	return conf
+}
+
+// confToTLSSettings converts the TLS configuration to the TLS settings.  conf
+// must not be nil.
+func confToTLSSettings(conf *aghtls.ExtendedTLSConfig) (s tlsConfigSettings) {
+	return tlsConfigSettings{
+		PrivateKeyPath:       conf.PrivateKeyPath,
+		PrivateKey:           conf.PrivateKey,
+		ServerName:           conf.ServerName,
+		DNSCryptConfigFile:   conf.DNSCryptConfigFile,
+		CertificatePath:      conf.CertificatePath,
+		CertificateChain:     conf.CertificateChain,
+		OverrideTLSCiphers:   slices.Clone(conf.OverrideTLSCiphers),
+		CertificateChainData: slices.Clone(conf.CertificateChainData),
+		PrivateKeyData:       slices.Clone(conf.PrivateKeyData),
+		Status:               tlsConfigStatusFromConf(&conf.Status),
+		PortDNSCrypt:         conf.PortDNSCrypt,
+		PortDNSOverQUIC:      conf.PortDNSOverQUIC,
+		PortDNSOverTLS:       conf.PortDNSOverTLS,
+		PortHTTPS:            conf.PortHTTPS,
+		Enabled:              conf.Enabled,
+		ForceHTTPS:           conf.ForceHTTPS,
+		StrictSNICheck:       conf.StrictSNICheck,
+		ServePlainDNS:        conf.ServePlainDNS,
+	}
+}
+
+// tlsConfigStatusFromConf converts the TLS configuration status to the TLS
+// settings status.  s must not be nil.
+func tlsConfigStatusFromConf(s *aghtls.TLSConfigStatus) (ds tlsConfigStatus) {
+	return tlsConfigStatus{
+		Subject:           s.Subject,
+		Issuer:            s.Issuer,
+		KeyType:           s.KeyType,
+		NotBefore:         s.NotBefore,
+		NotAfter:          s.NotAfter,
+		WarningValidation: s.WarningValidation,
+		DNSNames:          slices.Clone(s.DNSNames),
+		ValidCert:         s.ValidCert,
+		ValidChain:        s.ValidChain,
+		ValidKey:          s.ValidKey,
+		ValidPair:         s.ValidPair,
+	}
 }
 
 // updatePlainDNS checks the old value of
@@ -737,30 +860,30 @@ func unmarshalTLS(r *http.Request) (data tlsConfigSettingsExt, err error) {
 		return data, fmt.Errorf("failed to parse new TLS config json: %w", err)
 	}
 
-	if data.ExtendedTLSConfig.CertificateChain != "" {
+	if data.tlsConfigSettings.CertificateChain != "" {
 		var cert []byte
-		cert, err = base64.StdEncoding.DecodeString(data.ExtendedTLSConfig.CertificateChain)
+		cert, err = base64.StdEncoding.DecodeString(data.tlsConfigSettings.CertificateChain)
 		if err != nil {
 			return data, fmt.Errorf("failed to base64-decode certificate chain: %w", err)
 		}
 
-		data.ExtendedTLSConfig.CertificateChain = string(cert)
-		if data.ExtendedTLSConfig.CertificatePath != "" {
+		data.tlsConfigSettings.CertificateChain = string(cert)
+		if data.tlsConfigSettings.CertificatePath != "" {
 			return data, fmt.Errorf("certificate data and file can't be set together")
 		}
 	}
 
-	if data.ExtendedTLSConfig.PrivateKey == "" {
+	if data.tlsConfigSettings.PrivateKey == "" {
 		return data, nil
 	}
 
-	key, err := base64.StdEncoding.DecodeString(data.ExtendedTLSConfig.PrivateKey)
+	key, err := base64.StdEncoding.DecodeString(data.tlsConfigSettings.PrivateKey)
 	if err != nil {
 		return data, fmt.Errorf("failed to base64-decode private key: %w", err)
 	}
 
-	data.ExtendedTLSConfig.PrivateKey = string(key)
-	if data.ExtendedTLSConfig.PrivateKeyPath != "" {
+	data.tlsConfigSettings.PrivateKey = string(key)
+	if data.tlsConfigSettings.PrivateKeyPath != "" {
 		return data, fmt.Errorf("private key data and file can't be set together")
 	}
 

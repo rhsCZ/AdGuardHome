@@ -72,9 +72,9 @@ func (EmptyTLSConfigProvider) ExtendedTLSConfig() (conf *ExtendedTLSConfig) {
 // SetExtendedTLSConfig implements the [TLSConfigProvider] interface for
 // EmptyTLSConfigProvider.  It always returns false and nil.
 func (EmptyTLSConfigProvider) SetExtendedTLSConfig(
-	ctx context.Context,
-	servePlainDNS aghalg.NullBool,
-	conf *ExtendedTLSConfig,
+	_ context.Context,
+	_ aghalg.NullBool,
+	_ *ExtendedTLSConfig,
 ) (changed bool, err error) {
 	return false, nil
 }

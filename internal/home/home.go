@@ -861,7 +861,6 @@ func run(
 	mw.set(web)
 
 	globalContext.web = web
-
 	tlsMgr.setWebAPI(web)
 
 	statsDir, querylogDir, err := checkStatsAndQuerylogDirs(config, workDir)
@@ -963,7 +962,7 @@ func initTLS(
 		confModifier:  confModifier,
 		manager:       aghtlsMgr,
 		httpReg:       httpReg,
-		extTLSConf:    config.TLS,
+		extTLSConf:    confFromTLSSettings(&config.TLS),
 		servePlainDNS: config.DNS.ServePlainDNS,
 	})
 	if err != nil {

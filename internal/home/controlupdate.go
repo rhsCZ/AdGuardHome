@@ -193,7 +193,7 @@ func (vr *versionResponse) setAllowedToAutoUpdate(
 	}
 
 	canUpdate := true
-	if tlsConfUsesPrivilegedPorts(extTLSConf) ||
+	if extTLSConf.UsesPrivilegedPorts(maxPrivilegedPort) ||
 		config.HTTPConfig.Address.Port() < maxPrivilegedPort ||
 		config.DNS.Port < maxPrivilegedPort {
 		canUpdate, err = aghnet.CanBindPrivilegedPorts(ctx, l)
@@ -205,14 +205,6 @@ func (vr *versionResponse) setAllowedToAutoUpdate(
 	vr.CanAutoUpdate = aghalg.BoolToNullBool(canUpdate)
 
 	return nil
-}
-
-// tlsConfUsesPrivilegedPorts returns true if the provided TLS configuration
-// indicates that privileged ports are used.  c must not be nil.
-func tlsConfUsesPrivilegedPorts(c *aghtls.ExtendedTLSConfig) (ok bool) {
-	return c.Enabled && (c.PortHTTPS < maxPrivilegedPort ||
-		c.PortDNSOverTLS < maxPrivilegedPort ||
-		c.PortDNSOverQUIC < maxPrivilegedPort)
 }
 
 // finishUpdate completes an update procedure.  It is intended to be used as a
