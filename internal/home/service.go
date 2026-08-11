@@ -15,6 +15,7 @@ import (
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil/urlutil"
 	"github.com/AdguardTeam/golibs/osutil/executil"
+	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/kardianos/service"
 )
 
@@ -108,7 +109,7 @@ func (p *program) handleRun(
 		WorkingDirectory: pwd,
 		Arguments:        args,
 	}
-	ossvc.ConfigureServiceOptions(svcConfig, version.Full())
+	ossvc.ConfigureServiceOptions(svcConfig, timeutil.SystemClock{}, version.Full())
 
 	s, err := service.New(p, svcConfig)
 	if err != nil {

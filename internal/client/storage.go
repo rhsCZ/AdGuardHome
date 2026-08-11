@@ -201,8 +201,6 @@ func NewStorage(ctx context.Context, conf *StorageConfig) (s *Storage, err error
 }
 
 // Start starts the goroutines for updating the runtime client information.
-//
-// TODO(s.chzhen):  Pass context.
 func (s *Storage) Start(ctx context.Context) (err error) {
 	go s.periodicARPUpdate(ctx)
 	go s.handleHostsUpdates(ctx)

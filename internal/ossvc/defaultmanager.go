@@ -12,6 +12,7 @@ import (
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/osutil/executil"
+	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/kardianos/service"
 )
 
@@ -139,7 +140,7 @@ func (m *manager) install(ctx context.Context, action *ActionInstall) (err error
 		WorkingDirectory: action.WorkingDirectory,
 		Arguments:        action.Arguments,
 	}
-	ConfigureServiceOptions(conf, action.Version)
+	ConfigureServiceOptions(conf, timeutil.SystemClock{}, action.Version)
 
 	s, err := service.New(emptyInterface{}, conf)
 	if err != nil {

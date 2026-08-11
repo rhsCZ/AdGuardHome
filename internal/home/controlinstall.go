@@ -657,7 +657,7 @@ func startMods(
 
 	tlsMgr.start(ctx)
 
-	err = startDNSServer()
+	err = startDNSServer(ctx)
 	if err != nil {
 		closeDNSServer(ctx, baseLogger)
 
