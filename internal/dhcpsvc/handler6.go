@@ -289,7 +289,7 @@ func (iface *dhcpInterfaceV6) handleRenew(
 // handleRebind handles messages of type REBIND.  req must not be nil and must
 // be a valid DHCPv6 message of type REBIND, fd must be valid.
 //
-// TODO(e.burkov):  Rebinds all valid IA_NA options instead of only the first
+// TODO(e.burkov):  Rebind all valid IA_NA options instead of only the first
 // valid one.  It does not verify that the addresses in the IA match the stored
 // lease, since clients are identified by MAC address rather than DUID+IAID.
 func (iface *dhcpInterfaceV6) handleRebind(
@@ -472,7 +472,7 @@ func (iface *dhcpInterfaceV6) handleDecline(
 		return respond6(fd, resp)
 	}
 
-	l.WarnContext(ctx, "lease reported to be unavailable", "ip", lease.IP)
+	l.WarnContext(ctx, "lease is unavailable", "ip", lease.IP)
 
 	err = iface.common.blockLease(ctx, lease, iface.clock.Now())
 	if err != nil {
