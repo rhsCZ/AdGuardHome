@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"math/big"
+	"net"
 	"os"
 	"path/filepath"
 	"testing"
@@ -164,6 +165,35 @@ func newCertWithoutIP(tb testing.TB) (
 	return caCert, buf.Bytes(), leafKeyPEM
 }
 
+// newCertWithIP generates a self-signed certificate with an IP address in its
+// SAN extension and returns the PEM-encoded certificate and private key.
+func newCertWithIP(tb testing.TB) (certPEM, keyPEM []byte) {
+	tb.Helper()
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(tb, err)
+
+	now := time.Now()
+	tmpl := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		NotBefore:    now.Add(-time.Hour),
+		NotAfter:     now.Add(time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		IPAddresses:  []net.IP{net.ParseIP("192.0.2.1")},
+	}
+
+	certDER, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &key.PublicKey, key)
+	require.NoError(tb, err)
+
+	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+	keyPEM = pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	})
+
+	return certPEM, keyPEM
+}
+
 // newCertAndKey is a helper function that generates certificate and key.
 func newCertAndKey(tb testing.TB, n int64) (certDER []byte, key *rsa.PrivateKey) {
 	tb.Helper()
@@ -311,4 +341,78 @@ func TestTLSManager_Reload(t *testing.T) {
 
 	extTLSConf = m.extendedTLSConfig()
 	assertCertSerialNumber(t, extTLSConf, snAfter)
+}
+
+func TestTLSManager_HasIPAddrs(t *testing.T) {
+	ctx := testutil.ContextWithTimeout(t, testTimeout)
+
+	_, noIPChainPEM, noIPKeyPEM := newCertWithoutIP(t)
+	ipChainPEM, ipKeyPEM := newCertWithIP(t)
+
+	noIPSettings := tlsConfigSettings{
+		Enabled:          true,
+		CertificateChain: string(noIPChainPEM),
+		PrivateKey:       string(noIPKeyPEM),
+	}
+	ipSettings := tlsConfigSettings{
+		Enabled:          true,
+		CertificateChain: string(ipChainPEM),
+		PrivateKey:       string(ipKeyPEM),
+	}
+
+	testCases := []struct {
+		name     string
+		settings tlsConfigSettings
+		update   *tlsConfigSettings
+		want     bool
+	}{{
+		name:     "no_ip_in_cert",
+		settings: noIPSettings,
+		update:   nil,
+		want:     false,
+	}, {
+		name:     "has_ip_in_cert",
+		settings: ipSettings,
+		update:   nil,
+		want:     true,
+	}, {
+		name:     "updated_to_ip",
+		settings: noIPSettings,
+		update: &tlsConfigSettings{
+			CertificateChainData: ipChainPEM,
+			PrivateKeyData:       ipKeyPEM,
+		},
+		want: true,
+	}, {
+		name:     "updated_to_no_ip",
+		settings: ipSettings,
+		update: &tlsConfigSettings{
+			CertificateChainData: noIPChainPEM,
+			PrivateKeyData:       noIPKeyPEM,
+		},
+		want: false,
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			m, err := newTLSManager(ctx, &tlsManagerConfig{
+				logger:        testLogger,
+				confModifier:  agh.EmptyConfigModifier{},
+				manager:       aghtls.EmptyManager{},
+				tlsSettings:   tc.settings,
+				servePlainDNS: false,
+			})
+			require.NoError(t, err)
+
+			if tc.update != nil {
+				m.mu.Lock()
+				err = m.updateTLSCert(tc.update)
+				m.mu.Unlock()
+
+				require.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.want, m.HasIPAddrs())
+		})
+	}
 }

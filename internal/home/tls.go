@@ -35,7 +35,7 @@ type tlsManager struct {
 	// logger is used for logging the operation of the TLS Manager.
 	logger *slog.Logger
 
-	// mu protects certLastMod, tlsCert, tlsConf, extTLSConf.
+	// mu protects certHasIPAddrs, certLastMod, tlsCert, tlsConf, extTLSConf.
 	mu *sync.Mutex
 
 	// certLastMod is the last modification time of the certificate file.
@@ -76,6 +76,10 @@ type tlsManager struct {
 	// customCipherIDs are the IDs of the cipher suites that AdGuard Home must
 	// use.
 	customCipherIDs []uint16
+
+	// certHasIPAddrs is true if the current TLS certificate has at least one
+	// IP address in its SAN extension.
+	certHasIPAddrs bool
 }
 
 // tlsManagerConfig contains the settings for initializing the TLS manager.
@@ -173,7 +177,7 @@ func newTLSManager(ctx context.Context, conf *tlsManagerConfig) (m *tlsManager, 
 		GetCertificate: m.onGetCertificate,
 	}
 
-	m.tlsCert = &cert
+	m.setTLSCert(&cert)
 	m.setCertFileTime(ctx)
 
 	return m, nil
@@ -883,13 +887,7 @@ func (m *tlsManager) HasIPAddrs() (ok bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.tlsCert == nil || m.tlsCert.Leaf == nil {
-		return false
-	}
-
-	// TODO(m.kazantsev):  Consider storing the value instead of parsing each
-	// time.
-	return aghtls.CertificateHasIP(m.tlsCert.Leaf)
+	return m.certHasIPAddrs
 }
 
 // onGetCertificate gets [*tls.Certificate] from [*tls.Config].  If
@@ -907,6 +905,13 @@ func (m *tlsManager) onGetCertificate(chi *tls.ClientHelloInfo) (cert *tls.Certi
 	tlsCert := *m.tlsCert
 
 	return &tlsCert, nil
+}
+
+// setTLSCert stores the certificate and updates the cached properties of the
+// certificate.  cert and cert.Leaf must not be nil.  m.mu must be locked.
+func (m *tlsManager) setTLSCert(cert *tls.Certificate) {
+	m.tlsCert = cert
+	m.certHasIPAddrs = aghtls.CertificateHasIP(cert.Leaf)
 }
 
 // updateTLSCert loads and updates a TLS certificate for m.tlsConf.  If
@@ -933,7 +938,7 @@ func (m *tlsManager) updateTLSCert(extTLSConf *tlsConfigSettings) (err error) {
 		}
 	}
 
-	m.tlsCert = &cert
+	m.setTLSCert(&cert)
 
 	return nil
 }
