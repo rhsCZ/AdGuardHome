@@ -19,6 +19,7 @@ import (
 	"github.com/AdguardTeam/golibs/hostsfile"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
+	"github.com/AdguardTeam/golibs/service"
 	"github.com/AdguardTeam/golibs/timeutil"
 )
 
@@ -200,7 +201,11 @@ func NewStorage(ctx context.Context, conf *StorageConfig) (s *Storage, err error
 	return s, nil
 }
 
-// Start starts the goroutines for updating the runtime client information.
+// type check
+var _ service.Interface = (*Storage)(nil)
+
+// Start implements the [service.Interface] for *Storage.  It starts the
+// goroutines for updating the runtime client information.
 func (s *Storage) Start(ctx context.Context) (err error) {
 	go s.periodicARPUpdate(ctx)
 	go s.handleHostsUpdates(ctx)
@@ -208,7 +213,11 @@ func (s *Storage) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-// Shutdown gracefully stops the client storage.
+// type check
+var _ service.Shutdowner = (*Storage)(nil)
+
+// Shutdown implements the [service.Shutdowner] interface for *Storage.  It
+// gracefully stops the client storage.
 //
 // TODO(s.chzhen):  Pass context.
 func (s *Storage) Shutdown(_ context.Context) (err error) {
