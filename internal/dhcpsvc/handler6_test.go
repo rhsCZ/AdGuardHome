@@ -46,43 +46,43 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 	}{{
 		in:   newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, false),
 		name: "new",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptIANA(t, testIAID, testIPv6Conf.RangeStart, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
+			newDefaultOptIANA(t, testIPv6Conf.RangeStart),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Solicit(t, testHWStatic, testIPv6Static, false),
 		name: "existing_static",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
-			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
+			newDefaultOptIANA(t, testIPv6Static),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Solicit(t, testHWDynamic, testIPv6Dynamic, false),
 		name: "existing_dynamic",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptIANA(t, testIAID, testIPv6Dynamic, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
+			newDefaultOptIANA(t, testIPv6Dynamic),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Solicit(t, testHWExpired, testIPv6Expired, false),
 		name: "existing_expired",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWExpired),
-			newOptIANA(t, testIAID, testIPv6Expired, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWExpired,
+			newDefaultOptIANA(t, testIPv6Expired),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}}
 
 	for _, tc := range testCases {
@@ -112,6 +112,8 @@ func TestDHCPServer_ServeEther6_solicit(t *testing.T) {
 func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 	t.Parallel()
 
+	rapidCommitOpt := layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{})
+
 	testCases := []struct {
 		in       gopacket.Packet
 		want     *dhcpsvc.Lease
@@ -127,38 +129,38 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "new",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptIANA(t, testIAID, testIPv6Conf.RangeStart, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
+			newDefaultOptIANA(t, testIPv6Conf.RangeStart),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+			rapidCommitOpt,
+		),
 	}, {
 		in:   newDHCPv6Solicit(t, testHWStatic, testIPv6Static, true),
 		want: testLease6Static,
 		name: "existing",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
-			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
+			newDefaultOptIANA(t, testIPv6Static),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+			rapidCommitOpt,
+		),
 	}, {
 		in:   newDHCPv6Solicit(t, testHWDynamic, testIPv6Dynamic, true),
 		want: testLease6Dynamic,
 		name: "existing_dynamic",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptIANA(t, testIAID, testIPv6Dynamic, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
+			newDefaultOptIANA(t, testIPv6Dynamic),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+			rapidCommitOpt,
+		),
 	}, {
 		in: newDHCPv6Solicit(t, testHWExpired, testIPv6Expired, true),
 		want: &dhcpsvc.Lease{
@@ -169,14 +171,14 @@ func TestDHCPServer_ServeEther6_solicitRapidCommit(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "existing_expired",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWExpired),
-			newOptIANA(t, testIAID, testIPv6Expired, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-			layers.NewDHCPv6Option(layers.DHCPv6OptRapidCommit, []byte{}),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWExpired,
+			newDefaultOptIANA(t, testIPv6Expired),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+			rapidCommitOpt,
+		),
 	}}
 
 	for _, tc := range testCases {
@@ -233,45 +235,40 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "success",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptIANA(t, testIAID, testIPv6Conf.RangeStart, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
+			newDefaultOptIANA(t, testIPv6Conf.RangeStart),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Request(t, testHWUnknown, testIPv6OtherSubnet),
 		want: nil,
 		name: "not_on_link",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNotOnLink),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Request(t, testHWStatic, testIPv6Static),
 		want: testLease6Static,
 		name: "existing_static",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
-			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
+			newDefaultOptIANA(t, testIPv6Static),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
-		in:   newDHCPv6Request(t, testHWUnknown, netip.Addr{}),
-		want: nil,
-		name: "no_iana",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		in:       newDHCPv6Request(t, testHWUnknown, netip.Addr{}),
+		want:     nil,
+		name:     "no_iana",
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown, defaultOptPref, defaultOptSolMaxRT),
 	}}
 
 	for _, tc := range testCases {
@@ -311,12 +308,19 @@ func TestDHCPServer_ServeEther6_request(t *testing.T) {
 func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 	t.Parallel()
 
+	wantOpts := newWantDHCPv6Opts(
+		t,
+		testHWUnknown,
+		newDefaultOptIANA(t, testIPv6Conf.RangeStart),
+		defaultOptPref,
+		defaultOptSolMaxRT,
+	)
+
 	testCases := []struct {
-		in       gopacket.Packet
-		solicit  gopacket.Packet
-		want     *dhcpsvc.Lease
-		name     string
-		wantOpts layers.DHCPv6Options
+		in      gopacket.Packet
+		solicit gopacket.Packet
+		want    *dhcpsvc.Lease
+		name    string
 	}{{
 		in:      newDHCPv6Request(t, testHWUnknown, testIPv6Unknown),
 		solicit: newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, false),
@@ -328,13 +332,6 @@ func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "preceding_solicit",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptIANA(t, testIAID, testIPv6Conf.RangeStart, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
 	}, {
 		in:      newDHCPv6Request(t, testHWUnknown, testIPv6Unknown),
 		solicit: newDHCPv6Solicit(t, testHWUnknown, testIPv6Unknown, true),
@@ -346,13 +343,6 @@ func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "preceding_solicit_rapid_commit",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptIANA(t, testIAID, testIPv6Conf.RangeStart, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
 	}}
 
 	for _, tc := range testCases {
@@ -389,7 +379,7 @@ func TestDHCPServer_ServeEther6_requestWithSolicit(t *testing.T) {
 
 			testutil.RequireSend(t, inCh, tc.in, testTimeout)
 
-			assertValidResponse6(t, req, outCh, tc.wantOpts)
+			assertValidResponse6(t, req, outCh, wantOpts)
 		})
 	}
 }
@@ -407,11 +397,8 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			testHWUnknown,
 			newOptIANA(t, testIAID, testIPv6Unknown, 0),
 		),
-		name: "success",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-		},
+		name:     "success",
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown),
 	}, {
 		in: newDHCPv6Confirm(
 			t,
@@ -419,11 +406,8 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			newOptIANA(t, testIAID, testIPv6Dynamic, 0),
 			newOptIANA(t, testIAID+1, testIPv6Static, 0),
 		),
-		name: "success_multiple",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-		},
+		name:     "success_multiple",
+		wantOpts: newWantDHCPv6Opts(t, testHWDynamic),
 	}, {
 		in: newDHCPv6Confirm(
 			t,
@@ -431,11 +415,11 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			newOptIANA(t, testIAID, testIPv6OtherSubnet, 0),
 		),
 		name: "not_on_link",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptStatusCode(t, layers.DHCPv6StatusCodeNotOnLink),
-		},
+		),
 	}, {
 		in: newDHCPv6Confirm(
 			t,
@@ -444,11 +428,11 @@ func TestDHCPServer_ServeEther6_confirm(t *testing.T) {
 			newOptIANA(t, testIAID+1, testIPv6OtherSubnet, 0),
 		),
 		name: "mixed",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptStatusCode(t, layers.DHCPv6StatusCodeNotOnLink),
-		},
+		),
 	}, {
 		in:       newDHCPv6Confirm(t, testHWUnknown),
 		name:     "no_iana",
@@ -499,45 +483,40 @@ func TestDHCPServer_ServeEther6_renew(t *testing.T) {
 		in:   newDHCPv6Renew(t, testHWDynamic, testIPv6Dynamic),
 		name: "success",
 		want: testLease6Dynamic,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptIANA(t, testIAID, testIPv6Dynamic, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
+			newDefaultOptIANA(t, testIPv6Dynamic),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Renew(t, testHWStatic, testIPv6Static),
 		name: "success_static",
 		want: testLease6Static,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
-			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
+			newDefaultOptIANA(t, testIPv6Static),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Renew(t, testHWUnknown, testIPv6Unknown),
 		name: "no_binding",
 		want: nil,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
-		in:   newDHCPv6Renew(t, testHWUnknown, netip.Addr{}),
-		name: "no_iana",
-		want: nil,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		in:       newDHCPv6Renew(t, testHWUnknown, netip.Addr{}),
+		name:     "no_iana",
+		want:     nil,
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown, defaultOptPref, defaultOptSolMaxRT),
 	}}
 
 	for _, tc := range testCases {
@@ -586,45 +565,40 @@ func TestDHCPServer_ServeEther6_rebind(t *testing.T) {
 		in:   newDHCPv6Rebind(t, testHWDynamic, testIPv6Dynamic),
 		name: "success",
 		want: testLease6Dynamic,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptIANA(t, testIAID, testIPv6Dynamic, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
+			newDefaultOptIANA(t, testIPv6Dynamic),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Rebind(t, testHWStatic, testIPv6Static),
 		name: "success_static",
 		want: testLease6Static,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
-			newOptIANA(t, testIAID, testIPv6Static, testLeaseTTL),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
+			newDefaultOptIANA(t, testIPv6Static),
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Rebind(t, testHWUnknown, testIPv6Unknown),
 		name: "no_binding",
 		want: nil,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
-		in:   newDHCPv6Rebind(t, testHWUnknown, netip.Addr{}),
-		name: "no_iana",
-		want: nil,
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		in:       newDHCPv6Rebind(t, testHWUnknown, netip.Addr{}),
+		name:     "no_iana",
+		want:     nil,
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown, defaultOptPref, defaultOptSolMaxRT),
 	}}
 
 	for _, tc := range testCases {
@@ -669,12 +643,9 @@ func TestDHCPServer_ServeEther6_info(t *testing.T) {
 		name     string
 		wantOpts layers.DHCPv6Options
 	}{{
-		in:   newDHCPv6Info(t, testHWUnknown, true, true),
-		name: "cli_and_srv",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-		},
+		in:       newDHCPv6Info(t, testHWUnknown, true, true),
+		name:     "cli_and_srv",
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown),
 	}, {
 		in:   newDHCPv6Info(t, testHWUnknown, false, true),
 		name: "srv_only",
@@ -682,12 +653,9 @@ func TestDHCPServer_ServeEther6_info(t *testing.T) {
 			newOptServerDUID(t, testIfaceHWAddr),
 		},
 	}, {
-		in:   newDHCPv6Info(t, testHWUnknown, true, false),
-		name: "cli_only",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
-		},
+		in:       newDHCPv6Info(t, testHWUnknown, true, false),
+		name:     "cli_only",
+		wantOpts: newWantDHCPv6Opts(t, testHWUnknown),
 	}, {
 		in:   newDHCPv6Info(t, testHWUnknown, false, false),
 		name: "no_opts",
@@ -732,56 +700,51 @@ func TestDHCPServer_ServeEther6_release(t *testing.T) {
 		in:   newDHCPv6Release(t, testHWDynamic, testIPv6Dynamic),
 		want: testLease6Dynamic,
 		name: "success",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeSuccess),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Release(t, testHWStatic, testIPv6Static),
 		want: testLease6Static,
 		name: "success_static",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWStatic),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWStatic,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeSuccess),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Release(t, testHWUnknown, testIPv6Unknown),
 		want: nil,
 		name: "no_binding",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
-		in:   newDHCPv6Release(t, testHWDynamic, netip.Addr{}),
-		want: nil,
-		name: "no_iana",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		in:       newDHCPv6Release(t, testHWDynamic, netip.Addr{}),
+		want:     nil,
+		name:     "no_iana",
+		wantOpts: newWantDHCPv6Opts(t, testHWDynamic, defaultOptPref, defaultOptSolMaxRT),
 	}, {
 		in:   newDHCPv6Release(t, testHWDynamic, testIPv6Unknown),
 		want: nil,
 		name: "ip_mismatch",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}}
 
 	for _, tc := range testCases {
@@ -836,45 +799,40 @@ func TestDHCPServer_ServeEther6_decline(t *testing.T) {
 			IsStatic: false,
 		},
 		name: "success",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeSuccess),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Decline(t, testHWUnknown, testIPv6Unknown),
 		want: nil,
 		name: "no_binding",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWUnknown),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWUnknown,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
 		in:   newDHCPv6Decline(t, testHWDynamic, testIPv6Unknown),
 		want: nil,
 		name: "ip_mismatch",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
+		wantOpts: newWantDHCPv6Opts(
+			t,
+			testHWDynamic,
 			newOptIANAStatus(t, testIAID, layers.DHCPv6StatusCodeNoBinding),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+			defaultOptPref,
+			defaultOptSolMaxRT,
+		),
 	}, {
-		in:   newDHCPv6Decline(t, testHWDynamic, netip.Addr{}),
-		want: nil,
-		name: "no_iana",
-		wantOpts: layers.DHCPv6Options{
-			newOptServerDUID(t, testIfaceHWAddr),
-			newOptClientDUID(t, testHWDynamic),
-			newOptPreference(t, 0),
-			newOptSolMaxRT(t, dhcpsvc.DefaultSolMaxRT),
-		},
+		in:       newDHCPv6Decline(t, testHWDynamic, netip.Addr{}),
+		want:     nil,
+		name:     "no_iana",
+		wantOpts: newWantDHCPv6Opts(t, testHWDynamic, defaultOptPref, defaultOptSolMaxRT),
 	}}
 
 	for _, tc := range testCases {
