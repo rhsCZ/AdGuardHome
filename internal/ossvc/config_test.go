@@ -27,7 +27,7 @@ func TestConfigureServiceOptions(t *testing.T) {
 			Name: serviceName,
 		}
 
-		ossvc.ConfigureServiceOptions(conf, testClock, vInfo)
+		ossvc.ConfigureServiceOptions(conf, testClock.Now(), vInfo)
 		require.NotNil(t, conf.Option)
 
 		svcInfo, ok := conf.Option[svcInfoKey]
@@ -51,7 +51,7 @@ func TestConfigureServiceOptions(t *testing.T) {
 			},
 		}
 
-		ossvc.ConfigureServiceOptions(conf, testClock, vInfo)
+		ossvc.ConfigureServiceOptions(conf, testClock.Now(), vInfo)
 		require.NotNil(t, conf.Option)
 
 		assert.Equal(t, val, conf.Option[key])

@@ -36,6 +36,7 @@ const svcLogPrefix = "service_manager"
 // action.
 type program struct {
 	ctx             context.Context
+	clock           timeutil.Clock
 	clientBuildFS   fs.FS
 	signals         chan os.Signal
 	done            chan struct{}
@@ -109,7 +110,7 @@ func (p *program) handleRun(
 		WorkingDirectory: pwd,
 		Arguments:        args,
 	}
-	ossvc.ConfigureServiceOptions(svcConfig, timeutil.SystemClock{}, version.Full())
+	ossvc.ConfigureServiceOptions(svcConfig, p.clock.Now(), version.Full())
 
 	s, err := service.New(p, svcConfig)
 	if err != nil {
@@ -172,9 +173,12 @@ func handleServiceControlAction(
 	l.InfoContext(ctx, version.Full())
 	l.InfoContext(ctx, "control", "action", actionName)
 
+	clock := timeutil.SystemClock{}
+
 	// Create a service manager before even a run action, since it picks the
 	// correct system implementation.
 	svcMgr, err := ossvc.NewManager(ctx, &ossvc.ManagerConfig{
+		Clock:              clock,
 		Logger:             baseLogger.With(slogutil.KeyPrefix, svcLogPrefix),
 		CommandConstructor: executil.SystemCommandConstructor{},
 	})
@@ -188,6 +192,7 @@ func handleServiceControlAction(
 
 		p := &program{
 			ctx:             ctx,
+			clock:           clock,
 			clientBuildFS:   clientBuildFS,
 			signals:         signals,
 			done:            done,

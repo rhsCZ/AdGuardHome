@@ -2,19 +2,19 @@ package ossvc
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/AdguardTeam/golibs/timeutil"
 	"github.com/kardianos/service"
 )
 
 // ConfigureServiceOptions defines additional settings of the service
 // configuration.  conf and clock must not be nil.
-func ConfigureServiceOptions(conf *service.Config, clock timeutil.Clock, versionInfo string) {
+func ConfigureServiceOptions(conf *service.Config, now time.Time, versionInfo string) {
 	if conf.Option == nil {
 		conf.Option = map[string]any{}
 	}
 
-	conf.Option["SvcInfo"] = fmt.Sprintf("%s %s", versionInfo, clock.Now())
+	conf.Option["SvcInfo"] = fmt.Sprintf("%s %s", versionInfo, now)
 
 	configureOSOptions(conf)
 }

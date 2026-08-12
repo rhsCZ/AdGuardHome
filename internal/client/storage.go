@@ -219,7 +219,7 @@ var _ service.Shutdowner = (*Storage)(nil)
 // Shutdown implements the [service.Shutdowner] interface for *Storage.  It
 // gracefully stops the client storage.
 //
-// TODO(s.chzhen):  Pass context.
+// TODO(a.garipov):  Use context.
 func (s *Storage) Shutdown(_ context.Context) (err error) {
 	close(s.done)
 

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/AdguardTeam/golibs/osutil/executil"
+	"github.com/AdguardTeam/golibs/timeutil"
 )
 
 // Manager is the interface for communication with the OS service manager.
@@ -20,6 +21,9 @@ type Manager interface {
 
 // ManagerConfig contains the configuration for [Manager].
 type ManagerConfig struct {
+	// Clock is used to get the current time.  It must not be nil.
+	Clock timeutil.Clock
+
 	// Logger is the logger to use.
 	Logger *slog.Logger
 
