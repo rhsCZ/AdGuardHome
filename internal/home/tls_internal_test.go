@@ -364,17 +364,17 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 		name     string
 		settings tlsConfigSettings
 		update   *tlsConfigSettings
-		want     bool
+		want     assert.BoolAssertionFunc
 	}{{
 		name:     "no_ip_in_cert",
 		settings: noIPSettings,
 		update:   nil,
-		want:     false,
+		want:     assert.False,
 	}, {
 		name:     "has_ip_in_cert",
 		settings: ipSettings,
 		update:   nil,
-		want:     true,
+		want:     assert.True,
 	}, {
 		name:     "updated_to_ip",
 		settings: noIPSettings,
@@ -382,7 +382,7 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 			CertificateChainData: ipChainPEM,
 			PrivateKeyData:       ipKeyPEM,
 		},
-		want: true,
+		want: assert.True,
 	}, {
 		name:     "updated_to_no_ip",
 		settings: ipSettings,
@@ -390,7 +390,7 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 			CertificateChainData: noIPChainPEM,
 			PrivateKeyData:       noIPKeyPEM,
 		},
-		want: false,
+		want: assert.False,
 	}}
 
 	for _, tc := range testCases {
@@ -405,6 +405,8 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 			require.NoError(t, err)
 
 			if tc.update != nil {
+				tc.want(t, !m.HasIPAddrs())
+
 				m.mu.Lock()
 				err = m.updateTLSCert(tc.update)
 				m.mu.Unlock()
@@ -412,7 +414,7 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			assert.Equal(t, tc.want, m.HasIPAddrs())
+			tc.want(t, m.HasIPAddrs())
 		})
 	}
 }
