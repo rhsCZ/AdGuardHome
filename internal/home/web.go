@@ -340,6 +340,11 @@ func (web *webAPI) start(ctx context.Context) {
 
 	web.logger.InfoContext(ctx, "AdGuard Home is available at the following addresses:")
 
+	// Apply the initial TLS configuration.  The background context is used
+	// because tlsConfigChanged wraps context with timeout on its own and shuts
+	// down the server, which handles current request.
+	go web.tlsConfigChanged(context.Background(), web.tlsConfProvider.ExtendedTLSConfig())
+
 	// For https, we have a separate goroutine loop.
 	go web.tlsServerLoop(ctx)
 
