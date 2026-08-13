@@ -344,6 +344,8 @@ func TestTLSManager_Reload(t *testing.T) {
 }
 
 func TestTLSManager_HasIPAddrs(t *testing.T) {
+	t.Parallel()
+
 	ctx := testutil.ContextWithTimeout(t, testTimeout)
 
 	_, noIPChainPEM, noIPKeyPEM := newCertWithoutIP(t)
@@ -361,36 +363,31 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name     string
-		settings tlsConfigSettings
-		update   *tlsConfigSettings
-		want     assert.BoolAssertionFunc
+		want                 assert.BoolAssertionFunc
+		name                 string
+		certificateChainData []byte
+		privateKeyData       []byte
+		settings             tlsConfigSettings
 	}{{
 		name:     "no_ip_in_cert",
 		settings: noIPSettings,
-		update:   nil,
 		want:     assert.False,
 	}, {
 		name:     "has_ip_in_cert",
 		settings: ipSettings,
-		update:   nil,
 		want:     assert.True,
 	}, {
-		name:     "updated_to_ip",
-		settings: noIPSettings,
-		update: &tlsConfigSettings{
-			CertificateChainData: ipChainPEM,
-			PrivateKeyData:       ipKeyPEM,
-		},
-		want: assert.True,
+		name:                 "updated_to_ip",
+		settings:             noIPSettings,
+		certificateChainData: ipChainPEM,
+		privateKeyData:       ipKeyPEM,
+		want:                 assert.True,
 	}, {
-		name:     "updated_to_no_ip",
-		settings: ipSettings,
-		update: &tlsConfigSettings{
-			CertificateChainData: noIPChainPEM,
-			PrivateKeyData:       noIPKeyPEM,
-		},
-		want: assert.False,
+		name:                 "updated_to_no_ip",
+		settings:             ipSettings,
+		certificateChainData: noIPChainPEM,
+		privateKeyData:       noIPKeyPEM,
+		want:                 assert.False,
 	}}
 
 	for _, tc := range testCases {
@@ -404,7 +401,7 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			if tc.update == nil {
+			if tc.certificateChainData == nil && tc.privateKeyData == nil {
 				tc.want(t, m.HasIPAddrs())
 
 				return
@@ -416,8 +413,11 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 				m.mu.Lock()
 				defer m.mu.Unlock()
 
-				err = m.updateTLSCert(tc.update)
+				var cert tls.Certificate
+				cert, err = tls.X509KeyPair(tc.certificateChainData, tc.privateKeyData)
 				require.NoError(t, err)
+
+				m.tlsCert = &cert
 			}()
 
 			tc.want(t, m.HasIPAddrs())
