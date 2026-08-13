@@ -24,7 +24,7 @@ type ManagerConfig struct {
 	// Clock is used to get the current time.  It must not be nil.
 	Clock timeutil.Clock
 
-	// Logger is the logger to use.
+	// Logger is the logger to use.  It must not be nil.
 	Logger *slog.Logger
 
 	// CommandConstructor is the constructor to use for creating commands.

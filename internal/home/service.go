@@ -124,6 +124,7 @@ func (p *program) handleRun(
 // running.  l must not be nil.
 func restartService(ctx context.Context, baseLogger *slog.Logger) (err error) {
 	svcMgr, err := ossvc.NewManager(ctx, &ossvc.ManagerConfig{
+		Clock:              timeutil.SystemClock{},
 		Logger:             baseLogger.With(slogutil.KeyPrefix, svcLogPrefix),
 		CommandConstructor: executil.SystemCommandConstructor{},
 	})

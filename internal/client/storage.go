@@ -213,10 +213,7 @@ func (s *Storage) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-// type check
-var _ service.Shutdowner = (*Storage)(nil)
-
-// Shutdown implements the [service.Shutdowner] interface for *Storage.  It
+// Shutdown implements the [service.Interface] interface for *Storage.  It
 // gracefully stops the client storage.
 //
 // TODO(a.garipov):  Use context.
