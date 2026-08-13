@@ -8,7 +8,7 @@ import (
 )
 
 // ConfigureServiceOptions defines additional settings of the service
-// configuration.  conf and clock must not be nil.
+// configuration.  conf must not be nil.
 func ConfigureServiceOptions(conf *service.Config, now time.Time, versionInfo string) {
 	if conf.Option == nil {
 		conf.Option = map[string]any{}
