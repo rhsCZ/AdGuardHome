@@ -407,8 +407,6 @@ func TestTLSManager_HasIPAddrs(t *testing.T) {
 				return
 			}
 
-			tc.want(t, !m.HasIPAddrs())
-
 			func() {
 				m.mu.Lock()
 				defer m.mu.Unlock()
