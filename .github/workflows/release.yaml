@@ -99,7 +99,6 @@
       'artifact-name': 'adguardhome'
       'files': '**/**/AdGuardHome.exe'
       'signed-artifact-name': 'adguardhome'
-  # TODO(d.kolyshev): !! Rewrite windows ZIP archives.
   'CalculateChecksums':
     'name': 'Calculate Checksums'
     'needs': 'SignWindowsBuilds'
@@ -120,6 +119,24 @@
           'name': 'adguardhome'
           'path': |
             ${{ env.DIST_DIR }}
+      - 'name': 'Rewrite Windows ZIP archives'
+        'run': |
+          #!/bin/sh
+
+          set -e -f -u -x
+
+          dist="${{ env.DIST_DIR }}"
+
+          # The Windows executables have been changed after signing, so the ZIP
+          # archives that contain them must be recreated from the signed
+          # binaries.
+          for arch in '386' 'amd64' 'arm64'; do
+              ar="AdGuardHome_windows_${arch}"
+
+              rm -f "./${dist}/${ar}.zip"
+
+              ( cd "./${dist}/${ar}" && zip -9 -q -r "../${ar}.zip" './AdGuardHome' )
+          done
       - 'name': 'Calculate Checksums'
         'run': |
           env \
