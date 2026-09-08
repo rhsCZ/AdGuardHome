@@ -39,7 +39,6 @@ jobs:
             BASE_IMAGE=${{ env.BASE_IMAGE }}
             CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
             CHANNEL=${{ env.CHANNEL }}
-            VERSION=${{ github.ref_name }}
       - 'uses': 'actions/upload-artifact@v7'
         'with':
           'name': 'adguardhome'
@@ -67,7 +66,6 @@ jobs:
             BASE_IMAGE=${{ env.BASE_IMAGE }}
             CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
             SNAPCRAFT_CHANNEL=${{ env.SNAPCRAFT_CHANNEL }}
-            VERSION=${{ github.ref_name }}
           'secrets': |
             SNAPCRAFT_STORE_CREDENTIALS=${{ env.SNAPCRAFT_STORE_CREDENTIALS }}
 'name': 'Build and publish Snapcraft release'

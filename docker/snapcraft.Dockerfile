@@ -34,7 +34,6 @@ ARG BASE_IMAGE=adguard/snap-builder:2.1
 FROM "$BASE_IMAGE" AS builder
 ARG CACHE_BUSTER=0
 ARG CHANNEL=development
-ARG VERSION=""
 ADD snap /app/snap
 ADD scripts /app/scripts
 WORKDIR /app
@@ -57,7 +56,6 @@ EOF
 # could be published.  This stage should only be used in a CI.
 FROM scratch AS builder-exporter
 ARG CACHE_BUSTER=0
-ARG VERSION=""
 COPY --from=builder /app/AdGuardHome_amd64.snap /AdGuardHome_amd64.snap
 COPY --from=builder /app/AdGuardHome_arm64.snap /AdGuardHome_arm64.snap
 COPY --from=builder /app/AdGuardHome_armhf.snap /AdGuardHome_armhf.snap
@@ -67,7 +65,6 @@ COPY --from=builder /app/AdGuardHome_i386.snap /AdGuardHome_i386.snap
 FROM "$BASE_IMAGE" AS publisher
 ARG CACHE_BUSTER=0
 ARG SNAPCRAFT_CHANNEL=0
-ARG VERSION=""
 ADD snap /app/snap
 ADD scripts /app/scripts
 ADD AdGuardHome_amd64.snap /app/AdGuardHome_amd64.snap

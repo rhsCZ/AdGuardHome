@@ -50,6 +50,9 @@
       - 'name': 'Set source date epoch'
         'run': |
           echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+      - 'name': 'Set app version'
+        'run': |
+          echo "APP_VERSION=$(env CHANNEL=${{ env.CHANNEL }} sh ./scripts/make/version.sh)" >> "$GITHUB_ENV"
       - 'name': 'Retrieve GPG signing secrets'
         'uses': 'hashicorp/vault-action@v4'
         'with':
@@ -66,7 +69,6 @@
           'context': '.'
           'target': 'builder-exporter'
           'output': '.'
-          # TODO(d.kolyshev): !! Check correct version.
           'build-args': |
             BASE_IMAGE=${{ env.BASE_IMAGE }}
             BRANCH=${{ github.ref_name }}
@@ -76,7 +78,7 @@
             REVISION=${{ github.sha }}
             SIGN=1
             SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }}
-            VERSION=${{ github.ref_name }}
+            VERSION=${{ env.APP_VERSION }}
           'secrets': |
             GPG_KEY_PASSPHRASE=${{ env.GPG_PASSWORD }}
             GPG_SECRET_KEY=${{ env.GPG_SECRET_KEY }}
