@@ -30,7 +30,6 @@ set -e -u
 # verbosity level greater than 0.  Otherwise, it does nothing.
 log() {
 	if [ "$verbose" -gt '0' ]; then
-		# Don't use quotes to get word splitting.
 		printf '%s\n' "$1" 1>&2
 	fi
 }
@@ -39,7 +38,7 @@ log() {
 dist="${DIST_DIR:-dist}"
 readonly dist
 
-log "checking tools"
+log 'checking tools'
 
 # Make sure we fail gracefully if the SHA-256 tool we need is missing.  Use
 # shasum as an alternative when available.
@@ -58,7 +57,7 @@ if ! command -v 'sha256sum' >/dev/null; then
 fi
 readonly use_shasum
 
-log "calculating checksums"
+log 'calculating checksums'
 
 # calculate_checksums uses the previously detected SHA-256 tool to calculate
 # checksums.  Do not use find with -exec, since shasum requires arguments.
@@ -89,4 +88,4 @@ calculate_checksums() {
 	done
 )
 
-log "finished"
+log 'finished'

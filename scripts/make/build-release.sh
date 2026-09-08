@@ -32,7 +32,6 @@ set -e -o 'pipefail' -f -u
 # verbosity level greater than 0.  Otherwise, it does nothing.
 log() {
 	if [ "$verbose" -gt '0' ]; then
-		# Don't use quotes to get word splitting.
 		printf '%s\n' "$1" 1>&2
 	fi
 }
@@ -87,7 +86,7 @@ readonly gpg_key_passphrase gpg_key
 dist="${DIST_DIR:-dist}"
 readonly dist
 
-log "checking tools"
+log 'checking tools'
 
 # Make sure we fail gracefully if one of the tools we need is missing.
 for tool in gpg gzip sed tar zip; do
@@ -213,7 +212,7 @@ build() {
 	log "$build_archive"
 }
 
-log "starting builds"
+log 'starting builds'
 
 # Go over all platforms defined in the space-separated table above, tweak the
 # values where necessary, and feed to build.
@@ -258,13 +257,13 @@ echo "$platforms" | while read -r os arch arm mips; do
 	build "$dir" "$ar" "$os" "$arch" "$arm" "$mips"
 done
 
-log "packing frontend"
+log 'packing frontend'
 
 build_archive="./${dist}/AdGuardHome_frontend.tar.gz"
 tar -c -f - ./build | gzip -9 - >"$build_archive"
 log "$build_archive"
 
-log "calculating checksums"
+log 'calculating checksums'
 
 env \
 	DIST_DIR="$dist" \
@@ -272,7 +271,7 @@ env \
 	sh ./scripts/make/calc-checksums.sh \
 	;
 
-log "writing versions"
+log 'writing versions'
 
 echo "version=$version" >"./${dist}/version.txt"
 
@@ -342,4 +341,4 @@ done
 
 echo '}' >>"$version_json"
 
-log "finished"
+log 'finished'
