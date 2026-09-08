@@ -61,6 +61,8 @@ log 'calculating checksums'
 
 # calculate_checksums uses the previously detected SHA-256 tool to calculate
 # checksums.  Do not use find with -exec, since shasum requires arguments.
+#
+# TODO(d.kolyshev):  Get rid of this workaround.
 calculate_checksums() {
 	if [ "$use_shasum" -eq '0' ]; then
 		sha256sum "$@"
