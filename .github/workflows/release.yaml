@@ -203,13 +203,12 @@
           set -e -f -u -x
 
           # TODO(d.kolyshev):  Use AdGuardSoftwareLimited/actions/actions/docker-build.
-          # TODO(d.kolyshev): !! Set DOCKER_PUSH='1'.
           env \
               CHANNEL=${{ env.CHANNEL }} \
               REVISION=${{ github.sha }} \
               DIST_DIR=${{ env.DIST_DIR }} \
               DOCKER_IMAGE_NAME='adguard/adguardhome' \
-              DOCKER_PUSH='0' \
+              DOCKER_PUSH='1' \
               VERBOSE='1' \
               sh ./scripts/make/build-docker.sh \
               ;
@@ -230,10 +229,6 @@
       'target_repo': 'AdguardTeam/AdGuardHome'
 'name': 'Build and publish releases'
 'on':
-  # TODO(d.kolyshev): !! Remove on push.
-  'push':
-    'branches':
-      - '*'
   'workflow_dispatch':
     'inputs':
       'cache_buster':
