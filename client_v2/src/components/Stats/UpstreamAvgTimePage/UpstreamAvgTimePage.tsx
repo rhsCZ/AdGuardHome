@@ -63,7 +63,7 @@ export const UpstreamAvgTimePage = () => {
             getRowId={(row) => row.name}
             defaultSort={{ key: 'time', direction: 'desc' }}
             loading={statsState.processingStats}
-            emptyText={intl.getMessage('stats_table_empty')}
+            emptyText={intl.getMessage('nothing_found')}
             onRefresh={refreshStats}
             searchTextForRow={(row) => row.name}
             pageSizeKey={LOCAL_STORAGE_KEYS.UPSTREAM_AVG_TIME_PAGE_SIZE}

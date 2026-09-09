@@ -1,4 +1,4 @@
-import { Show, createSignal } from 'solid-js';
+import { Show, createMemo, createSignal } from 'solid-js';
 
 import intl from 'panel/common/intl';
 import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
@@ -21,47 +21,35 @@ export const initialClientBlockConfirmState: ClientBlockConfirmState = {
 
 export const CLIENT_BLOCK_CONFIRM_SUBMIT_TEST_ID = 'confirm-dialog-submit';
 
-// `intl.getMessage` renders tags (e.g. <b>) as DOM nodes; strip them to a
-// plain string so `new Error()` doesn't log "[object HTMLElement]".
-const getPlainMessage = (key: string, values?: Record<string, string | number>): string => {
-    const message = intl.getMessage(key, values) as string | unknown[];
-    return Array.isArray(message)
-        ? message
-              .map((part) =>
-                  typeof part === 'string' ? part : (part as HTMLElement).textContent ?? '',
-              )
-              .join('')
-        : message;
-};
-
 type ClientBlockConfirmDialogProps = {
     state: ClientBlockConfirmState;
     onClose: () => void;
     onConfirm: () => void;
 };
 
-/**
- * Confirm dialog for blocking and unblocking a client. Shared by the
- * dashboard Top clients card and the full stats Top clients page. Renders
- * nothing unless `state.open` is true.
- */
 export const ClientBlockConfirmDialog = (props: ClientBlockConfirmDialogProps) => {
     const isBlock = () => props.state.action === 'block';
+
+    const title = createMemo(() =>
+        isBlock()
+            ? intl.getMessage('confirm_client_block_title', { ip: props.state.client })
+            : intl.getMessage('confirm_client_unblock_title', { ip: props.state.client }),
+    );
+
+    const text = createMemo(() =>
+        isBlock()
+            ? intl.getMessage('confirm_client_block_desc', { ip: props.state.client })
+            : intl.getMessage('confirm_client_unblock_desc', { ip: props.state.client }),
+    );
 
     return (
         <Show when={props.state.open}>
             <ConfirmDialog
                 onClose={props.onClose}
                 onConfirm={props.onConfirm}
-                title={intl.getMessage(
-                    isBlock() ? 'confirm_client_block_title' : 'confirm_client_unblock_title',
-                    { ip: props.state.client },
-                )}
-                text={intl.getMessage(
-                    isBlock() ? 'confirm_client_block_desc' : 'confirm_client_unblock_desc',
-                    { ip: props.state.client },
-                )}
-                buttonText={intl.getMessage(isBlock() ? 'block' : 'unblock')}
+                title={title()}
+                text={text()}
+                buttonText={isBlock() ? intl.getMessage('block') : intl.getMessage('unblock')}
                 cancelText={intl.getMessage('cancel')}
                 buttonVariant={isBlock() ? 'danger' : 'primary'}
                 submitTestId={CLIENT_BLOCK_CONFIRM_SUBMIT_TEST_ID}
@@ -95,7 +83,7 @@ export const useClientBlockConfirm = () => {
         if (action === 'block') {
             if (isClientBlocked(client)) {
                 addErrorToast({
-                    error: new Error(getPlainMessage('client_already_blocked', { ip: client })),
+                    error: intl.getMessage('client_already_blocked', { ip: client }),
                 });
                 closeConfirmDialog();
                 return;

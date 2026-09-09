@@ -64,7 +64,7 @@ export const TopQueriedDomainsPage = () => {
             getRowId={(row) => row.name}
             defaultSort={{ key: 'queries', direction: 'desc' }}
             loading={statsState.processingStats}
-            emptyText={intl.getMessage('stats_table_empty')}
+            emptyText={intl.getMessage('nothing_found')}
             onRefresh={refreshStats}
             searchTextForRow={(row) => row.name}
             pageSizeKey={LOCAL_STORAGE_KEYS.TOP_QUERIED_DOMAINS_PAGE_SIZE}

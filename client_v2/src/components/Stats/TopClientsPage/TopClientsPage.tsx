@@ -73,9 +73,7 @@ export const TopClientsPage = () => {
 
     // Track the access list: <For> mappers run untracked, so rows must be
     // re-created (cloned) to re-render block state.
-    const blockedSet = createMemo(
-        () => new Set(splitByNewLine(accessState.disallowed_clients)),
-    );
+    const blockedSet = createMemo(() => new Set(splitByNewLine(accessState.disallowed_clients)));
 
     const rows = createMemo<ClientStat[]>(() => {
         void blockedSet();
@@ -249,7 +247,7 @@ export const TopClientsPage = () => {
                         type="button"
                         class={s.actionButton}
                         data-testid="client-action-button"
-                        aria-label={`${intl.getMessage('actions')}: ${row.info?.name || row.name}`}
+                        aria-label={`${intl.getMessage('aria_actions')}: ${row.info?.name || row.name}`}
                     >
                         <Icon icon="bullets" />
                     </button>
@@ -323,7 +321,9 @@ export const TopClientsPage = () => {
                         data-testid={blocked ? 'client-unblock-button' : 'client-block-button'}
                         onClick={() => openConfirmDialog(row.name, blocked ? 'unblock' : 'block')}
                     >
-                        {intl.getMessage(blocked ? 'unblock_client' : 'block_client')}
+                        {blocked
+                            ? intl.getMessage('unblock_client')
+                            : intl.getMessage('block_client')}
                     </button>
                 }
             />
@@ -354,7 +354,7 @@ export const TopClientsPage = () => {
                 getRowId={(row) => row.name}
                 defaultSort={{ key: 'queries', direction: 'desc' }}
                 loading={statsState.processingStats || accessState.processing}
-                emptyText={intl.getMessage('stats_table_empty')}
+                emptyText={intl.getMessage('nothing_found')}
                 onRefresh={handleRefresh}
                 searchTextForRow={(row) => `${row.name} ${row.info?.name ?? ''}`}
                 pageSizeKey={LOCAL_STORAGE_KEYS.TOP_CLIENTS_PAGE_SIZE}
