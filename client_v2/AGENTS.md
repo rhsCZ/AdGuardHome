@@ -138,17 +138,22 @@ All commands are run from the `client_v2/` directory.
 
 - You MUST verify your work with the linter, formatter, and type checker.
 
-    Use the following commands:
-    - `npm run typecheck` to check for type errors
+    Run only the npm scripts, from the `client_v2/` directory. Do not invoke
+    the underlying binaries directly (`npx eslint ...`, `npx tsc`,
+    `node_modules/.bin/...`, etc.) — the scripts are the only supported
+    commands, and ad-hoc `npx` calls can install tooling into the repo root
+    instead of `client_v2/node_modules`:
+    - `npm run check` — the full gate (lint + typecheck + unit tests)
     - `npm run lint` to run the linter
     - `npm run lint:fix` to fix linting and formatting issues automatically
+    - `npm run typecheck` to check for type errors
+    - `npm run test` to run the unit tests
 
 - You MUST update the unit tests for changed code. New stores, helpers, and
   components should have corresponding tests under `src/__tests__/`.
 
-- You MUST run tests with `npm run test` to verify that your changes do not
-  break existing functionality. Use `npm run check` for the full gate
-  (lint + typecheck + test).
+- You MUST run `npm run check` after completing your changes: lint,
+  typecheck, and all unit tests must pass before the task is done.
 
 - You MUST verify UI changes against the running AdGuard Home instance, not
   the webpack dev server. Rebuild with `npm run build-dev` (quick iteration)

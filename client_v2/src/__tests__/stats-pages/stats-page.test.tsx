@@ -1,10 +1,11 @@
-import { render, screen, fireEvent } from '@solidjs/testing-library';
+import { render, screen, fireEvent, waitFor } from '@solidjs/testing-library';
 import { HashRouter, Route } from '@solidjs/router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { StatsPage } from 'panel/components/Stats/StatsPage';
 import type { TableColumn } from 'panel/common/ui/Table';
 import { LocalStorageHelper } from 'panel/helpers/localStorageHelper';
+import type { IOption } from 'panel/lib/helpers/utils';
 
 type Row = { name: string; count: number };
 
@@ -22,6 +23,13 @@ const columns: TableColumn<Row>[] = [
         accessor: 'count',
         sortable: true,
     },
+];
+
+const mobileSortOptions: IOption<string>[] = [
+    { value: 'name:asc', label: 'Name asc' },
+    { value: 'name:desc', label: 'Name desc' },
+    { value: 'count:desc', label: 'Count desc' },
+    { value: 'count:asc', label: 'Count asc' },
 ];
 
 const mockMatchMedia = (matches: boolean) => {
@@ -59,6 +67,7 @@ const renderPage = (overrides: Partial<Parameters<typeof StatsPage<Row>>[0]> = {
                         searchTextForRow={(row) => row.name}
                         pageSizeKey="top_queried_domains_page_size"
                         sortStorageKey="top_queried_domains_sort"
+                        mobileSortOptions={mobileSortOptions}
                         renderMobileCard={(row) => (
                             <div data-testid="mobile-card">
                                 {row.name}: {row.count}
@@ -188,5 +197,43 @@ describe('StatsPage', () => {
         expect(
             calls.some((url) => url.includes('sort=count') && url.includes('dir=asc')),
         ).toBe(true);
+    });
+
+    it('shows a loader instead of the empty state while loading on mobile', () => {
+        mockMatchMedia(false);
+        renderPage({ loading: true, rows: [] });
+
+        expect(screen.getByTestId('stats-mobile-loader')).toBeInTheDocument();
+        expect(screen.queryByTestId('stats-empty-state')).not.toBeInTheDocument();
+    });
+
+    it('shows the empty state once loading finishes with no rows on mobile', () => {
+        mockMatchMedia(false);
+        renderPage({ loading: false, rows: [] });
+
+        expect(screen.queryByTestId('stats-mobile-loader')).not.toBeInTheDocument();
+        expect(screen.getByTestId('stats-empty-state')).toBeInTheDocument();
+        expect(screen.getByText('Nothing found')).toBeInTheDocument();
+    });
+
+    it('shows a loader on mobile during refresh even when rows are present', () => {
+        mockMatchMedia(false);
+        renderPage({ loading: true });
+
+        expect(screen.getByTestId('stats-mobile-loader')).toBeInTheDocument();
+        expect(screen.queryAllByTestId('mobile-card')).toHaveLength(0);
+    });
+
+    it('shows the table loader instead of the empty state on desktop while loading', async () => {
+        mockMatchMedia(true);
+        renderPage({ loading: true, rows: [] });
+
+        await waitFor(() => {
+            expect(
+                document.querySelector('[class*="tableLoader"]'),
+            ).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('stats-empty-state')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('stats-mobile-list')).not.toBeInTheDocument();
     });
 });

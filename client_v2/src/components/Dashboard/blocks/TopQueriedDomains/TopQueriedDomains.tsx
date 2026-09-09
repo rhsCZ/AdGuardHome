@@ -85,7 +85,18 @@ export const TopQueriedDomains = (props: Props) => {
                                                 <Icon icon="eye_open" class={s.tableRowIcon} />
                                             </Tooltip>
                                         </Show>
-                                        <span class={s.domainName}>{domain.name}</span>
+                                        <Link
+                                            to={RoutePath.QueryLog}
+                                            query={{ search: `"${domain.name}"` }}
+                                            class={cn(
+                                                theme.text.t3,
+                                                theme.text.condenced,
+                                                s.domainNameLink,
+                                            )}
+                                            title={domain.name}
+                                        >
+                                            <span class={s.domainName}>{domain.name}</span>
+                                        </Link>
                                     </div>
 
                                     <div class={s.tableRowRight}>

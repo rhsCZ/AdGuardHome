@@ -30,7 +30,6 @@
 
 .tableRows {
     height: 100%;
-    overflow-y: auto;
 }
 
 .tableRowRight {
@@ -201,6 +200,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+}
+
+.clientIpText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .clientIpLink {

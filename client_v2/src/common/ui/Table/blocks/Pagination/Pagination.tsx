@@ -1,10 +1,12 @@
-import { createSignal, createMemo, For } from 'solid-js';
+import { createMemo, For } from 'solid-js';
 import cn from 'clsx';
 
 import { Icon } from 'panel/common/ui/Icon';
 import theme from 'panel/lib/theme';
-import { Dropdown } from 'panel/common/ui/Dropdown';
+import { Select } from 'panel/common/controls/Select';
 import intl from 'panel/common/intl';
+import type { IOption } from 'panel/lib/helpers/utils';
+import { useIsMobile } from 'panel/hooks/useIsMobile';
 
 type Props = {
     currentPage: number;
@@ -14,7 +16,6 @@ type Props = {
     pageSizeOptions: number[];
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
-    limitButtonDescription?: string;
 };
 
 export const generatePageNumbers = (
@@ -56,33 +57,34 @@ export const generatePageNumbers = (
 };
 
 export const Pagination = (props: Props) => {
-    const [limitMenuOpen, setLimitMenuOpen] = createSignal(false);
-
     const canPreviousPage = () => props.currentPage > 0;
     const canNextPage = () => props.currentPage < props.totalPages - 1;
 
     const pageNumbers = createMemo(() => generatePageNumbers(props.currentPage, props.totalPages));
+    const isMobile = useIsMobile();
 
-    const limitMenu = (
-        <div class={theme.dropdown.menu}>
-            <For each={props.pageSizeOptions}>
-                {(size) => (
-                    <div
-                        class={cn(theme.dropdown.item, {
-                            [theme.dropdown.item_active]: props.pageSize === size,
-                        })}
-                        data-testid={`pagination-page-size-${size}`}
-                        onClick={() => {
-                            props.onPageSizeChange(size);
-                            setLimitMenuOpen(false);
-                        }}
-                    >
-                        {intl.getMessage('rows_per_page', { value: size })}
-                    </div>
-                )}
-            </For>
-        </div>
+    const pageSizeOptions = createMemo<IOption<number>[]>(() =>
+        props.pageSizeOptions.map((size) => ({
+            value: size,
+            label: intl.getMessage('rows_per_page', { value: size }),
+        })),
     );
+
+    const scrollToTopOnMobile = () => {
+        if (isMobile()) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        props.onPageChange(page);
+        scrollToTopOnMobile();
+    };
+
+    const handlePageSizeChange = (size: number) => {
+        props.onPageSizeChange(size);
+        scrollToTopOnMobile();
+    };
 
     const renderPages = () => {
         if (props.totalPages <= 1) {
@@ -94,7 +96,7 @@ export const Pagination = (props: Props) => {
                 <button
                     type="button"
                     aria-label={intl.getMessage('aria_previous_page')}
-                    onClick={() => props.onPageChange(props.currentPage - 1)}
+                    onClick={() => handlePageChange(props.currentPage - 1)}
                     disabled={!canPreviousPage()}
                     class={theme.pagination.button}
                     data-testid="pagination-previous-button"
@@ -114,7 +116,7 @@ export const Pagination = (props: Props) => {
                         return (
                             <button
                                 type="button"
-                                onClick={() => props.onPageChange(pageNum - 1)}
+                                onClick={() => handlePageChange(pageNum - 1)}
                                 class={cn(
                                     theme.pagination.button,
                                     pageNum === props.currentPage + 1 &&
@@ -130,7 +132,7 @@ export const Pagination = (props: Props) => {
                 <button
                     type="button"
                     aria-label={intl.getMessage('aria_next_page')}
-                    onClick={() => props.onPageChange(props.currentPage + 1)}
+                    onClick={() => handlePageChange(props.currentPage + 1)}
                     disabled={!canNextPage()}
                     class={theme.pagination.button}
                     data-testid="pagination-next-button"
@@ -149,22 +151,18 @@ export const Pagination = (props: Props) => {
             {renderPages()}
 
             <div class={theme.pagination.limitContainer}>
-                <Dropdown
-                    position="bottomRight"
-                    menu={limitMenu}
-                    open={limitMenuOpen()}
-                    onOpenChange={setLimitMenuOpen}
-                    iconClass={theme.dropdown.icon}
-                    class={theme.dropdown.flexDropdownWrap}
-                    wrapClass={cn(theme.dropdown.dropdown, theme.pagination.dropdownShowOnPage)}
-                >
-                    <span
-                        class={theme.pagination.dropdownText}
-                        data-testid="pagination-page-size-trigger"
-                    >
-                        {intl.getMessage('rows_per_page', { value: props.pageSize })}
-                    </span>
-                </Dropdown>
+                <div data-testid="pagination-page-size-select">
+                    <Select<number>
+                        options={pageSizeOptions()}
+                        value={pageSizeOptions().find((option) => option.value === props.pageSize)}
+                        onChange={(option) => handlePageSizeChange(option.value)}
+                        isSearchable={false}
+                        optionTestIdPrefix="pagination-page-size"
+                        class={theme.pagination.select}
+                        height={isMobile() ? 'medium' : 'small'}
+                        showOptionIcon={false}
+                    />
+                </div>
             </div>
         </div>
     );

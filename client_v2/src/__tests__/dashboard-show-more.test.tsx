@@ -37,6 +37,12 @@ describe('Dashboard "Show more" links', () => {
             />
         ));
         expect(getLinkHref('show-more-top-queried-domains')).toContain('/top_queried_domains');
+
+        // The domain name is a QueryLog link filtered by the domain.
+        const domainLink = screen.getByText('a.org').closest('a');
+        expect(domainLink).not.toBeNull();
+        expect(domainLink!.getAttribute('href')).toContain('/logs');
+        expect(domainLink!.getAttribute('href')).toContain('a.org');
     });
 
     it('Top blocked domains card links to /top_blocked_domains', () => {
@@ -47,6 +53,11 @@ describe('Dashboard "Show more" links', () => {
             />
         ));
         expect(getLinkHref('show-more-top-blocked-domains')).toContain('/top_blocked_domains');
+
+        const domainLink = screen.getByText('a.org').closest('a');
+        expect(domainLink).not.toBeNull();
+        expect(domainLink!.getAttribute('href')).toContain('/logs');
+        expect(domainLink!.getAttribute('href')).toContain('a.org');
     });
 
     it('Top upstreams card links to /top_upstreams', () => {

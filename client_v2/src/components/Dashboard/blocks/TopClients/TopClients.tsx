@@ -1,4 +1,4 @@
-import { Show, For, createSignal, createMemo, onCleanup } from 'solid-js';
+import { Show, For, createSignal, createMemo } from 'solid-js';
 import { useIsDesktop } from 'panel/helpers/useMediaQuery';
 
 import intl from 'panel/common/intl';
@@ -6,12 +6,13 @@ import { Icon } from 'panel/common/ui/Icon';
 import { Tooltip } from 'panel/common/ui/Tooltip';
 import { QueriesTooltip } from 'panel/common/ui/QueriesTooltip';
 import { Dropdown } from 'panel/common/ui/Dropdown';
-import { ConfirmDialog } from 'panel/common/ui/ConfirmDialog';
+import {
+    ClientBlockConfirmDialog,
+    useClientBlockConfirm,
+} from 'panel/common/ui/ClientBlockConfirm';
 import { Link } from 'panel/common/ui/Link';
 import { RoutePath } from 'panel/components/Routes/Paths';
 import { formatCompactNumber } from 'panel/helpers/helpers';
-import { addErrorToast } from 'panel/stores/toasts';
-import { accessState, toggleClientBlock } from 'panel/stores/access';
 import theme from 'panel/lib/theme';
 import cn from 'clsx';
 import { useSortedData, TOP_CLIENTS_VISIBLE_ITEMS } from '../../hooks/useSortedData';
@@ -23,6 +24,7 @@ import { ClientTooltip } from '../ClientTooltip';
 import s from './TopClients.module.pcss';
 
 import type { ClientFindSubEntry } from 'panel/api/model/clientFindSubEntry';
+import type { ClientBlockAction } from 'panel/common/ui/ClientBlockConfirm';
 
 type ClientInfo = {
     name: string;
@@ -37,21 +39,14 @@ type Props = {
 };
 
 export const TopClients = (props: Props) => {
-    let isMounted = true;
-    onCleanup(() => {
-        isMounted = false;
-    });
+    const {
+        confirmState: confirmDialog,
+        isClientBlocked,
+        openConfirmDialog,
+        closeConfirmDialog,
+        handleConfirm,
+    } = useClientBlockConfirm();
 
-    const disallowedClientsList = createMemo(() => {
-        const str = accessState.disallowed_clients || '';
-        return str ? str.split('\n').filter(Boolean) : [];
-    });
-
-    const [confirmDialog, setConfirmDialog] = createSignal<{
-        open: boolean;
-        client: string;
-        action: 'block' | 'unblock';
-    }>({ open: false, client: '', action: 'block' });
     const [openMenuClient, setOpenMenuClient] = createSignal<string | null>(null);
 
     const isDesktop = useIsDesktop();
@@ -60,42 +55,9 @@ export const TopClients = (props: Props) => {
         TOP_CLIENTS_VISIBLE_ITEMS,
     );
 
-    const isClientBlocked = (clientName: string) => disallowedClientsList().includes(clientName);
-
-    const handleBlockClient = async (clientIp: string) => {
-        const disallowedList = accessState.disallowed_clients
-            ? accessState.disallowed_clients.split('\n').filter(Boolean)
-            : [];
-        const isDisallowed = disallowedList.includes(clientIp);
-        if (isDisallowed) {
-            addErrorToast({
-                error: new Error(intl.getMessage('client_already_blocked', { ip: clientIp })),
-            });
-            if (isMounted) {
-                setConfirmDialog({ open: false, client: '', action: 'block' });
-            }
-            return;
-        }
-        await toggleClientBlock(clientIp, false, '');
-        if (isMounted) {
-            setConfirmDialog({ open: false, client: '', action: 'block' });
-        }
-    };
-
-    const handleUnblockClient = async (clientIp: string) => {
-        const disallowedList = accessState.disallowed_clients
-            ? accessState.disallowed_clients.split('\n').filter(Boolean)
-            : [];
-        const isDisallowed = disallowedList.includes(clientIp);
-        await toggleClientBlock(clientIp, isDisallowed, isDisallowed ? clientIp : '');
-        if (isMounted) {
-            setConfirmDialog({ open: false, client: '', action: 'unblock' });
-        }
-    };
-
-    const openConfirmDialog = (client: string, action: 'block' | 'unblock') => {
+    const openClientConfirmDialog = (client: string, action: ClientBlockAction) => {
         setOpenMenuClient(null);
-        setConfirmDialog({ open: true, client, action });
+        openConfirmDialog(client, action);
     };
 
     const getClientMenu = (client: ClientInfo) => {
@@ -111,7 +73,7 @@ export const TopClients = (props: Props) => {
                                 s.protectionMenuItem,
                                 s.protectionMenuItemRed,
                             )}
-                            onClick={() => openConfirmDialog(client.name, 'block')}
+                            onClick={() => openClientConfirmDialog(client.name, 'block')}
                         >
                             {intl.getMessage('block_client')}
                         </div>
@@ -124,7 +86,7 @@ export const TopClients = (props: Props) => {
                             theme.dropdown.item,
                             s.protectionMenuItem,
                         )}
-                        onClick={() => openConfirmDialog(client.name, 'unblock')}
+                        onClick={() => openClientConfirmDialog(client.name, 'unblock')}
                     >
                         {intl.getMessage('unblock_client')}
                     </div>
@@ -170,6 +132,7 @@ export const TopClients = (props: Props) => {
                                                 s.clientIp,
                                                 s.clientIpLink,
                                             )}
+                                            title={client.name}
                                         >
                                             <Tooltip
                                                 position="bottomLeft"
@@ -198,7 +161,7 @@ export const TopClients = (props: Props) => {
                                                 </Show>
                                             </Tooltip>
 
-                                            {client.name}
+                                            <span class={s.clientIpText}>{client.name}</span>
                                         </Link>
                                     </div>
 
@@ -289,6 +252,7 @@ export const TopClients = (props: Props) => {
                                                     theme.text.condenced,
                                                     s.clientName,
                                                 )}
+                                                title={client.info.name}
                                             >
                                                 {client.info.name}
                                             </div>
@@ -340,50 +304,11 @@ export const TopClients = (props: Props) => {
                     </For>
                 </Show>
 
-                <Show when={confirmDialog().open}>
-                    {(() => {
-                        const dialog = confirmDialog();
-                        const isBlock = dialog.action === 'block';
-
-                        return (
-                            <ConfirmDialog
-                                onClose={() =>
-                                    setConfirmDialog({ open: false, client: '', action: 'block' })
-                                }
-                                title={
-                                    isBlock
-                                        ? intl.getMessage('confirm_client_block_title', {
-                                              ip: dialog.client,
-                                          })
-                                        : intl.getMessage('confirm_client_unblock_title', {
-                                              ip: dialog.client,
-                                          })
-                                }
-                                text={
-                                    isBlock
-                                        ? intl.getMessage('confirm_client_block_desc', {
-                                              ip: dialog.client,
-                                          })
-                                        : intl.getMessage('confirm_client_unblock_desc', {
-                                              ip: dialog.client,
-                                          })
-                                }
-                                buttonText={
-                                    isBlock ? intl.getMessage('block') : intl.getMessage('unblock')
-                                }
-                                cancelText={intl.getMessage('cancel')}
-                                buttonVariant={isBlock ? 'danger' : 'primary'}
-                                onConfirm={() => {
-                                    if (isBlock) {
-                                        handleBlockClient(dialog.client);
-                                    } else {
-                                        handleUnblockClient(dialog.client);
-                                    }
-                                }}
-                            />
-                        );
-                    })()}
-                </Show>
+                <ClientBlockConfirmDialog
+                    state={confirmDialog()}
+                    onClose={closeConfirmDialog}
+                    onConfirm={handleConfirm}
+                />
             </div>
 
             <CardFooter
