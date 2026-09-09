@@ -19,7 +19,6 @@ type Props = {
     progress?: number;
 };
 
-/** Compact count with the percentage of the total in parentheses. */
 export const CountWithPercent = (props: Props) => {
     const search = createMemo(() => props.queryLogSearch);
 
