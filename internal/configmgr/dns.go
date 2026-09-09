@@ -4,8 +4,10 @@ import (
 	"net/netip"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/dnsforward"
+	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/netutil"
 	"github.com/AdguardTeam/golibs/timeutil"
+	"github.com/AdguardTeam/golibs/validate"
 )
 
 // DNSConfig is a block with DNS configuration params.
@@ -210,4 +212,18 @@ type PendingRequests struct {
 	// Enabled controls if duplicate requests should be sent to the upstreams
 	// along with the original one.
 	Enabled bool `yaml:"enabled"`
+}
+
+// type check
+var _ validate.Interface = (*DNSConfig)(nil)
+
+// Validate implements the [validate.Interface] interface for *DNSConfig.
+func (c *DNSConfig) Validate() (err error) {
+	if c == nil {
+		return errors.ErrNoValue
+	}
+
+	// TODO(d.kolyshev):  Add validations.
+
+	return nil
 }

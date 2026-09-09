@@ -10,6 +10,9 @@ import (
 //
 // TODO(d.kolyshev):  Use.
 type Config struct {
+	// DNSConfig is a block with DNS configuration params.
+	DNSConfig *DNSConfig `yaml:"dns"`
+
 	// HTTP is a block with web API configuration settings.
 	HTTP *HTTPConfig `yaml:"http"`
 
@@ -60,8 +63,8 @@ func (c *Config) Validate() (err error) {
 
 	// Keep this in the same order as the fields in the config.
 	validators := container.KeyValues[string, validate.Interface]{{
-		Key:   "http",
-		Value: c.HTTP,
+		Key:   "dns",
+		Value: c.DNSConfig,
 	}, {
 		Key:   "log",
 		Value: c.Log,
