@@ -47,9 +47,9 @@ type DNSConfig struct {
 	// empty slice for this field makes Proxy not trust any address.
 	TrustedProxies []netutil.Prefix `yaml:"trusted_proxies"`
 
-	// AllowedClients is the slice of IP addresses, CIDR networks, and
-	// ClientIDs of allowed clients.  If not empty, only these clients are
-	// allowed, and [Config.DisallowedClients] are ignored.
+	// AllowedClients is the slice of IP addresses, CIDR networks, and ClientIDs
+	// of allowed clients.  If not empty, only these clients are allowed, and
+	// DisallowedClients are ignored.
 	AllowedClients []string `yaml:"allowed_clients"`
 
 	// BlockedHosts is the list of hosts that should be blocked.

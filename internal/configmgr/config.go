@@ -66,6 +66,9 @@ func (c *Config) Validate() (err error) {
 		Key:   "dns",
 		Value: c.DNSConfig,
 	}, {
+		Key:   "http",
+		Value: c.HTTP,
+	}, {
 		Key:   "log",
 		Value: c.Log,
 	}, {

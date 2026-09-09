@@ -1,6 +1,7 @@
 package configmgr
 
 import (
+	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/validate"
 )
 
@@ -41,8 +42,10 @@ type LogConfig struct {
 var _ validate.Interface = (*LogConfig)(nil)
 
 // Validate implements the [validate.Interface] interface for *LogConfig.
-//
-// TODO(d.kolyshev):  Validate.
 func (c *LogConfig) Validate() (err error) {
+	if c == nil {
+		return errors.ErrNoValue
+	}
+
 	return nil
 }
