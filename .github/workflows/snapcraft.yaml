@@ -70,6 +70,21 @@ jobs:
             SNAPCRAFT_STORE_CREDENTIALS=${{ env.SNAPCRAFT_STORE_CREDENTIALS }}
 'name': 'Build and publish Snapcraft release'
 'on':
+  'push':
+    'branches':
+      - 'master'
+      - 'release-v*'
+      - 'beta-v*'
+  'schedule':
+    # Don't use minute values that end with a zero or a five as these are often
+    # used in CI and so resources during these minutes can be quite busy.
+    #
+    # NOTE: The time is chosen to be exactly one hour after the main release
+    # build as defined as in release.yaml.
+    #
+    # GitHub Actions uses standard 5-field POSIX cron: runs at 14:42 UTC on
+    # weekdays (Mon-Fri).
+    - cron: '42 14 * * 1-5'
   'workflow_dispatch':
     'inputs':
       'cache_buster':
