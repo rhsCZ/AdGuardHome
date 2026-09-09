@@ -69,5 +69,10 @@ func (t Theme) Validate() (res error) {
 		return nil
 	}
 
-	return fmt.Errorf("%w: %q", errors.ErrBadEnumValue, t)
+	return fmt.Errorf(
+		"%w: %q, supported: %q",
+		errors.ErrBadEnumValue,
+		t,
+		[]Theme{ThemeAuto, ThemeLight, ThemeDark},
+	)
 }
