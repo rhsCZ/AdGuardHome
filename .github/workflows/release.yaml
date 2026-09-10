@@ -161,93 +161,11 @@
           'overwrite': true
           'path': |
             ${{ env.DIST_DIR }}
-  'DeployToStaticStorage':
-    'if': |
-      ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
-    'needs': 'CalculateChecksums'
-    'permissions':
-      'contents': 'read'
-      'id-token': 'write'
-    'uses': 'AdGuardSoftwareLimited/actions/.github/workflows/deploy-to-static.yml@master'
-    'with':
-      'team': 'go'
-      # env is not available in reusable workflow inputs; keep this in sync
-      # with the workflow-level CHANNEL value.
-      'deployer-module': |-
-        adguard-home-${{ case(
-          startsWith(github.ref_name, 'release-v'), 'release',
-          startsWith(github.ref_name, 'beta-v'), 'beta',
-          'edge'
-        ) }}
-      'artifact-name': 'adguardhome'
-      'environment': |-
-        ${{ case(
-          startsWith(github.ref_name, 'release-v'), 'release',
-          startsWith(github.ref_name, 'beta-v'), 'beta',
-          'edge'
-        ) }}-static
-  'PublishDocker':
-    'if': |
-      ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
-    'needs': 'DeployToStaticStorage'
-    'permissions':
-      'contents': 'read'
-    'runs-on': 'team-go'
-    'steps':
-      - 'uses': 'actions/checkout@v6'
-        'with':
-          'fetch-depth': 0
-          # Set to false to avoid GITHUB_TOKEN leaking.
-          #
-          # See https://github.com/actions/checkout/issues/485#issuecomment-934422611.
-          'persist-credentials': false
-      - 'uses': 'actions/download-artifact@v8'
-        'with':
-          'name': 'adguardhome'
-          'path': |
-            ${{ env.DIST_DIR }}
-      - 'name': 'Publish to Docker Hub'
-        'run': |
-          #!/bin/sh
-
-          set -e -f -u -x
-
-          # TODO(d.kolyshev):  Use AdGuardSoftwareLimited/actions/actions/docker-build.
-          env \
-              CHANNEL=${{ env.CHANNEL }} \
-              REVISION=${{ github.sha }} \
-              DIST_DIR=${{ env.DIST_DIR }} \
-              DOCKER_IMAGE_NAME='adguard/adguardhome' \
-              DOCKER_PUSH='1' \
-              VERBOSE='1' \
-              sh ./scripts/make/build-docker.sh \
-              ;
-  'PublishGitHubRelease':
-    # Only publish to GitHub Releases for the beta and release channels.
-    'if': |
-      ${{
-        github.repository_owner == 'AdGuardSoftwareLimited'
-        && (startsWith(github.ref_name, 'release-v') || startsWith(github.ref_name, 'beta-v'))
-      }}
-    'needs':
-      - 'Build'
-      - 'DeployToStaticStorage'
-    'permissions':
-      'contents': 'read'
-      # Octopass OIDC for the cross-repo token.
-      'id-token': 'write'
-    'uses': 'AdGuardSoftwareLimited/actions/.github/workflows/create-gh-release.yml@master'
-    'with':
-      'artifact_name': 'adguardhome'
-      'draft': true
-      # Use the actual application version, e.g. v0.108.1, as the tag, and not
-      # the branch name, so that it matches the announcement_url written to
-      # version.json by scripts/make/build-release.sh.
-      'tag_name': ${{ needs.Build.outputs.app_version }}
-      'team': 'go'
-      'target_repo': 'AdguardTeam/AdGuardHome'
 'name': 'Build and publish releases'
 'on':
+  'push':
+    'branches':
+      - '*'
   # Only the daily schedule runs automatically, on the default branch.  Builds
   # for the beta-v* and release-v* branches are manual and must be triggered via
   # workflow_dispatch with the corresponding branch selected.
