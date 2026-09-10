@@ -54,25 +54,17 @@ const (
 	ThemeDark  Theme = "dark"
 )
 
-// type check
-var _ validate.Interface = Theme("")
-
-// Validate implements the [validate.Interface] interface for Theme.
-func (t Theme) Validate() (res error) {
-	if t == "" {
-		// The default theme will be used.
-		return nil
-	}
-
-	switch t {
+// NewTheme converts a simple string into a [Theme] and makes sure it's valid.
+func NewTheme(s string) (t Theme, err error) {
+	switch t = Theme(s); t {
 	case ThemeAuto, ThemeLight, ThemeDark:
-		return nil
+		return t, nil
+	default:
+		return "", fmt.Errorf(
+			"%w: %q, supported: %q",
+			errors.ErrBadEnumValue,
+			s,
+			[]Theme{ThemeAuto, ThemeLight, ThemeDark},
+		)
 	}
-
-	return fmt.Errorf(
-		"%w: %q, supported: %q",
-		errors.ErrBadEnumValue,
-		t,
-		[]Theme{ThemeAuto, ThemeLight, ThemeDark},
-	)
 }

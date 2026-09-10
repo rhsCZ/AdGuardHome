@@ -47,5 +47,7 @@ func (c *LogConfig) Validate() (err error) {
 		return errors.ErrNoValue
 	}
 
+	// TODO(d.kolyshev):  Add more validations.
+
 	return nil
 }

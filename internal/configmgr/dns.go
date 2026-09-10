@@ -1,6 +1,7 @@
 package configmgr
 
 import (
+	"fmt"
 	"net/netip"
 
 	"github.com/AdguardTeam/AdGuardHome/internal/dnsforward"
@@ -27,7 +28,7 @@ type DNSConfig struct {
 	UpstreamDNSFileName string `yaml:"upstream_dns_file"`
 
 	// UpstreamMode determines the logic through which upstreams will be used.
-	UpstreamMode dnsforward.UpstreamMode `yaml:"upstream_mode"`
+	UpstreamMode string `yaml:"upstream_mode"`
 
 	// BindHosts are the addresses to listen on.
 	BindHosts []netip.Addr `yaml:"bind_hosts"`
@@ -223,7 +224,14 @@ func (c *DNSConfig) Validate() (err error) {
 		return errors.ErrNoValue
 	}
 
-	// TODO(d.kolyshev):  Add validations.
+	if c.UpstreamMode != "" {
+		_, err = dnsforward.NewUpstreamMode(c.UpstreamMode)
+		if err != nil {
+			return fmt.Errorf("upstream_mode: %w", err)
+		}
+	}
+
+	// TODO(d.kolyshev):  Add more validations.
 
 	return nil
 }

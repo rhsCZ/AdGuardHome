@@ -1,6 +1,8 @@
 package configmgr
 
 import (
+	"fmt"
+
 	"github.com/AdguardTeam/golibs/container"
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/validate"
@@ -9,6 +11,7 @@ import (
 // Config is the top-level on-disk configuration structure.
 //
 // TODO(d.kolyshev):  Use.
+// TODO(d.kolyshev):  Add contracts.
 type Config struct {
 	// DNSConfig is a block with DNS configuration params.
 	DNSConfig *DNSConfig `yaml:"dns"`
@@ -28,7 +31,7 @@ type Config struct {
 	Language string `yaml:"language"`
 
 	// Theme is a web UI theme for current user.
-	Theme Theme `yaml:"theme"`
+	Theme string `yaml:"theme"`
 
 	// Users are the clients capable for accessing the web interface.
 	Users WebUsers `yaml:"users"`
@@ -74,14 +77,18 @@ func (c *Config) Validate() (err error) {
 	}, {
 		Key:   "users",
 		Value: c.Users,
-	}, {
-		Key:   "theme",
-		Value: c.Theme,
 	}}
 
 	var errs []error
 	for _, kv := range validators {
 		errs = validate.Append(errs, kv.Key, kv.Value)
+	}
+
+	if c.Theme != "" {
+		_, err = NewTheme(c.Theme)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("theme: %w", err))
+		}
 	}
 
 	return errors.Join(errs...)

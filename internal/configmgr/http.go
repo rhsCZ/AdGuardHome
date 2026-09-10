@@ -10,8 +10,6 @@ import (
 )
 
 // HTTPConfig is the on-disk web API configuration.
-//
-// TODO(d.kolyshev):  Use.
 type HTTPConfig struct {
 	// DoH contains DNS-over-HTTPS configuration.
 	DoH *DOHConfig `yaml:"doh"`
@@ -93,5 +91,7 @@ var _ validate.Interface = (*HTTPPprofConfig)(nil)
 
 // Validate implements the [validate.Interface] interface for *HTTPPprofConfig.
 func (c *HTTPPprofConfig) Validate() (err error) {
+	// TODO(d.kolyshev):  Validate.
+
 	return nil
 }
