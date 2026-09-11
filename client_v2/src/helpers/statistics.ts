@@ -29,10 +29,9 @@ export const getStoredStatsPeriod = (): number => {
         : DAY;
 };
 
-/** Maximum stats interval from the server config, clamped to at least a day. */
+/** Maximum stats interval from the server config; falls back to DAY if the value is unexpectedly small. */
 const getClampedMaxInterval = (maxInterval: number): number =>
     maxInterval >= HOUR ? maxInterval : DAY;
-
 /** Saved period clamped by the maximum interval available in the stats config. */
 export const getEffectiveStatsPeriod = (maxInterval: number): number =>
     Math.min(getStoredStatsPeriod(), getClampedMaxInterval(maxInterval));
