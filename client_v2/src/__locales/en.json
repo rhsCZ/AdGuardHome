@@ -597,6 +597,7 @@
   "reset_settings_confirm": "Yes, reset",
   "response_details": "Response details",
   "response_time": "Response time",
+  "avg_response_time": "Avg response time",
   "result": "Result",
   "resume_protection_timer": "Protection will resume in %time%",
   "rewrite_add": "Add DNS rewrite",

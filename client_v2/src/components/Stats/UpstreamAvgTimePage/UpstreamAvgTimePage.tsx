@@ -33,7 +33,7 @@ export const UpstreamAvgTimePage = () => {
         },
         {
             key: 'time',
-            header: { text: intl.getMessage('response_time') },
+            header: { text: intl.getMessage('avg_response_time') },
             accessor: 'count',
             sortable: true,
             sortFn: (a: number, b: number) => a - b,
@@ -74,7 +74,7 @@ export const UpstreamAvgTimePage = () => {
                     title={row.name}
                     items={[
                         {
-                            label: intl.getMessage('response_time'),
+                            label: intl.getMessage('avg_response_time'),
                             value: (
                                 <span>
                                     {(row.count ?? 0).toFixed(0)}{' '}
