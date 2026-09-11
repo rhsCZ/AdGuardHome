@@ -37,18 +37,6 @@
           #
           # See https://github.com/actions/checkout/issues/485#issuecomment-934422611.
           'persist-credentials': false
-      - 'name': 'Build frontend'
-        'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
-        'with':
-          'dockerfile': 'docker/frontend.Dockerfile'
-          'context': '.'
-          'target': 'builder-exporter'
-          'output': '.'
-          'build-args': |
-            BASE_IMAGE=${{ env.FRONTEND_BASE_IMAGE }}
-            CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
-            CLIENT_DIR=${{ env.CLIENT_DIR }}
-            DIST_DIR=${{ env.BUILD_DIR }}
       - 'name': 'Set source date epoch'
         'run': |
           echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
@@ -72,7 +60,7 @@
           'secrets': |
             secret/data/ci-secrets/gpg-signing gpgPassword | GPG_PASSWORD ;
             secret/data/ci-secrets/gpg-signing gpgSecretKey | GPG_SECRET_KEY ;
-      - 'name': 'Build release artifacts'
+      - 'name': 'Build unix release artifacts'
         'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
         'with':
           'dockerfile': 'docker/ci.Dockerfile'
@@ -85,6 +73,7 @@
             CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
             CHANNEL=${{ env.CHANNEL }}
             DIST_DIR=${{ env.DIST_DIR }}
+            OS=darwin freebsd linux openbsd
             REVISION=${{ github.sha }}
             SIGN=1
             SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }}
@@ -94,9 +83,32 @@
             GPG_SECRET_KEY=${{ env.GPG_SECRET_KEY }}
       - 'uses': 'actions/upload-artifact@v7'
         'with':
-          'name': 'adguardhome'
+          'name': 'adguardhome-unix'
           'path': |
             ${{ env.DIST_DIR }}
+      - 'name': 'Build windows release artifacts'
+        'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
+        'with':
+          'dockerfile': 'docker/ci.Dockerfile'
+          'context': '.'
+          'target': 'builder-exporter'
+          'output': '.'
+          'build-args': |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
+            BRANCH=${{ github.ref_name }}
+            CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
+            CHANNEL=${{ env.CHANNEL }}
+            DIST_DIR=${{ env.DIST_DIR }}
+            OS=windows
+            REVISION=${{ github.sha }}
+            SIGN=0
+            SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }}
+            VERSION=${{ env.APP_VERSION }}
+      - 'uses': 'actions/upload-artifact@v7'
+        'with':
+          'name': 'adguardhome-win'
+          'path': |
+            ${{ env.DIST_DIR }}/AdGuardHome_windows_*
   'SignWindowsBuilds':
     'name': 'Sign Windows executables'
     'needs': 'Build'
@@ -108,12 +120,14 @@
     'uses': 'AdGuardSoftwareLimited/actions/.github/workflows/sign-by-signer.yml@master'
     'with':
       'team': 'go'
-      'artifact-name': 'adguardhome'
+      'artifact-name': 'adguardhome-win'
       'files': '**/**/AdGuardHome.exe'
-      'signed-artifact-name': 'adguardhome'
-  'CalculateChecksums':
-    'name': 'Calculate Checksums'
-    'needs': 'SignWindowsBuilds'
+      'signed-artifact-name': 'adguardhome-win'
+  'PackArtifacts':
+    'name': 'Pack Artifacts'
+    'needs':
+      - 'Build'
+      - 'SignWindowsBuilds'
     'if': |
       ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
     'permissions':
@@ -126,45 +140,53 @@
           #
           # See https://github.com/actions/checkout/issues/485#issuecomment-934422611.
           'persist-credentials': false
+      - 'name': 'Set source date epoch'
+        'run': |
+          echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+      - 'name': 'Build frontend'
+        'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
+        'with':
+          'dockerfile': 'docker/frontend.Dockerfile'
+          'context': '.'
+          'target': 'builder-exporter'
+          'output': '.'
+          'build-args': |
+            BASE_IMAGE=${{ env.FRONTEND_BASE_IMAGE }}
+            CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
+            CLIENT_DIR=${{ env.CLIENT_DIR }}
+            DIST_DIR=${{ env.BUILD_DIR }}
       - 'uses': 'actions/download-artifact@v8'
         'with':
-          'name': 'adguardhome'
+          'name': 'adguardhome-unix'
           'path': |
             ${{ env.DIST_DIR }}
-      - 'name': 'Rewrite Windows ZIP archives'
-        'run': |
-          #!/bin/sh
-
-          set -e -f -u -x
-
-          dist="${{ env.DIST_DIR }}"
-
-          # The Windows executables have been changed after signing, so the ZIP
-          # archives that contain them must be recreated from the signed
-          # binaries.
-          for arch in '386' 'amd64' 'arm64'; do
-              ar="AdGuardHome_windows_${arch}"
-
-              rm -f "./${dist}/${ar}.zip"
-
-              ( cd "./${dist}/${ar}" && zip -9 -q -r "../${ar}.zip" './AdGuardHome' )
-          done
-      - 'name': 'Calculate Checksums'
-        'run': |
-          env \
-            DIST_DIR="${{ env.DIST_DIR }}" \
-            VERBOSE=1 \
-            sh ./scripts/make/calc-checksums.sh
+      - 'uses': 'actions/download-artifact@v8'
+        'with':
+          'name': 'adguardhome-win'
+          'path': |
+            ${{ env.DIST_DIR }}
+      - 'name': 'Pack'
+        'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
+        'with':
+          'dockerfile': 'docker/ci.Dockerfile'
+          'context': '.'
+          'target': 'packer-exporter'
+          'output': '.'
+          'build-args': |
+            CACHE_BUSTER=${{ inputs.cache_buster || '0' }}
+            CHANNEL=${{ env.CHANNEL }}
+            DIST_DIR=${{ env.DIST_DIR }}
+            SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }}
+            VERSION=${{ needs.Build.outputs.app_version }}
       - 'uses': 'actions/upload-artifact@v7'
         'with':
           'name': 'adguardhome'
-          'overwrite': true
           'path': |
-            ${{ env.DIST_DIR }}
+            ${{ env.DIST_DIR }}/*.*
   'DeployToStaticStorage':
     'if': |
       ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
-    'needs': 'CalculateChecksums'
+    'needs': 'PackArtifacts'
     'permissions':
       'contents': 'read'
       'id-token': 'write'
@@ -203,7 +225,7 @@
           'persist-credentials': false
       - 'uses': 'actions/download-artifact@v8'
         'with':
-          'name': 'adguardhome'
+          'name': 'adguardhome-unix'
           'path': |
             ${{ env.DIST_DIR }}
       - 'name': 'Publish to Docker Hub'
@@ -242,7 +264,7 @@
       'draft': true
       # Use the actual application version, e.g. v0.108.1, as the tag, and not
       # the branch name, so that it matches the announcement_url written to
-      # version.json by scripts/make/build-release.sh.
+      # version.json by scripts/make/pack-release.sh.
       'tag_name': ${{ needs.Build.outputs.app_version }}
       'team': 'go'
       'target_repo': 'AdguardTeam/AdGuardHome'
