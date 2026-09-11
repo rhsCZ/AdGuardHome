@@ -181,10 +181,7 @@ describe('TlsSetupWizard — step 1 (certificate)', () => {
         const user = userEvent.setup();
         renderWizard();
 
-        await user.type(
-            screen.getByLabelText('Paste the certificate contents'),
-            'not a pem block',
-        );
+        await user.type(screen.getByLabelText('Paste the certificate contents'), 'not a pem block');
         await user.tab();
 
         expect(screen.getByText('Enter the certificate contents with header')).toBeInTheDocument();
@@ -221,6 +218,8 @@ describe('TlsSetupWizard — step 1 (certificate)', () => {
             ).toBeInTheDocument();
         });
         expect(screen.getByText('Add certificate')).toBeInTheDocument(); // still on step 1
+        // An error never turns Add into its warning state.
+        expect(screen.getByTestId('tls-setup-add')).toHaveTextContent(/^Add$/);
     });
 
     it('shows the self-signed warning on the first Add and advances on the second', async () => {
@@ -233,7 +232,13 @@ describe('TlsSetupWizard — step 1 (certificate)', () => {
         renderWizard();
 
         await user.type(screen.getByLabelText('Paste the certificate contents'), CERT);
-        await user.click(screen.getByTestId('tls-setup-add'));
+
+        // Nothing is known to be wrong until the check runs: a plain Add.
+        const add = screen.getByTestId('tls-setup-add');
+        expect(add).toHaveTextContent(/^Add$/);
+        expect(add.className).not.toContain('warning');
+
+        await user.click(add);
 
         // The warning is surfaced on this step instead of being carried to the
         // next one, and it never blocks — it just has to be seen once.
@@ -246,7 +251,37 @@ describe('TlsSetupWizard — step 1 (certificate)', () => {
         });
         expect(screen.getByText('Add certificate')).toBeInTheDocument();
 
-        await user.click(screen.getByTestId('tls-setup-add'));
+        // The button now spells out what going past the warning means.
+        expect(add).toHaveTextContent('Add anyway');
+        expect(add.className).toContain('warning');
+
+        await user.click(add);
+        await waitFor(() => {
+            expect(screen.getByText('Add private key')).toBeInTheDocument();
+        });
+    });
+
+    it('flips Add into the warning state on the blur check, before anything is clicked', async () => {
+        const user = userEvent.setup();
+        mocks.tlsValidate.mockResolvedValue({
+            ...CERT_ONLY_STATUS,
+            valid_chain: false,
+            warning_validation: SELF_SIGNED_WARNING,
+        });
+        renderWizard();
+
+        await user.type(screen.getByLabelText('Paste the certificate contents'), CERT);
+        await user.tab(); // schedules the debounced per-step check
+
+        const add = screen.getByTestId('tls-setup-add');
+        await waitFor(() => {
+            expect(add).toHaveTextContent('Add anyway');
+        });
+        expect(add.className).toContain('warning');
+        expect(add).not.toBeDisabled();
+
+        // The warning is already on screen, so a single click goes through.
+        await user.click(add);
         await waitFor(() => {
             expect(screen.getByText('Add private key')).toBeInTheDocument();
         });
@@ -432,6 +467,8 @@ describe('TlsSetupWizard — step 3 (config & enable)', () => {
         await goToStep3(user);
 
         expect(screen.getByText('Enable encrypted DNS')).toBeInTheDocument();
+        // The warning state is an Add-button affair: Enable keeps its label.
+        expect(screen.getByTestId('tls-setup-enable')).toHaveTextContent(/^Enable$/);
         // Empty is valid: the backend just turns off DDR, ClientID detection
         // and the certificate hostname check when there is no name.
         expect(screen.queryByText('Fill out this field')).toBeNull();

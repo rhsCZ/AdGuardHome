@@ -272,12 +272,14 @@ export const TlsSetupWizard = (props: Props) => {
         ) : (
             <div class={s.footer}>
                 <Button
-                    variant="primary"
+                    variant={stepCheck.hasWarning() ? 'warning' : 'primary'}
                     onClick={() => void goToNextStep()}
                     disabled={stepCheck.validating()}
                     data-testid="tls-setup-add"
                 >
-                    {intl.getMessage('add')}
+                    {stepCheck.hasWarning()
+                        ? intl.getMessage('tls_setup_add_anyway')
+                        : intl.getMessage('add')}
                 </Button>
                 <Button variant="secondary" onClick={props.onClose}>
                     {intl.getMessage('cancel')}

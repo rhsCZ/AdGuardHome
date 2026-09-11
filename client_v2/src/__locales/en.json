@@ -767,6 +767,7 @@
   "tls_certificate_expired": "Your TLS certificate has expired",
   "tls_certificate_expiring": "Your TLS certificate is about to expire",
   "tls_key_path_label": "Full path to the private key file",
+  "tls_setup_add_anyway": "Add anyway",
   "tls_setup_cert_description": "For DNS encryption, you need a valid TLS certificate chain for your domain — get a free one from letsencrypt.org or buy from a trusted CA. After adding the certificate and key, you'll configure the encrypted DNS server settings",
   "tls_setup_cert_paste_label": "Paste the certificate contents",
   "tls_setup_cert_path_option": "Path to file on the server",

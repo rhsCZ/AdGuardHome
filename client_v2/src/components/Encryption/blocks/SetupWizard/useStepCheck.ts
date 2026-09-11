@@ -121,6 +121,13 @@ export const createStepCheck = (opts: Options) => {
     /** True while the step carries a blocking error. */
     const blocked = () => message()?.kind === 'error';
 
+    /**
+     * True while the step shows a warning the user may still go past.  The
+     * footer flips its submit button into the warning state on this, so the
+     * click that goes through is visibly a confirmation.
+     */
+    const hasWarning = () => message()?.kind === 'warning';
+
     /** Error text to render under `field` on the current step, if any. */
     const fieldError = (field: string) => {
         const m = message();
@@ -147,6 +154,7 @@ export const createStepCheck = (opts: Options) => {
         requestAdvance,
         fail,
         blocked,
+        hasWarning,
         fieldError,
         fieldWarning,
         formMessage,
