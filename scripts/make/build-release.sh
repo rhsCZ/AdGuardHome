@@ -5,7 +5,10 @@
 # The commentary in this file is written with the assumption that the reader
 # only has superficial knowledge of the POSIX shell language and alike.
 # Experienced readers may find it overly verbose.
-
+#
+# It builds the artifacts for the specified platforms and signs the ones that
+# can be signed in place.
+#
 # The default verbosity level is 0.  Show log messages if the caller requested
 # verbosity level greater than 0.  Show the environment and every command that
 # is run if the verbosity level is greater than 1.  Otherwise, print nothing.
@@ -88,14 +91,12 @@ readonly dist
 
 log 'checking tools'
 
-# Make sure we fail gracefully if one of the tools we need is missing.
-for tool in gpg gzip sed tar zip; do
-	if ! command -v "$tool" >/dev/null; then
-		log "pieces don't fit, '$tool' not found"
+# Make sure we fail gracefully if the tool we need is missing.
+if ! command -v 'gpg' >/dev/null; then
+	log "pieces don't fit, 'gpg' not found"
 
-		exit 1
-	fi
-done
+	exit 1
+fi
 
 # Data section.  Arrange data into space-separated tables for read -r to read.
 # Use a hyphen for missing values.
@@ -142,6 +143,8 @@ sign() {
 	sign_os="$1"
 	sign_bin_path="$2"
 
+	log "signing $sign_bin_path"
+
 	if [ "$sign_os" != 'windows' ]; then
 		gpg \
 			--default-key "$gpg_key" \
@@ -152,17 +155,16 @@ sign() {
 	fi
 }
 
-# Function build builds the release for one platform.  It builds a binary and an
-# archive.
+# Function build builds the release for one platform.  It builds a binary and
+# prepares its directory for packing.
 build() {
 	# Get the arguments.  Here and below, use the "build_" prefix for all
 	# variables local to function build.
 	build_dir="${dist}/${1}/AdGuardHome" \
-		build_ar="$2" \
-		build_os="$3" \
-		build_arch="$4" \
-		build_arm="$5" \
-		build_mips="$6" \
+		build_os="$2" \
+		build_arch="$3" \
+		build_arm="$4" \
+		build_mips="$5" \
 		;
 
 	# Use the ".exe" filename extension if we build a Windows release.
@@ -174,14 +176,18 @@ build() {
 
 	mkdir -p "./${build_dir}"
 
+	# Prepare the build directory for archiving.
+	cp ./CHANGELOG.md ./LICENSE.txt ./README.md "$build_dir"
+
 	# Build the binary.
 	#
 	# Set GOARM and GOMIPS to an empty string if $build_arm and $build_mips are
 	# the zero value by removing the hyphen as if it's a prefix.
-	env GOARCH="$build_arch" \
+	env \
+		GOARCH="$build_arch" \
 		GOARM="${build_arm#-}" \
 		GOMIPS="${build_mips#-}" \
-		GOOS="$os" \
+		GOOS="$build_os" \
 		VERBOSE="$((verbose - 1))" \
 		VERSION="$version" \
 		OUT="$build_output" \
@@ -189,27 +195,7 @@ build() {
 
 	log "$build_output"
 
-	sign "$os" "$build_output"
-
-	# Prepare the build directory for archiving.
-	cp ./CHANGELOG.md ./LICENSE.txt ./README.md "$build_dir"
-
-	# Make archives.  Windows and macOS prefer ZIP archives; the rest,
-	# gzipped tarballs.
-	case "$build_os" in
-	'darwin' | 'windows')
-		build_archive="./${dist}/${build_ar}.zip"
-		# TODO(a.garipov): Find an option similar to the -C option of tar for
-		# zip.
-		(cd "${dist}/${1}" && zip -9 -q -r "../../${build_archive}" "./AdGuardHome")
-		;;
-	*)
-		build_archive="./${dist}/${build_ar}.tar.gz"
-		tar -C "./${dist}/${1}" -c -f - "./AdGuardHome" | gzip -9 - >"$build_archive"
-		;;
-	esac
-
-	log "$build_archive"
+	sign "$build_os" "$build_output"
 }
 
 log 'starting builds'
@@ -242,103 +228,20 @@ echo "$platforms" | while read -r os arch arm mips; do
 	case "$arch" in
 	arm)
 		dir="AdGuardHome_${os}_${arch}_${arm}"
-		ar="AdGuardHome_${os}_${arch}v${arm}"
 		;;
 	mips*)
 		dir="AdGuardHome_${os}_${arch}_${mips}"
-		ar="$dir"
 		;;
 	*)
 		dir="AdGuardHome_${os}_${arch}"
-		ar="$dir"
 		;;
 	esac
 
-	build "$dir" "$ar" "$os" "$arch" "$arm" "$mips"
+	build "$dir" "$os" "$arch" "$arm" "$mips"
 done
-
-log 'packing frontend'
-
-build_archive="./${dist}/AdGuardHome_frontend.tar.gz"
-tar -c -f - ./build | gzip -9 - >"$build_archive"
-log "$build_archive"
-
-log 'calculating checksums'
-
-env \
-	DIST_DIR="$dist" \
-	VERBOSE="$verbose" \
-	sh ./scripts/make/calc-checksums.sh \
-	;
 
 log 'writing versions'
 
 echo "version=$version" >"./${dist}/version.txt"
-
-# Create the version.json file.
-
-version_download_url="https://static.adtidy.org/adguardhome/${channel}"
-version_json="./${dist}/version.json"
-readonly version_download_url version_json
-
-# If the channel is edge, point users to the "Platforms" page on the Wiki,
-# because the direct links to the edge packages are listed there.
-if [ "$channel" = 'edge' ]; then
-	announcement_url='https://github.com/AdguardTeam/AdGuardHome/wiki/Platforms'
-else
-	announcement_url="https://github.com/AdguardTeam/AdGuardHome/releases/tag/${version}"
-fi
-readonly announcement_url
-
-# TODO(a.garipov): Remove "selfupdate_min_version" in future versions.
-rm -f "$version_json"
-echo "{
-  \"version\": \"${version}\",
-  \"announcement\": \"AdGuard Home ${version} is now available!\",
-  \"announcement_url\": \"${announcement_url}\",
-  \"selfupdate_min_version\": \"0.0\",
-" >>"$version_json"
-
-# Add the MIPS* object keys without the "softfloat" part to mitigate the
-# consequences of #5373.
-#
-# TODO(a.garipov): Remove this around fall 2023.
-echo "
-  \"download_linux_mips64\": \"${version_download_url}/AdGuardHome_linux_mips64_softfloat.tar.gz\",
-  \"download_linux_mips64le\": \"${version_download_url}/AdGuardHome_linux_mips64le_softfloat.tar.gz\",
-  \"download_linux_mipsle\": \"${version_download_url}/AdGuardHome_linux_mipsle_softfloat.tar.gz\",
-" >>"$version_json"
-
-# Same as with checksums above, don't use ls, because files matching one of the
-# patterns may be absent.
-ar_files="$(find "./${dist}" ! -name "${dist}" -prune \( -name '*.tar.gz' -o -name '*.zip' \))"
-ar_files_len="$(echo "$ar_files" | wc -l)"
-readonly ar_files ar_files_len
-
-i='1'
-# Don't use quotes to get word splitting.
-for f in $ar_files; do
-	platform="$f"
-
-	# Remove the prefix.
-	platform="${platform#"./${dist}/AdGuardHome_"}"
-
-	# Remove the filename extensions.
-	platform="${platform%.zip}"
-	platform="${platform%.tar.gz}"
-
-	# Use the filename's base path.
-	filename="${f#"./${dist}/"}"
-
-	if [ "$i" -eq "$ar_files_len" ]; then
-		echo "  \"download_${platform}\": \"${version_download_url}/${filename}\"" >>"$version_json"
-	else
-		echo "  \"download_${platform}\": \"${version_download_url}/${filename}\"," >>"$version_json"
-	fi
-
-	i="$((i + 1))"
-done
-
-echo '}' >>"$version_json"
 
 log 'finished'

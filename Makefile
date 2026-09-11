@@ -98,9 +98,10 @@ test: js-test go-test
 .PHONY: build-docker
 build-docker: ; $(ENV) "$(SHELL)" ./scripts/make/build-docker.sh
 
-.PHONY: build-release
+.PHONY: build-release pack-release
 build-release: $(BUILD_RELEASE_DEPS_$(FRONTEND_PREBUILT))
 	$(ENV) "$(SHELL)" ./scripts/make/build-release.sh
+pack-release:  ; $(ENV) "$(SHELL)" ./scripts/make/pack-release.sh
 
 .PHONY: js-build js-deps js-typecheck js-lint js-test js-test-e2e
 js-build:     ; $(NPM) $(NPM_FLAGS) run build-prod

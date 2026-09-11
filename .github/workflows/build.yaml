@@ -37,7 +37,7 @@
             DIST_DIR=${{ env.BUILD_DIR }}
       - 'uses': 'actions/upload-artifact@v7'
         'with':
-          'name': 'adguardhomefrontend'
+          'name': 'adguardhome-frontend'
           'path': |
             ${{ env.BUILD_DIR }}
       - 'name': 'Set source date epoch'
@@ -64,12 +64,9 @@
             VERSION=${{ github.ref_name }}
       - 'uses': 'actions/upload-artifact@v7'
         'with':
-          'name': 'adguardhome'
+          'name': 'adguardhome-qa'
           'path': |
-            ${{ env.DIST_DIR }}/AdGuardHome_windows_amd64.zip
-            ${{ env.DIST_DIR }}/AdGuardHome_darwin_amd64.zip
-            ${{ env.DIST_DIR }}/AdGuardHome_darwin_arm64.zip
-            ${{ env.DIST_DIR }}/AdGuardHome_linux_amd64.tar.gz
+            ${{ env.DIST_DIR }}
   'TestE2E':
     'if': |
       ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
@@ -86,12 +83,12 @@
           'persist-credentials': false
       - 'uses': 'actions/download-artifact@v8'
         'with':
-          'name': 'adguardhomefrontend'
+          'name': 'adguardhome-frontend'
           'path': |
             ${{ env.BUILD_DIR }}
       - 'uses': 'actions/download-artifact@v8'
         'with':
-          'name': 'adguardhome'
+          'name': 'adguardhome-qa'
           'path': |
             ${{ env.DIST_DIR }}
       - 'run': |
@@ -99,9 +96,7 @@
 
           set -e -f -u -x
 
-          tar -xzf ${{ env.DIST_DIR }}/AdGuardHome_linux_amd64.tar.gz -C /tmp
-
-          mv /tmp/AdGuardHome/AdGuardHome ./AdGuardHome
+          mv ${{ env.DIST_DIR }}/AdGuardHome_linux_amd64/AdGuardHome ./AdGuardHome
       - 'name': 'Run tests'
         'uses': 'AdGuardSoftwareLimited/actions/actions/docker-build@master'
         'with':
