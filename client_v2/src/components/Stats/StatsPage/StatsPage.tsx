@@ -99,6 +99,11 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
 
     const mobileTotalPages = () => Math.max(1, Math.ceil(filteredRows().length / pageSize()));
 
+    // The rows-per-page select is only meaningful once there is at least a full
+    // page of rows, so the whole footer is hidden for short lists — the same
+    // rule the desktop Table applies.
+    const showMobilePagination = () => filteredRows().length >= DEFAULT_PAGE_SIZE;
+
     // The desktop Table sorts internally; mirror that logic here so the mobile
     // card list is ordered the same way (resolvedSort drives both).
     const sortedMobileRows = createMemo(() => {
@@ -294,17 +299,19 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
                                             {(row) => props.renderMobileCard(row)}
                                         </For>
                                     </div>
-                                    <div class={s.mobilePagination}>
-                                        <Pagination
-                                            currentPage={currentPage()}
-                                            totalPages={mobileTotalPages()}
-                                            pageSize={pageSize()}
-                                            totalItems={filteredRows().length}
-                                            pageSizeOptions={DEFAULT_PAGE_SIZE_OPTIONS}
-                                            onPageChange={(page: number) => setCurrentPage(page)}
-                                            onPageSizeChange={handlePageSizeChange}
-                                        />
-                                    </div>
+                                    <Show when={showMobilePagination()}>
+                                        <div class={s.mobilePagination}>
+                                            <Pagination
+                                                currentPage={currentPage()}
+                                                totalPages={mobileTotalPages()}
+                                                pageSize={pageSize()}
+                                                totalItems={filteredRows().length}
+                                                pageSizeOptions={DEFAULT_PAGE_SIZE_OPTIONS}
+                                                onPageChange={(page: number) => setCurrentPage(page)}
+                                                onPageSizeChange={handlePageSizeChange}
+                                            />
+                                        </div>
+                                    </Show>
                                 </Show>
                             </Show>
                         </div>
