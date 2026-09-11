@@ -97,7 +97,6 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
         setCurrentPage(0);
     };
 
-    // Mobile pagination shares the page-size preference with the desktop table.
     const mobileTotalPages = () => Math.max(1, Math.ceil(filteredRows().length / pageSize()));
 
     // The desktop Table sorts internally; mirror that logic here so the mobile
