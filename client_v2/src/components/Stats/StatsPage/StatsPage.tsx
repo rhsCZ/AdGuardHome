@@ -1,4 +1,4 @@
-import { For, Show, createEffect, createMemo, createSignal, type JSX } from 'solid-js';
+import { For, Show, createEffect, createMemo, createSignal, untrack, type JSX } from 'solid-js';
 import cn from 'clsx';
 import { useSearchParams } from '@solidjs/router';
 
@@ -61,8 +61,8 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
         return props.rows.filter((row) => isQueryMatch(props.searchTextForRow(row), query));
     });
 
-    const pageSize = createMemo(
-        () => LocalStorageHelper.getItem<number>(props.pageSizeKey) ?? DEFAULT_PAGE_SIZE,
+    const [pageSize, setPageSize] = createSignal(
+        untrack(() => LocalStorageHelper.getItem<number>(props.pageSizeKey) ?? DEFAULT_PAGE_SIZE),
     );
 
     const getStoredSort = (): SortState | null => {
@@ -153,6 +153,7 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
 
     const handlePageSizeChange = (size: number) => {
         LocalStorageHelper.setItem(props.pageSizeKey, size);
+        setPageSize(size);
         setCurrentPage(0);
     };
 
@@ -258,10 +259,7 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
                             <Show
                                 when={!props.loading}
                                 fallback={
-                                    <div
-                                        class={s.mobileLoader}
-                                        data-testid="stats-mobile-loader"
-                                    >
+                                    <div class={s.mobileLoader} data-testid="stats-mobile-loader">
                                         <Loader class={s.mobileLoaderIcon} />
                                     </div>
                                 }
@@ -283,8 +281,7 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
                                             <Select<string>
                                                 options={props.mobileSortOptions}
                                                 value={props.mobileSortOptions.find(
-                                                    (option) =>
-                                                        option.value === currentSortValue(),
+                                                    (option) => option.value === currentSortValue(),
                                                 )}
                                                 onChange={handleMobileSortChange}
                                                 height="big"
@@ -305,9 +302,7 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
                                             pageSize={pageSize()}
                                             totalItems={filteredRows().length}
                                             pageSizeOptions={DEFAULT_PAGE_SIZE_OPTIONS}
-                                            onPageChange={(page: number) =>
-                                                setCurrentPage(page)
-                                            }
+                                            onPageChange={(page: number) => setCurrentPage(page)}
                                             onPageSizeChange={handlePageSizeChange}
                                         />
                                     </div>
@@ -324,9 +319,7 @@ export function StatsPage<T>(props: StatsPageProps<T>) {
                         onSortChange={handleSortChange}
                         loading={props.loading}
                         pageSize={pageSize()}
-                        onPageSizeChange={(size: number) =>
-                            LocalStorageHelper.setItem(props.pageSizeKey, size)
-                        }
+                        onPageSizeChange={handlePageSizeChange}
                         emptyTable={<EmptyState message={props.emptyText} />}
                     />
                 </Show>

@@ -178,14 +178,15 @@ describe('Pagination', () => {
         scrollSpy.mockRestore();
     });
 
-    it('scrolls to the top on page-size change when mobile', () => {
+    it('does not scroll to the top on page-size change when mobile', () => {
         const scrollSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
         const { getByTestId } = render(() => (
-            <Pagination {...baseProps} currentPage={0} totalPages={3} />
+            <Pagination {...baseProps} currentPage={2} totalPages={3} />
         ));
         fireEvent.click(getByTestId('page-size-trigger'));
         fireEvent.click(getByTestId('page-size-menu').querySelectorAll('[class~="item"]')[1]);
-        expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+        expect(baseProps.onPageSizeChange).toHaveBeenCalledWith(20);
+        expect(scrollSpy).not.toHaveBeenCalled();
         scrollSpy.mockRestore();
     });
 });

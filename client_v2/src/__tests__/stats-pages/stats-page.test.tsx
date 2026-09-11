@@ -81,9 +81,7 @@ const renderPage = (overrides: Partial<Parameters<typeof StatsPage<Row>>[0]> = {
     ));
 
 const getRowsText = () =>
-    Array.from(document.querySelectorAll('[class*="tableRow"]')).map(
-        (el) => el.textContent ?? '',
-    );
+    Array.from(document.querySelectorAll('[class*="tableRow"]')).map((el) => el.textContent ?? '');
 
 describe('StatsPage', () => {
     beforeEach(() => {
@@ -95,9 +93,7 @@ describe('StatsPage', () => {
     it('renders breadcrumb, title, search and refresh controls (desktop)', () => {
         renderPage();
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
-        expect(
-            screen.getByRole('heading', { name: 'Top queried domains' }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Top queried domains' })).toBeInTheDocument();
         expect(screen.getByTestId('stats-search-input')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
     });
@@ -194,9 +190,9 @@ describe('StatsPage', () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
 
         const calls = replaceSpy.mock.calls.map((call) => String(call[2]));
-        expect(
-            calls.some((url) => url.includes('sort=count') && url.includes('dir=asc')),
-        ).toBe(true);
+        expect(calls.some((url) => url.includes('sort=count') && url.includes('dir=asc'))).toBe(
+            true,
+        );
     });
 
     it('shows a loader instead of the empty state while loading on mobile', () => {
@@ -229,9 +225,7 @@ describe('StatsPage', () => {
         renderPage({ loading: true, rows: [] });
 
         await waitFor(() => {
-            expect(
-                document.querySelector('[class*="tableLoader"]'),
-            ).toBeInTheDocument();
+            expect(document.querySelector('[class*="tableLoader"]')).toBeInTheDocument();
         });
         expect(screen.queryByTestId('stats-empty-state')).not.toBeInTheDocument();
         expect(screen.queryByTestId('stats-mobile-list')).not.toBeInTheDocument();

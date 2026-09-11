@@ -83,7 +83,6 @@ export const Pagination = (props: Props) => {
 
     const handlePageSizeChange = (size: number) => {
         props.onPageSizeChange(size);
-        scrollToTopOnMobile();
     };
 
     const renderPages = () => {
@@ -159,7 +158,7 @@ export const Pagination = (props: Props) => {
                         isSearchable={false}
                         optionTestIdPrefix="pagination-page-size"
                         class={theme.pagination.select}
-                        height={isMobile() ? 'medium' : 'small'}
+                        height={isMobile() ? 'medium' : 'extra-small'}
                         showOptionIcon={false}
                     />
                 </div>

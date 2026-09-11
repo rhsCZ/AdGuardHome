@@ -17,8 +17,7 @@ const renderWithRouter = (ui: () => JSX.Element) =>
         </HashRouter>
     ));
 
-const getLinkHref = (testid: string) =>
-    screen.getByTestId(testid).getAttribute('href') ?? '';
+const getLinkHref = (testid: string) => screen.getByTestId(testid).getAttribute('href') ?? '';
 
 describe('Dashboard "Show more" links', () => {
     it('Top clients card links to /top_clients', () => {
@@ -58,6 +57,10 @@ describe('Dashboard "Show more" links', () => {
         expect(domainLink).not.toBeNull();
         expect(domainLink!.getAttribute('href')).toContain('/logs');
         expect(domainLink!.getAttribute('href')).toContain('a.org');
+
+        // The blocked total links to QueryLog filtered by blocked status.
+        expect(getLinkHref('blocked-total-link')).toContain('/logs');
+        expect(getLinkHref('blocked-total-link')).toContain('status=blocked');
     });
 
     it('Top upstreams card links to /top_upstreams', () => {
@@ -81,9 +84,7 @@ describe('Dashboard "Show more" links', () => {
     });
 
     it('the link is visible even when the card is empty', () => {
-        renderWithRouter(() => (
-            <TopQueriedDomains topQueriedDomains={[]} numDnsQueries={100} />
-        ));
+        renderWithRouter(() => <TopQueriedDomains topQueriedDomains={[]} numDnsQueries={100} />);
         expect(getLinkHref('show-more-top-queried-domains')).toContain('/top_queried_domains');
     });
 
