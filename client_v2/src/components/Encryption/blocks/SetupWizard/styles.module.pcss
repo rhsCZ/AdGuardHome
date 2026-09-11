@@ -39,6 +39,11 @@
     gap: 4px;
 }
 
+/* Gap between the paste field and the dropzone below it. */
+.dropzoneGap {
+    margin-top: 16px;
+}
+
 .pill {
     flex: 1 0 0;
     height: 4px;
@@ -75,14 +80,24 @@
     gap: 8px;
 }
 
-.description {
-    padding-bottom: 16px;
+/* Inline per-field validation messages (Figma AGDNS-4262).  Only rendered for
+   warnings and form-level messages: field errors use the controls'
+   `errorMessage`, which also paints the field border red. */
+.message {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-.backendError {
-    padding: 16px 0 8px;
+.messageError {
+    color: var(--default-error-icon);
 }
 
-.goBackHint {
-    padding-top: 8px;
+.messageWarning {
+    color: var(--default-attention-link);
+}
+
+.messageHint {
+    padding-top: 4px;
+    color: var(--default-description-text);
 }

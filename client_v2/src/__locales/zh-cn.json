@@ -16,8 +16,6 @@
   "add_allowlist": "添加白名单",
   "add_blocklist": "添加黑名单",
   "add_persistent_client": "添加为持久客户端",
-  "add_tls_certificate": "添加 TLS 证书",
-  "add_tls_certificate_private_key": "添加 TLS 证书私钥",
   "add_to_allowlist": "添加到白名单",
   "ads_blocked": "广告已拦截",
   "ads_blocked_card": "广告已拦截",

@@ -449,42 +449,77 @@ describe('validateCacheSize', () => {
 
 describe('validateRewriteNotExists', () => {
     it('returns undefined for a non-existing domain', () => {
-        const result = validateRewriteNotExists('new.example.com', [
-            { domain: 'existing.example.com' },
+        const result = validateRewriteNotExists('new.example.com', '1.2.3.4', [
+            { domain: 'existing.example.com', answer: '1.2.3.4' },
         ]);
         expect(result).toBeUndefined();
     });
 
-    it('returns error for a domain that already exists', () => {
-        const result = validateRewriteNotExists('example.com', [{ domain: 'example.com' }]);
+    it('returns undefined for the same domain with a different answer', () => {
+        const result = validateRewriteNotExists('example.com', '5.6.7.8', [
+            { domain: 'example.com', answer: '1.2.3.4' },
+        ]);
+        expect(result).toBeUndefined();
+    });
+
+    it('returns error for a duplicated domain and answer', () => {
+        const result = validateRewriteNotExists('example.com', '1.2.3.4', [
+            { domain: 'example.com', answer: '1.2.3.4' },
+        ]);
         expect(result).toBeTruthy();
     });
 
     it('returns undefined when editing the same rewrite', () => {
         const result = validateRewriteNotExists(
             'example.com',
-            [{ domain: 'example.com' }],
-            'example.com',
+            '1.2.3.4',
+            [{ domain: 'example.com', answer: '1.2.3.4' }],
+            { domain: 'example.com', answer: '1.2.3.4' },
         );
         expect(result).toBeUndefined();
     });
 
-    it('returns error when editing and changing to an existing other domain', () => {
+    it('returns undefined when editing and changing the answer', () => {
+        const result = validateRewriteNotExists(
+            'example.com',
+            '5.6.7.8',
+            [{ domain: 'example.com', answer: '1.2.3.4' }],
+            { domain: 'example.com', answer: '1.2.3.4' },
+        );
+        expect(result).toBeUndefined();
+    });
+
+    it('returns error when editing and changing to an existing domain/answer pair', () => {
         const result = validateRewriteNotExists(
             'other.example.com',
-            [{ domain: 'example.com' }, { domain: 'other.example.com' }],
-            'example.com',
+            '1.2.3.4',
+            [
+                { domain: 'example.com', answer: '1.2.3.4' },
+                { domain: 'other.example.com', answer: '1.2.3.4' },
+            ],
+            { domain: 'example.com', answer: '1.2.3.4' },
         );
         expect(result).toBeTruthy();
     });
 
     it('returns undefined for an empty domain', () => {
-        const result = validateRewriteNotExists('', [{ domain: 'example.com' }]);
+        const result = validateRewriteNotExists('', '1.2.3.4', [
+            { domain: 'example.com', answer: '1.2.3.4' },
+        ]);
+        expect(result).toBeUndefined();
+    });
+
+    it('returns undefined for an empty answer', () => {
+        const result = validateRewriteNotExists('example.com', '', [
+            { domain: 'example.com', answer: '1.2.3.4' },
+        ]);
         expect(result).toBeUndefined();
     });
 
     it('case-insensitive duplicate check', () => {
-        const result = validateRewriteNotExists('Example.COM', [{ domain: 'example.com' }]);
+        const result = validateRewriteNotExists('Example.COM', '1.2.3.4', [
+            { domain: 'example.com', answer: '1.2.3.4' },
+        ]);
         expect(result).toBeTruthy();
     });
 });

@@ -1,0 +1,51 @@
+.dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    /* Fixed 146px in both states — the 40px drag icon must not grow the zone. */
+    min-height: 146px;
+    padding: 16px;
+    /* Transparent at rest so switching to the dashed drag border shifts nothing. */
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background-color: var(--page-background-additional);
+    color: var(--default-description-text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+    text-align: center;
+    cursor: pointer;
+
+    &.dragOver {
+        background-color: var(--fills-backgrounds-recent-activity);
+        border: 1px dashed var(--default-product-icon);
+        color: var(--default-main-text);
+    }
+}
+
+.browseLink {
+    color: var(--default-link);
+}
+
+.dropzoneIcon {
+    width: 40px;
+    height: 40px;
+    color: var(--default-main-text);
+}
+
+.hiddenFileInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

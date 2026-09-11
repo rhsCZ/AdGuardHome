@@ -103,7 +103,17 @@ export const getTlsStatus = async () => {
     }
 };
 
-export const setTlsConfig = async (values: TlsConfigBody, opts?: { silent?: boolean }) => {
+/**
+ * Saves the TLS configuration.
+ *
+ * With the default options it updates the store and shows toasts — existing
+ * callers are unaffected.  With `suppressErrorToast` the error is returned
+ * instead of toasted so callers can render it inline.
+ */
+export const setTlsConfig = async (
+    values: TlsConfigBody,
+    opts?: { silent?: boolean; suppressErrorToast?: boolean },
+): Promise<{ ok: true } | { ok: false; error: string }> => {
     setState('processingConfig', true);
     try {
         // Merge: start with all store values, then override with caller's
@@ -138,9 +148,15 @@ export const setTlsConfig = async (values: TlsConfigBody, opts?: { silent?: bool
         if (!opts?.silent) {
             addSuccessToast(intl.getMessage('settings_notify_changes_saved'));
         }
+
+        return { ok: true };
     } catch (error) {
-        addErrorToast({ error });
+        if (!opts?.suppressErrorToast) {
+            addErrorToast({ error });
+        }
         setState('processingConfig', false);
+
+        return { ok: false, error: extractBodyText(error) };
     }
 };
 

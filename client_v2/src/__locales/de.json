@@ -16,8 +16,6 @@
   "add_allowlist": "Zulassungsliste hinzufügen",
   "add_blocklist": "Blockliste hinzufügen",
   "add_persistent_client": "Als dauerhaften Client hinzufügen",
-  "add_tls_certificate": "TLS-Zertifikat hinzufügen",
-  "add_tls_certificate_private_key": "Privaten Schlüssel des TLS-Zertifikats hinzufügen",
   "add_to_allowlist": "Zur Positivliste hinzufügen",
   "ads_blocked": "Anzeigen blockiert",
   "ads_blocked_card": "Anzeigen blockiert",

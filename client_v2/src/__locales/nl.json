@@ -16,8 +16,6 @@
   "add_allowlist": "Toelatingslijst toevoegen",
   "add_blocklist": "Blokkeerlijst toevoegen",
   "add_persistent_client": "Toevoegen als permanente client",
-  "add_tls_certificate": "TLS-certificaat toevoegen",
-  "add_tls_certificate_private_key": "TLS-certificaat privésleutel toevoegen",
   "add_to_allowlist": "Toevoegen aan toelatingslijst",
   "ads_blocked": "Geblokk. advertenties",
   "ads_blocked_card": "Geblokk. advertenties",

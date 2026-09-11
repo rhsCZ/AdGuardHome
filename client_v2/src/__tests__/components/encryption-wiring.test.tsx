@@ -52,15 +52,21 @@ describe('Encryption — TLS setup wizard wiring', () => {
         mocks.tlsStatus.mockResolvedValue(statusNoCert);
     });
 
-    it('opens the wizard via the plus button when no certificate is configured', async () => {
+    it('opens the wizard via the Set up row when no certificate is configured', async () => {
         const user = userEvent.setup();
         render(() => <Encryption />);
 
         await waitFor(() => {
-            expect(screen.getByText('Add TLS certificate')).toBeInTheDocument();
+            expect(screen.getByText('Set up')).toBeInTheDocument();
         });
 
-        await user.click(screen.getByText('Add TLS certificate'));
+        expect(
+            screen.getByText(
+                'Upload your TLS certificate and private key, then configure the DNS server',
+            ),
+        ).toBeInTheDocument();
+
+        await user.click(screen.getByText('Set up'));
 
         expect(await screen.findByText('Add certificate')).toBeInTheDocument();
         expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');

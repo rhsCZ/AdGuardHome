@@ -1,0 +1,110 @@
+import { createMemo, Show, untrack } from 'solid-js';
+
+import { Input } from 'panel/common/controls/Input';
+import { Radio } from 'panel/common/controls/Radio';
+import { Textarea } from 'panel/common/controls/Textarea';
+import { Dropzone } from 'panel/common/ui/Dropzone';
+import intl from 'panel/common/intl';
+import theme from 'panel/lib/theme';
+import { ENCRYPTION_SOURCE } from 'panel/helpers/constants';
+import { InlineMessage } from './InlineMessage';
+import type { PemFields, PemStepConfig } from './pemFields';
+import s from './styles.module.pcss';
+
+type Props = {
+    /** Constant per step — pass the module-level config, never a new object. */
+    config: PemStepConfig;
+    fields: PemFields;
+    /** Error to render under the active field, composed by the host. */
+    errorFor: (field: string) => string | undefined;
+    /** Warning to render under the active field, composed by the host. */
+    warningFor: (field: string) => string | undefined;
+};
+
+/**
+ * The certificate / private key step body: the source switch between pasted
+ * PEM data and a path on the server, plus the matching input and dropzone.
+ */
+export const PemSourceFields = (props: Props) => {
+    // Stable objects (a module-level config and the per-instance handlers); the
+    // values inside them are accessors, so reactivity lives in the calls below.
+    const config = untrack(() => props.config);
+    const fields = untrack(() => props.fields);
+
+    // Built reactively: the option texts are translated on each language change.
+    const sourceOptions = createMemo(() => [
+        {
+            text: config.texts.textOption(),
+            description: config.texts.textOptionDesc(),
+            value: ENCRYPTION_SOURCE.CONTENT,
+        },
+        {
+            text: config.texts.pathOption(),
+            description: config.texts.pathOptionDesc(),
+            value: ENCRYPTION_SOURCE.PATH,
+        },
+    ]);
+
+    const contentWarning = () => props.warningFor(config.fields.content);
+    const pathWarning = () => props.warningFor(config.fields.path);
+
+    return (
+        <>
+            <Radio
+                value={fields.sourceValue() ?? ''}
+                handleChange={fields.handleSourceChange}
+                name={config.radioName}
+                options={sourceOptions()}
+                inModal
+            />
+            <Show
+                when={fields.isContent()}
+                fallback={
+                    <div class={theme.form.input}>
+                        <Input
+                            id={`${config.idPrefix}${config.fields.path}`}
+                            name={config.fields.path}
+                            value={fields.pathValue()}
+                            onChange={fields.handlePathChange}
+                            onBlur={fields.validateOnBlur}
+                            placeholder={intl.getMessage('path_to_file_placeholder')}
+                            errorMessage={props.errorFor(config.fields.path)}
+                            label={config.texts.pathLabel()}
+                            size="large"
+                        />
+                        <Show when={pathWarning()}>
+                            <InlineMessage kind="warning">{pathWarning()}</InlineMessage>
+                        </Show>
+                    </div>
+                }
+            >
+                <div class={theme.form.input}>
+                    <Textarea
+                        id={`${config.idPrefix}${config.fields.content}`}
+                        name={config.fields.content}
+                        value={fields.contentValue()}
+                        onChange={fields.handleContentChange}
+                        onBlur={fields.validateOnBlur}
+                        placeholder={config.contentPlaceholder}
+                        errorMessage={props.errorFor(config.fields.content)}
+                        label={config.texts.contentLabel()}
+                        isClearable
+                        onClear={fields.handleClear}
+                        size={fields.dropzoneVisible() ? 'compact' : 'large'}
+                    />
+                    <Show when={contentWarning()}>
+                        <InlineMessage kind="warning">{contentWarning()}</InlineMessage>
+                    </Show>
+                    <Show when={fields.dropzoneVisible()}>
+                        <Dropzone
+                            onFileSelect={fields.handleFileSelect}
+                            hint={config.texts.dropzoneHint()}
+                            testId={config.dropzoneTestId}
+                            class={s.dropzoneGap}
+                        />
+                    </Show>
+                </div>
+            </Show>
+        </>
+    );
+};

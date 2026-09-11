@@ -16,8 +16,6 @@
   "add_allowlist": "Adicionar lista de permissões",
   "add_blocklist": "Adicionar lista de bloqueio",
   "add_persistent_client": "Adicionar como cliente persistente",
-  "add_tls_certificate": "Adicionar certificado TLS",
-  "add_tls_certificate_private_key": "Adicionar a chave privada do certificado TLS",
   "add_to_allowlist": "Adicionar na lista de permissões",
   "ads_blocked": "Anúncios bloqueados",
   "ads_blocked_card": "Anúncios bloqueados",

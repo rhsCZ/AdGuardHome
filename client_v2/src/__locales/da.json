@@ -16,8 +16,6 @@
   "add_allowlist": "Tilføj hvidliste",
   "add_blocklist": "Tilføj sortliste",
   "add_persistent_client": "Tilføj som vedvarende klient",
-  "add_tls_certificate": "Tilføj TLS-certifikat",
-  "add_tls_certificate_private_key": "Tilføj TLS-certifikats private nøgle",
   "add_to_allowlist": "Føj til hvidliste",
   "ads_blocked": "Blokerede annoncer",
   "ads_blocked_card": "Blokerede annoncer",

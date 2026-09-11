@@ -12,11 +12,6 @@ type Props = {
     onGoBack: () => void;
 };
 
-/**
- * Wizard header — "Go back" link (steps 2-3) and the 3-segment progress
- * bar per the TLS setup wizard design.  The design's switch/arrow icons
- * are hidden artifacts and intentionally omitted.
- */
 export const WizardSteps = (props: Props) => (
     <div
         class={s.header}

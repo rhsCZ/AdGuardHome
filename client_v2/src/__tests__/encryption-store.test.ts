@@ -168,6 +168,45 @@ describe('setTlsConfig', () => {
             expect.any(Number),
         );
     });
+
+    it('resolves { ok: true } on success', async () => {
+        mocks.tlsConfigure.mockImplementation(async (v: any) => ({
+            ...v,
+            certificate_chain: '',
+            private_key: '',
+        }));
+
+        await expect(setTlsConfig({ certificate_chain: '', private_key: '' })).resolves.toEqual({
+            ok: true,
+        });
+    });
+
+    it('resolves { ok: false, error } and still toasts on failure by default', async () => {
+        mocks.tlsConfigure.mockRejectedValue(
+            new Error('http://127.0.0.1/control/tls/configure | saving: boom | 500'),
+        );
+
+        await expect(setTlsConfig({ certificate_chain: '', private_key: '' })).resolves.toEqual({
+            ok: false,
+            error: 'saving: boom',
+        });
+        expect(mocks.addErrorToast).toHaveBeenCalledTimes(1);
+        expect(encryptionState.processingConfig).toBe(false);
+    });
+
+    it('suppresses the error toast when requested so callers can render it inline', async () => {
+        mocks.tlsConfigure.mockRejectedValue(
+            new Error('http://127.0.0.1/control/tls/configure | saving: boom | 500'),
+        );
+
+        const res = await setTlsConfig(
+            { certificate_chain: '', private_key: '' },
+            { suppressErrorToast: true },
+        );
+
+        expect(res).toEqual({ ok: false, error: 'saving: boom' });
+        expect(mocks.addErrorToast).not.toHaveBeenCalled();
+    });
 });
 
 describe('validateTlsConfig', () => {
